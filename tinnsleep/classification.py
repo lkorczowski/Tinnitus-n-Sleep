@@ -57,7 +57,7 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         self.center_ = np.average(X, axis=0, weights=sample_weight)
 
         # Return the classifier
-        # La ptit branche est passée là
+        # La petite branche est passée là
         return self
 
 
