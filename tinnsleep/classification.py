@@ -10,13 +10,13 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
     """Classification by Thresholding
 
     The classifier estimate the centroid value of a given signal (class 0) and detect
-    observation that reach a the value above `abs_threshold + abs_threshold * centroid`
+    observation that reach a the value above `abs_threshold + rel_threshold * centroid`
 
     Parameters
     ----------
     abs_threshold : float, (default: 0.)
         absolute value to add to the centroid for thresholding
-    abs_threshold : float, (default: 2.)
+    rel_threshold : float, (default: 2.)
         multiplicator factor of the centroid for thresholding
 
     Attributes
@@ -33,7 +33,7 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         self.rel_threshold = rel_threshold
 
     def fit(self, X, y=[], sample_weight=None):
-        """Compute average smplitude
+        """Compute average amplitude
 
                 Parameters
                 ----------
