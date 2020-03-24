@@ -28,3 +28,6 @@ the `conda` command is found.
     $ conda activate tinnsleep-env
     $ pip install -e .
     ```
+   
+## Tutorial to set Git
+
