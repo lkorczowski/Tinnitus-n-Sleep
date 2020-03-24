@@ -40,13 +40,15 @@ git config --global user.email johndoe@example.com
 # Git Branch locally and put it on github GitHub (if you want develop new features)
 
 0. (optional) To make things easier, and have the same name locally and remote without setting the upstream
- `git config --global push.default current`
+ `git config --global push.default current` and  `git config --global pull.default current`
 1. Create a new branch:
     `git checkout -b feature_branch_name`
 2. Edit, add and commit your files.
 3. Push your branch to the remote repository:
     (normal) `git push -u origin feature_branch_name`
     (if you done step 0.) `git push -u`
+2. If you missed the step to connect to origin for pull (e.g. you did only `git checkout test`)
+    do :     `git branch --set-upstream-to=origin/feature_branch_name feature_branch_name`
 
 # Get a existing branch on GitHub that is NOT yet on your machine locally
 0. to check all branch (even the remote):
@@ -54,6 +56,8 @@ git config --global user.email johndoe@example.com
 1.  Get the remote branch locally
 	`git checkout -b feature_branch_localname origin/feature_branch_remotename`
 	example: `git checkout -b test origin/test`
+
+
 
 # Git merge branch into master (or other)
 
