@@ -1,11 +1,14 @@
 import mne
 
 #Create Raw file
-def CreateRaw(data, ch_names):
-    """Generate a mne raw structure based on hardcoded info"""
-    ch_types = ['eeg'] * len(ch_names)
+def CreateRaw(data, ch_names, montage=None, ch_types=None):
+    """Generate a mne raw structure based on hardcoded info for bruxisme data"""
+    if ch_types is None:
+        ch_types = ['eeg']
+    ch_types = ch_types * len(ch_names)
     sfreq = 200
-    montage = 'standard_1020'
+    if montage is 'None':
+        montage = 'standard_1020'
     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types, montage=montage, verbose=False)
     raw = mne.io.RawArray(data, info, verbose=False)
     return raw
