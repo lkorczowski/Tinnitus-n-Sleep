@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -51,29 +51,9 @@ jobs:
            activate-environment: anaconda-client-env
            environment-file: environment.yaml
            python-version: 3.7
-           condarc-file: etc/example-condarc.yml
            auto-activate-base: false
       - shell: bash -l {0}
         run: |
           conda info
           conda list
-          pytest
-          
-  condaspyder:
-    name: Ex4 Linux
-    runs-on: 'ubuntu-latest'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: goanpeca/setup-miniconda@enh/channels
-        with:
-           activate-environment: foo
-           python-version: 3.7
-           environment-file: environment.yaml
-           channels: conda-forge,spyder-ide
-      - shell: bash -l {0}
-        run: |
-          conda info
-          conda list
-          conda config --show-sources
-          conda config --show
           pytest
