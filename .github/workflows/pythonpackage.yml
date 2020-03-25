@@ -24,9 +24,9 @@ jobs:
            environment-file: environment.yaml
            python-version: 3.7
            auto-activate-base: true
+           auto_update_conda: true
       - shell: bash -l {0}
         run: |
-          conda activate tinnsleep-env
           pip install -e .
           conda info
           conda list
