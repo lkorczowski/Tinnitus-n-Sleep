@@ -5,6 +5,7 @@ import sys
 import pytest
 
 PATH = os.path.dirname(os.path.abspath(__file__))
+print(PATH)
 sys.path.insert(0, PATH  + '/../')
 
 def pytest_configure(config):

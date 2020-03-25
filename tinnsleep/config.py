@@ -10,7 +10,7 @@ class Config():
     """
 
     username = getpass.getuser()
-    known_users = {"robin": 'C:\\Users\\zeta\\documents\\EEG_polysomno\\PSG_tamtin_nox',
+    known_users = {"Zeta": 'C:\\Users\\zeta\\documents\\EEG_polysomno\\PSG2',
                     "louis": "/Users/louis/Data/SIOPI/bruxisme"}
 
     if username in known_users.keys():
