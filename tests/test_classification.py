@@ -20,5 +20,4 @@ def test_AmplitudeThresholding_values():
 
     expected_val = np.array([False, False, False, True])
     npt.assert_equal(classif.predict(X), expected_val)
-
     npt.assert_equal(classif.fit_predict(X), expected_val)
