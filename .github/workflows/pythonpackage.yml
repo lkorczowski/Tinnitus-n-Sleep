@@ -27,7 +27,6 @@ jobs:
            auto_update_conda: true
       - shell: bash -l {0}
         run: |
-          pip install -e .
           conda info
           conda list
           pytest
