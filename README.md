@@ -1,6 +1,7 @@
 # Tinnitus-n-Sleep
 Detecting events in sleeping tinnitus patients
 
+
 ## Installation
 The following steps must be performed on a Anaconda prompt console, or 
 alternatively, in a Windows command console that has executed the 
@@ -30,4 +31,7 @@ the `conda` command is found.
     ```
    
 ## Tutorial to set Git
+
+
+Work for SIOPI, by Robin Guillard & Louis Korczowski
 
