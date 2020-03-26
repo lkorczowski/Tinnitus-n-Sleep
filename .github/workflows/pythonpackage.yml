@@ -47,7 +47,8 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-      - name: Pytest and Coverage
+      - shell: bash -l {0}
+        name: Pytest and Coverage
         run: |
           chmod u+r+x ./gitcommit2.sh
           ./gitcommit2.sh -m "update coverage"
@@ -55,3 +56,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${GITHUB_REF#refs/heads/}
