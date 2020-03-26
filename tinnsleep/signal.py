@@ -1,4 +1,5 @@
 import numpy as np
+from tinnsleep.classification import AmplitudeThresholding
 
 
 def rms(epochs):
@@ -20,3 +21,30 @@ def rms(epochs):
     """
 
     return np.sqrt(np.mean(epochs ** 2, axis=1))
+
+def create_basic_detection(RMS, absv, relv):
+    """ Create an array of booleans with True corresponding to an epoch classified
+    as containing potentially a bruxism burst
+    
+    Parameters
+    ----------
+    RMS: ndarray, shape (n_trials, n_electrodes)
+        Root Mean Square Amplitude of a series of epochs
+    
+    Returns
+    -------
+    l_detect : ndarray, shape (n_trials)
+        binary array output of the classification process
+    """
+    #Create a new instance of AmplitudeThresholding
+    ampthr=AmplitudeThresholding(abs_threshold=absv, rel_threshold=relv) 
+    #returns the prediction of the classifier
+    return ampthr.fit_predict(RMS)
+    
+    
+    
+    
+    
+    
+        
+    
