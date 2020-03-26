@@ -49,7 +49,7 @@ jobs:
           git config --local user.name "GitHub Action"
       - name: Pytest and Coverage
         run: |
-          chmod r+w+x ./gitcommit2.sh
+          chmod u+r+x ./gitcommit2.sh
           ./gitcommit2.sh -m "update coverage"
       - name: Push changes
         uses: ad-m/github-push-action@master
