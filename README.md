@@ -1,8 +1,7 @@
-[![build_badge](https://github.com/lkorczowski/Tinnitus-n-Sleep/workflow/build/badge.png)](
-https://github.com/lkorczowski/Tinnitus-n-Sleep/actions) [![coverage_badge](
-https://github.com/lkorczowski/Tinnitus-n-Sleep/Coverage/coverage.svg)](
-https://github.com/lkorczowski/Tinnitus-n-Sleep/Coverage/index.html)
-
+[![build_badge](https://github.com/lkorczowski/Tinnitus-n-Sleep/workflows/build/badge.svg)](
+https://github.com/lkorczowski/Tinnitus-n-Sleep/actions)
+[![codecov](https://codecov.io/gh/lkorczowski/Tinnitus-n-Sleep/branch/master/graph/badge.svg)](
+https://codecov.io/gh/lkorcczowski/Tinnitus-n-Sleep)
 # Tinnitus-n-Sleep
 Detecting events in sleeping tinnitus patients
 Work for SIOPI, by Robin Guillard & Louis Korczowski
