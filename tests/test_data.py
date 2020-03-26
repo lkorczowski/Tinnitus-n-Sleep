@@ -13,6 +13,11 @@ def test_CreateRaw(data):
     raw = CreateRaw(data, ch_names)
     npt.assert_equal(raw.get_data(), data)
 
+def test_CreateRaw_invalidmontage(data):
+    ch_names = ['Fz', 'Pz']
+    with pytest.raises(ValueError, match="Could not find the montage. Please provide the full path."):
+        raw = CreateRaw(data, ch_names, montage="nice")
+
 def test_RawToEpochs_sliding(data):
     ch_names = ['Fz', 'Pz']
     duration = 1-1/200

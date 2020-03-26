@@ -1,0 +1,38 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: build
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches: 
+      - '*'
+
+jobs:
+
+  build:
+    name: miniconda-pytest
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: goanpeca/setup-miniconda@v1
+        with:
+           activate-environment: tinnsleep-env
+           environment-file: environment.yaml
+           python-version: 3.7
+           auto-activate-base: true
+           auto_update_conda: true
+      - shell: bash -l {0}
+        name: pytest
+        run: |
+          pytest
+      - shell: bash -l {0}
+        name: codecov
+        run: |
+          pip install codecov
+          coverage run -m pytest
+          coverage xml
+          codecov --token=8b0ed9cd-8182-4b6e-8d87-a97807eb4e11
