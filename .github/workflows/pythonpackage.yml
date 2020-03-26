@@ -25,15 +25,15 @@ jobs:
            python-version: 3.7
            auto-activate-base: true
            auto_update_conda: true
-        - shell: bash -l {0}
-          name: pytest
-          run: |
-            pytest
-        - shell: bash -l {0}
-          name: codecov
-          run: |
-            pip install codecov
-            codecov --token=8b0ed9cd-8182-4b6e-8d87-a97807eb4e11
+      - shell: bash -l {0}
+        name: pytest
+        run: |
+          pytest
+      - shell: bash -l {0}
+        name: codecov
+        run: |
+          pip install codecov
+          codecov --token=8b0ed9cd-8182-4b6e-8d87-a97807eb4e11
 
 """
   pytest:
