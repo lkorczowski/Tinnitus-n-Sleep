@@ -11,7 +11,8 @@ class Config():
 
     username = getpass.getuser()
     known_users = {"Zeta": 'C:\\Users\\zeta\\documents\\EEG_polysomno\\PSG2',
-                    "louis": "/Users/louis/Data/SIOPI/bruxisme"}
+                    "louis": "/Users/louis/Data/SIOPI/bruxisme",
+                   "runner": "/runner/"}
 
     if username in known_users.keys():
         data_path = known_users[username]

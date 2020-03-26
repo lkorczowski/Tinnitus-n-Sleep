@@ -1,0 +1,7 @@
+[report]
+include = */tinnsleep/*
+omit =
+    */setup.py
+    */tests/*
+    */notebooks/*
+    */tinnsleep/config.py
