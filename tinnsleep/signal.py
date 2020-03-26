@@ -2,7 +2,7 @@ import numpy as np
 from tinnsleep.classification import AmplitudeThresholding
 
 
-def rms(epochs):
+def rms(epochs, ax=1):
     """ Estimate Root Mean Square Amplitude for each epoch and each electrode.
 
     .. math::
@@ -20,7 +20,7 @@ def rms(epochs):
         Root Mean Square Amplitude
     """
 
-    return np.sqrt(np.mean(epochs ** 2, axis=1))
+    return np.sqrt(np.mean(epochs ** 2, axis=ax))
 
 def create_basic_detection(RMS, absv, relv):
     """ Create an array of booleans with True corresponding to an epoch classified
