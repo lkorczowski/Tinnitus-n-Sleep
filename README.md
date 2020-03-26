@@ -1,3 +1,5 @@
+![](https://github.com/lkorczowski/Tinnitus-n-Sleep/workflows/build/badge.svg)
+
 # Tinnitus-n-Sleep
 Detecting events in sleeping tinnitus patients
 
