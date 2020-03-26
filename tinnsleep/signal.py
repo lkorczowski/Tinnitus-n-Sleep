@@ -22,7 +22,7 @@ def rms(epochs, ax=1):
 
     return np.sqrt(np.mean(epochs ** 2, axis=ax))
 
-def create_basic_detection(RMS, absv, relv):
+def create_basic_detect(RMS, absv, relv):
     """ Create an array of booleans with True corresponding to an epoch classified
     as containing potentially a bruxism burst
     
@@ -40,6 +40,8 @@ def create_basic_detection(RMS, absv, relv):
     ampthr=AmplitudeThresholding(abs_threshold=absv, rel_threshold=relv) 
     #returns the prediction of the classifier
     return ampthr.fit_predict(RMS)
+
+
     
     
     
