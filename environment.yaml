@@ -9,7 +9,9 @@ dependencies:
     - matplotlib
     - seaborn
     - jupyter
+    - coverage
     # Pip dependencies
     - pip
     - pip:
         - mne
+        - coverage-badge
