@@ -18,7 +18,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2
-      - uses: goanpeca/setup-miniconda@v1.0.2
+      - uses: goanpeca/setup-miniconda@v1
         with:
            activate-environment: tinnsleep-env
            environment-file: environment.yaml
@@ -31,3 +31,27 @@ jobs:
           conda info
           conda list
 
+  pytest:
+    name: miniconda-pytest
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: goanpeca/setup-miniconda@v1
+        with:
+           activate-environment: tinnsleep-env
+           environment-file: environment.yaml
+           python-version: 3.7
+           auto-activate-base: true
+           auto_update_conda: true
+      - name: Git indentification settings
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+      - name: Pytest and Coverage
+        run: |
+          chmod r+w+x ./gitcommit2.sh
+          ./gitcommit2.sh -m "update coverage"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
