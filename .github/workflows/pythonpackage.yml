@@ -14,7 +14,7 @@ on:
 jobs:
 
   build:
-    name: miniconda-Linux
+    name: miniconda-pytest
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2
@@ -25,12 +25,11 @@ jobs:
            python-version: 3.7
            auto-activate-base: true
            auto_update_conda: true
-      - shell: bash -l {0}
+        - shell: bash -l {0}
         name: condalist
         run: |
-          conda info
-          conda list
-
+          pytest
+"""
   pytest:
     name: miniconda-pytest
     runs-on: 'ubuntu-latest'
@@ -44,19 +43,27 @@ jobs:
            auto-activate-base: true
            auto_update_conda: true
       - name: Git indentification settings
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+          COMMIT_MSG: |
+            'updated doc'
+            skip-checks: true
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git status
+          git config --local user.email 'action@github.com'
+          git config --local user.name 'GitHub Action'
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           git checkout ${{ github.head_ref }}
-          git pull
+          git add .
+          # Only commit and push if we have changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m '${COMMIT_MSG}'; git push origin master)
       - shell: bash -l {0}
         name: Pytest and Coverage
         run: |
           chmod u+r+x ./gitcommit2.sh
-          ./gitcommit2.sh -m "update coverage"
+          ./gitcommit2.sh -m 'update coverage'
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
+"""
