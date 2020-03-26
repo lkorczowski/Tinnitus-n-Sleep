@@ -1,4 +1,7 @@
-[![build](https://github.com/lkorczowski/Tinnitus-n-Sleep/workflow/build/badge.png)](https://github.com/lkorczowski/Tinnitus-n-Sleep/actions)
+[![build_badge](https://github.com/lkorczowski/Tinnitus-n-Sleep/workflow/build/badge.png)](
+https://github.com/lkorczowski/Tinnitus-n-Sleep/actions) [![coverage_badge](
+https://github.com/lkorczowski/Tinnitus-n-Sleep/Coverage/coverage.svg)](
+https://github.com/lkorczowski/Tinnitus-n-Sleep/Coverage/index.html)
 
 # Tinnitus-n-Sleep
 Detecting events in sleeping tinnitus patients

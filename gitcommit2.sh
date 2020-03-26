@@ -24,8 +24,9 @@ then
 fi
 
 coverage run -m pytest
-coverage report -m
-rm .github/coverage.svg
-coverage-badge -o .github/coverage.svg
+coverage html -d Coverage
+rm Coverage/coverage.svg
+coverage-badge -o Coverage/coverage.svg
 git add .github/
+git add Coverage/
 git commit -m "$parameterM"
