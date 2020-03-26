@@ -33,4 +33,6 @@ jobs:
         name: codecov
         run: |
           pip install codecov
+          coverage run -m pytest
+          coverage xml
           codecov --token=8b0ed9cd-8182-4b6e-8d87-a97807eb4e11
