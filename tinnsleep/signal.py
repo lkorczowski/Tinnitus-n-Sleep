@@ -2,7 +2,7 @@ import numpy as np
 from tinnsleep.classification import AmplitudeThresholding
 
 
-def rms(epochs, ax=1):
+def rms(epochs, axis=2):
     """ Estimate Root Mean Square Amplitude for each epoch and each electrode.
 
     .. math::
@@ -11,7 +11,7 @@ def rms(epochs, ax=1):
 
     Parameters
     ----------
-    epochs : ndarray, shape (n_trials, n_samples, n_electrodes)
+    epochs : ndarray, shape (n_trials, n_electrodes, n_samples)
         the epochs for the estimation
 
     Returns
@@ -20,33 +20,4 @@ def rms(epochs, ax=1):
         Root Mean Square Amplitude
     """
 
-    return np.sqrt(np.mean(epochs ** 2, axis=ax))
-
-def create_basic_detect(RMS, absv, relv):
-    """ Create an array of booleans with True corresponding to an epoch classified
-    as containing potentially a bruxism burst
-    
-    Parameters
-    ----------
-    RMS: ndarray, shape (n_trials, n_electrodes)
-        Root Mean Square Amplitude of a series of epochs
-    
-    Returns
-    -------
-    l_detect : ndarray, shape (n_trials)
-        binary array output of the classification process
-    """
-    #Create a new instance of AmplitudeThresholding
-    ampthr=AmplitudeThresholding(abs_threshold=absv, rel_threshold=relv) 
-    #returns the prediction of the classifier
-    return ampthr.fit_predict(RMS)
-
-
-    
-    
-    
-    
-    
-    
-        
-    
+    return np.sqrt(np.mean(epochs ** 2, axis=axis))
