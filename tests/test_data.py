@@ -20,7 +20,6 @@ def test_CreateRaw_invalidmontage(data):
 
 def test_RawToEpochs_sliding(data):
     ch_names = ['Fz', 'Pz']
-    duration = 1-1/200
-    interval = 0.5
-    assert RawToEpochs_sliding(CreateRaw(data, ch_names), duration, interval, picks=None).get_data().shape \
-           == (3, 2, 200)
+    duration = 200
+    interval = 100
+    assert RawToEpochs_sliding(CreateRaw(data, ch_names), duration, interval, picks=None).shape == (3, 2, 200)
