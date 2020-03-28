@@ -3,6 +3,7 @@ import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch, compute_nb_epochs
 
+
 def test_compute_nb_epochs():
     assert compute_nb_epochs(10, 5, 5) == 2
 
@@ -61,6 +62,7 @@ def test_epoch_unit_with_axis2():
     I = 3                  # interval
     epochs = epoch(X, T, I, axis=1)
     npt.assert_array_equal(epochs, epochs_target)
+
 
 def test_epoch_fail_size():
     with pytest.raises(ValueError, match="Invalid range for parameters"):
