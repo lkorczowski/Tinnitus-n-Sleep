@@ -10,13 +10,13 @@ def create_visual(raw, detect, duration, interval):
     Parameters
     ----------
     raw : instance of mne.Raw
-            the signal of interest
+        the signal of interest
     detect: ndarray, shape (n_trials,)
-            the vector of labels for the annotation sampled at the interval rate
-    duration : float
-            duration in seconds of an epoch
-    interval : float
-            interval between two epochs enabling overlap (if duration == interval, no overlap)
+        the vector of labels for the annotation sampled at the interval rate
+    duration: int
+        Number of elements (i.e. samples) on the epoch.
+    interval: int
+        Number of elements (i.e. samples) to move for the next epoch (if duration == interval, no overlap)
     
     Returns
     -------
@@ -25,12 +25,12 @@ def create_visual(raw, detect, duration, interval):
     """
     fig1 = plt.figure()
     plt.plot(detect, marker='o', markeredgecolor='r')
-
-    if len(raw.annotations)>0:
+    sfreq = raw.info['sfreq']
+    if len(raw.annotations) > 0:
         raw.annotations.delete(np.arange(0, len(raw.annotations)))
     for i in range(len(detect)):
         if detect[i]:
-            raw.annotations.append([interval * i], [duration], str("brux_burst"))
+            raw.annotations.append([interval * i / sfreq], [duration/sfreq], str("brux_burst"))
     fig2 = raw.plot(scalings="auto")
             
     return fig1, fig2
