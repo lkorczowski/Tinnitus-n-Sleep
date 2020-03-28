@@ -3,7 +3,29 @@ from tinnsleep.utils import epoch
 
 #Create Raw file
 def CreateRaw(data, ch_names, montage=None, ch_types=None):
-    """Generate a mne raw structure based on hardcoded info for bruxisme data"""
+    """Generate a mne raw structure based on hardcoded info for bruxisme data
+
+    Parameters
+    ----------
+    data : array, shape (n_channels, n_times)
+        The channels' time series. See notes for proper units of measure.
+    ch_names : list of str | int
+        Channel names. If an int, a list of channel names will be created
+        from ``range(ch_names)``.
+    montage: None | str | DigMontage
+        A montage containing channel positions. If str or DigMontage is specified, the channel info will be updated
+        with the channel positions. Default is None. See also the documentation of mne.channels.DigMontage for more
+        information.
+    ch_types: ‘mag’ | ‘grad’ | ‘planar1’ | ‘planar2’ | ‘eeg’ | None | list
+        The channel type to plot. For ‘grad’, the gradiometers are collec- ted in pairs and the RMS for each pair
+        is plotted. If None (default), it will return all channel types present. If a list of ch_types is provided,
+        it will return multiple figures.
+
+    Returns
+    -------
+    raw: Instance of mne.Raw
+        the signal
+    """
     if ch_types is None:
         ch_types = ['eeg']
     ch_types = ch_types * len(ch_names)
@@ -15,11 +37,12 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     return raw
 
 def RawToEpochs_sliding(raw, duration, interval, picks=None):
-    """Generate an Epoch structure from mne raw given the duration and interval by sliding window
+    """Generate an epoch array from mne.Raw given the duration and interval (in samples) using sliding window.
+
     Parameters
     ----------
-    a: array_like
-        Input array
+    raw: Instance of mne.Raw
+        the signal
     duration: int
         Number of elements (i.e. samples) on the epoch.
     interval: int
@@ -34,7 +57,7 @@ def RawToEpochs_sliding(raw, duration, interval, picks=None):
 
     Returns
     -------
-    epochs: ndarray
+    epochs: ndarray, shape (n_epochs, n_channels, duration)
         Epoched view of `raw`. Epochs are in the first dimension.
     """
 
