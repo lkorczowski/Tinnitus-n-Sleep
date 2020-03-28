@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def rms(epochs, axis=-1):
     """ Estimate Root Mean Square Amplitude for each epoch and each electrode over the samples.
 
