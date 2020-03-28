@@ -6,6 +6,14 @@ from tinnsleep.utils import epoch, compute_nb_epochs
 def test_compute_nb_epochs():
     assert compute_nb_epochs(10, 5, 5) == 2
 
+
+def test_compute_nb_epochs():
+    with pytest.raises(ValueError, match="Invalid range for parameters"):
+        compute_nb_epochs(10, 0, 5)
+    with pytest.raises(ValueError, match="Invalid range for parameters"):
+        compute_nb_epochs(10, 1, 0)
+
+
 def test_epoch_unit1():
     np.random.seed(seed=42)
     N = 1000               # signal length
@@ -19,6 +27,7 @@ def test_epoch_unit1():
     epochs = epoch(X, T, I)
     assert epochs.shape == (K, Ne, T)
 
+
 def test_epoch_unit2():
     np.random.seed(seed=42)
     N = 100               # signal length
@@ -30,6 +39,7 @@ def test_epoch_unit2():
     epochs = epoch(X, T, I)
     assert epochs.shape == (K, Ne, T)
 
+
 def test_epoch_unit_with_axis1():
     np.random.seed(seed=42)
     N = 1000               # signal length
@@ -40,6 +50,7 @@ def test_epoch_unit_with_axis1():
     K = compute_nb_epochs(N, T, I)
     epochs = epoch(X.T, T, I, axis=0)
     assert epochs.shape == (K, T, Ne)
+
 
 def test_epoch_unit_with_axis2():
     epochs_target = np.array([[[1,  2,  3,  4]],
