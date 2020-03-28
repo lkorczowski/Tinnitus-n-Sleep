@@ -15,7 +15,7 @@ def test_CreateRaw(data):
 
 def test_CreateRaw_invalidmontage(data):
     ch_names = ['Fz', 'Pz']
-    with pytest.raises(ValueError, match="Could not find the montage. Please provide the full path."):
+    with pytest.raises(ValueError):
         raw = CreateRaw(data, ch_names, montage="nice")
 
 def test_RawToEpochs_sliding(data):
