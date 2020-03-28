@@ -2,7 +2,7 @@ import numpy as np
 from tinnsleep.classification import AmplitudeThresholding
 
 
-def rms(epochs, axis=2):
+def rms(epochs, axis=-1):
     """ Estimate Root Mean Square Amplitude for each epoch and each electrode.
 
     .. math::
@@ -13,6 +13,8 @@ def rms(epochs, axis=2):
     ----------
     epochs : ndarray, shape (n_trials, n_electrodes, n_samples)
         the epochs for the estimation
+    axis : None or int or tuple of ints, optional (default: -1)
+        Axis or axes along which the means are computed.
 
     Returns
     -------
