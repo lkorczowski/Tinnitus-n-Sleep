@@ -3,7 +3,7 @@ from tinnsleep.classification import AmplitudeThresholding
 
 
 def rms(epochs, axis=-1):
-    """ Estimate Root Mean Square Amplitude for each epoch and each electrode.
+    """ Estimate Root Mean Square Amplitude for each epoch and each electrode over the samples.
 
     .. math::
 
