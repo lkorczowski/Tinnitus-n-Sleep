@@ -9,8 +9,9 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     sfreq = 200
     if montage is None:
         montage = 'standard_1020'
-    info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types, montage=montage, verbose=False)
+    info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types, verbose=False)
     raw = mne.io.RawArray(data, info, verbose=False)
+    raw.set_montage(montage)
     return raw
 
 def RawToEpochs_sliding(raw, duration, interval, picks=None):

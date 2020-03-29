@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def rms(epochs):
-    """ Estimate Root Mean Square Amplitude for each epoch and each electrode.
+def rms(epochs, axis=-1):
+    """ Estimate Root Mean Square Amplitude for each epoch and each electrode over the samples.
 
     .. math::
 
@@ -10,8 +10,10 @@ def rms(epochs):
 
     Parameters
     ----------
-    epochs : ndarray, shape (n_trials, n_samples, n_electrodes)
+    epochs : ndarray, shape (n_trials, n_electrodes, n_samples)
         the epochs for the estimation
+    axis : None or int or tuple of ints, optional (default: -1)
+        Axis or axes along which the means are computed.
 
     Returns
     -------
@@ -19,4 +21,4 @@ def rms(epochs):
         Root Mean Square Amplitude
     """
 
-    return np.sqrt(np.mean(epochs ** 2, axis=1))
+    return np.sqrt(np.mean(epochs ** 2, axis=axis))
