@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
+from tinnsleep.data import CleanAnnotations, Annotate
 
 def create_visual(raw, detect, duration, interval):
     """ Create two visuals of a burst detection : a simple plot enabling 
@@ -25,12 +25,9 @@ def create_visual(raw, detect, duration, interval):
     """
     fig1 = plt.figure()
     plt.plot(detect, marker='o', markeredgecolor='r')
-    sfreq = raw.info['sfreq']
-    if len(raw.annotations) > 0:
-        raw.annotations.delete(np.arange(0, len(raw.annotations)))
-    for i in range(len(detect)):
-        if detect[i]:
-            raw.annotations.append([interval * i / sfreq], [duration/sfreq], str("brux_burst"))
+
+    raw = CleanAnnotations(raw)
+    raw = Annotate(raw, labels=detect, duration=duration, interval=interval)
     fig2 = raw.plot(scalings="auto")
             
     return fig1, fig2
