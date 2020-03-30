@@ -63,5 +63,4 @@ def RawToEpochs_sliding(raw, duration, interval, picks=None):
     """
 
     raw = raw.pick(picks=picks)
-    epochs = epoch(raw.get_data(), duration, interval, axis=1)
-    return epochs
+    return epoch(raw.get_data(), duration, interval, axis=1)
