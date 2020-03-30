@@ -8,5 +8,5 @@ setup(name='tinnsleep',
       author_email='louis.korczowski@gmail.com',
       license='(c) SIOPI',
       packages=find_packages(),
-      install_requires=['numpy', 'scipy', 'scikit-learn', 'pandas'],
+      install_requires=['numpy', 'scipy', 'scikit-learn', 'pandas', 'pytest'],
       zip_safe=False)
