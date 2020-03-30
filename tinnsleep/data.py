@@ -1,7 +1,8 @@
 import mne
 from tinnsleep.utils import epoch
+import numpy as np
 
-#Create Raw file
+
 def CreateRaw(data, ch_names, montage=None, ch_types=None):
     """Generate a mne raw structure based on hardcoded info for bruxisme data
 
@@ -37,6 +38,7 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     raw.set_montage(montage)
     return raw
 
+
 def RawToEpochs_sliding(raw, duration, interval, picks=None):
     """Generate an epoch array from mne.Raw given the duration and interval (in samples) using sliding window.
 
@@ -64,3 +66,50 @@ def RawToEpochs_sliding(raw, duration, interval, picks=None):
 
     raw = raw.pick(picks=picks)
     return epoch(raw.get_data(), duration, interval, axis=1)
+
+
+def CleanAnnotations(raw):
+    """Clean annotations from existing mne.Raw if exists
+    
+    Parameters
+    ----------
+    raw: Instance of mne.Raw
+        the signal
+        
+    Returns
+    -------
+    raw: Instance of mne.Raw
+        the signal without annotations
+    """
+    if len(raw.annotations) > 0:
+        raw.annotations.delete(np.arange(0, len(raw.annotations)))
+    return raw
+
+
+def Annotate(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interval=50):
+    """Annotate mne.Raw data based on an labels
+
+    Parameters
+    ----------
+    raw: Instance of mne.Raw
+        the signal
+    duration: int
+        Number of elements (i.e. samples) on the epoch.
+    interval: int
+        Number of elements (i.e. samples) to move for the next epoch.
+
+
+    Returns
+    -------
+    raw: Instance of mne.Raw
+        the signal
+
+    """
+
+    for k, label in enumerate(labels):
+        if label in dict_annotations:
+            raw.annotations.append([interval * k / raw.info["sfreq"]],
+                                   [duration / raw.info["sfreq"]],
+                                   dict_annotations[label])
+
+    return raw
