@@ -30,7 +30,7 @@ def test_episode():
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
-    npt.assert_equal(epi.is_valid, False)
+    npt.assert_equal(epi.is_valid(), False)
     
     
     #We try to add the same burst
@@ -43,7 +43,7 @@ def test_episode():
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
-    npt.assert_equal(epi.is_valid, False)
+    npt.assert_equal(epi.is_valid(), False)
     
     #We try to add a new burst (tonic) afterwards
     epi.add_a_burst(bursty3)
@@ -55,7 +55,7 @@ def test_episode():
     npt.assert_equal(epi.is_tonic, True)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
-    npt.assert_equal(epi.is_valid, True)
+    npt.assert_equal(epi.is_valid(), True)
     
     #We try to add a burst in the middle
     epi.add_a_burst(bursty4)
@@ -67,7 +67,7 @@ def test_episode():
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, True)
-    npt.assert_equal(epi.is_valid, True)
+    npt.assert_equal(epi.is_valid(), True)
     
     #We try to add a new burst, overlapping with burst 1 and 2
     npt.assert_equal(epi.burst_list[1].beg, 1.5)
@@ -109,7 +109,7 @@ def test_episode():
     npt.assert_equal(epi.is_tonic, True)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
-    npt.assert_equal(epi.is_valid, True)
+    npt.assert_equal(epi.is_valid(), True)
     
     #We verify the final burst parameters
     npt.assert_equal(epi.burst_list[0].beg, 0)
@@ -117,3 +117,4 @@ def test_episode():
     npt.assert_equal(epi.burst_list[1].beg, 1.25)
     npt.assert_equal(epi.burst_list[1].end, 6.5)
     
+test_episode()
