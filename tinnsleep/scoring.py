@@ -13,7 +13,7 @@ def classif_to_burst(classif, interval=0.25):
 
     Returns
     -------
-    list of bursts instances 
+    burst_list : list of bursts instances 
     """
 
     burst_list=[]
@@ -65,7 +65,7 @@ def burst_to_episode(burst_list, delim=3):
     within a episode
     Returns
     -------
-    list of episodes instances 
+    ep_list : list of episodes instances 
     """
     leny=len(burst_list)
     #test if input is empty
@@ -101,4 +101,43 @@ def burst_to_episode(burst_list, delim=3):
     
     
     return ep_list
+
+def get_event_label(episode):
+    """ return the label of the episode"""
+    if episode.is_tonic:
+        return 1
+    if episode.is_phasic:
+        return 2
+    if episode.is_mixed:
+        return 3
+
+def create_list_events(li_ep, interval):
+    """ Creates the list of events, 0 = no event, 1 = tonic episode, 2 = phasic 
+    episode, 3 = mixed episode
+    
+    Parameters
+    ----------
+    li_ep : list of episode instances
+    interval: float, interval between 2 elementary events
+    Returns
+    -------
+    list of integers, labels of the events 
+    """
+    li_events=[]
+    if len(li_ep)==0:
+        return []
+    if li_ep[0].beg/interval>1:
+            li_0=[0 for i in range(int(li_ep[0].beg/interval))]
+            li_events.extend(li_0)
+            
+    label=get_event_label(li_ep[0])
+    li_events.extend([label for i in range(int((li_ep[0].end-li_ep[0].beg)/interval))])
+    
+    if len(li_ep)>1:
+        for i in range(len(li_ep)-1):
+             li_events.extend([0 for i in range(int((li_ep[i+1].beg-li_ep[i].end)/interval))])
+             label=get_event_label(li_ep[i+1])
+             li_events.extend([label for i in range(int((li_ep[i+1].end-li_ep[i+1].beg)/interval))])
+             
+    return li_events
             

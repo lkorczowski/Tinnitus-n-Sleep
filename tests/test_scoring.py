@@ -1,6 +1,6 @@
 import pytest
 import numpy.testing as npt
-from tinnsleep.scoring import classif_to_burst, burst_to_episode
+from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events
 from tinnsleep.burst import burst
 
 
@@ -12,6 +12,8 @@ def test_classif_to_burst():
     interval=1
     li_burst=classif_to_burst(li,interval)
     npt.assert_equal(len(li_burst), 6)
+    
+    
     
 def test_burst_to_episode():
     
@@ -32,7 +34,21 @@ def test_burst_to_episode():
     npt.assert_equal(len(li_ep[0].burst_list), 2)
     npt.assert_equal(li_ep[0].is_tonic, True)
     
+def test_create_list_events():
+    bursty=[burst(0.1,1)]
+    bursty.append(burst(0.1,1))
+    bursty.append(burst(3,6))
+    bursty.append(burst(1.5,2.5))
+    bursty.append(burst(1.25,3.5))
+    bursty.append(burst(0,0.2))
+    bursty.append(burst(5.5,6.5)) 
+    bursty.append(burst(7.5,8.5)) 
+    bursty.append(burst(15,20)) 
     
-    
-test_classif_to_burst()
-test_burst_to_episode()
+    li_ep=burst_to_episode(bursty)
+    li_ev=create_list_events(li_ep, 0.25)
+    npt.assert_equal(li_ev, [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                             3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])

@@ -135,4 +135,3 @@ class episode():
         if it is"""
         return (self.is_tonic or self.is_phasic or self.is_mixed) 
            
-           

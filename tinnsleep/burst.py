@@ -102,6 +102,3 @@ class burst():
         else:
             return False
         
-
-           
-           

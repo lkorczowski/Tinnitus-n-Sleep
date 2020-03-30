@@ -117,7 +117,3 @@ def test_episode():
     npt.assert_equal(epi.burst_list[1].beg, 1.25)
     npt.assert_equal(epi.burst_list[1].end, 6.5)
     
-    
-    
-
-    
