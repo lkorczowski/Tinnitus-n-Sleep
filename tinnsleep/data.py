@@ -97,6 +97,7 @@ def Annotate(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interv
         A array of labels code to annotate (e.g. ints or booleans)
     dict_annotations: dict (default: {1: "bad EPOCH"})
         Map the labels code to annotation description. By default, 1 are converted to "bad EPOCH".
+        If None or if the key doesn't exist, the labels are added to the dictionary without a description.
     duration: int
         Number of elements (i.e. samples) for all annotations.
     interval: int
@@ -109,6 +110,19 @@ def Annotate(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interv
         the signal
 
     """
+    # if the raw is too short
+    total_length = interval * (len(labels) - 1) + duration
+    if raw.__len__() < total_length:
+        raise ValueError(f"Total length ({total_length}) exceed length of raw ({raw.__len__()})")
+
+    # if the key doesn't exist, it just create dictionary with the description being the label
+    for label in np.unique(labels):
+        if not label == 0:
+            if label not in dict_annotations.keys():
+                dict_annotations[label] = str(label)
+
+    if (duration < 1) | (interval < 1):
+        raise ValueError("Invalid range for parameters")
 
     for k, label in enumerate(labels):
         if label in dict_annotations:
