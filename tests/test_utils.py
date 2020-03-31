@@ -8,7 +8,8 @@ def test_compute_nb_epochs():
     assert compute_nb_epochs(10, 5, 5) == 2
 
 
-def test_compute_nb_epochs():
+
+def test_compute_nb_epochs_invalid():
     with pytest.raises(ValueError, match="Invalid range for parameters"):
         compute_nb_epochs(10, 0, 5)
     with pytest.raises(ValueError, match="Invalid range for parameters"):
