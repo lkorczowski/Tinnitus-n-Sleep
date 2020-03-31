@@ -93,10 +93,14 @@ def Annotate(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interv
     ----------
     raw: Instance of mne.Raw
         the signal
+    labels: array-like, shape (n_annotations,)
+        A array of labels code to annotate (e.g. ints or booleans)
+    dict_annotations: dict (default: {1: "bad EPOCH"})
+        Map the labels code to annotation description. By default, 1 are converted to "bad EPOCH".
     duration: int
-        Number of elements (i.e. samples) on the epoch.
+        Number of elements (i.e. samples) for all annotations.
     interval: int
-        Number of elements (i.e. samples) to move for the next epoch.
+        Number of elements (i.e. samples) to move for the next annotations (if interval>=duration, no overlap).
 
 
     Returns
