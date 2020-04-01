@@ -68,9 +68,6 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
 
     def predict(self, X):
 
-        # Check is fit had been called
-        #check_is_fitted(self)
-
         # Input validation
         X = check_array(X)
         distances = self._predict_distances(X)
