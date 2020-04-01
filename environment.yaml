@@ -14,4 +14,4 @@ dependencies:
     # Pip dependencies
     - pip
     - pip:
-        - mne==20
+        - mne>=19.2
