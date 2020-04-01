@@ -134,19 +134,27 @@ def create_list_events(li_ep, interval):
     -------
     list of integers, labels of the events 
     """
+    #Deals the case the inpu is empty
     li_events = []
     if len(li_ep) == 0:
         return []
+
+    # Initialization
+    # Case where the first burst does not begin at time=0
     if li_ep[0].beg / interval > 1:
         li_0 = [0 for i in range(int(li_ep[0].beg / interval))]
         li_events.extend(li_0)
 
+    # Tagging the first event
     label = get_event_label(li_ep[0])
     li_events.extend([label for i in range(int((li_ep[0].end - li_ep[0].beg) / interval))])
 
+    # Loop of tagging
     if len(li_ep) > 1:
         for i in range(len(li_ep) - 1):
+            # Putting zeros between two episodes
             li_events.extend([0 for i in range(int((li_ep[i + 1].beg - li_ep[i].end) / interval))])
+            # Tagging the next episode
             label = get_event_label(li_ep[i + 1])
             li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / interval))])
 
