@@ -1,15 +1,15 @@
 class burst():
-    """Define a bruxism burst object and caracterize it
+    """Define a bruxism burst object and characterize it
 
     Parameters
     ----------
-    beg : time of beggining of the burst
+    beg : time of beginning of the burst
     end : time of end of the burst
     
 
     Attributes
     ----------
-    is_tonic: boolean, caracterizes if a bruxism burst is tonic i.e superior in
+    is_tonic: boolean, characterizes if a bruxism burst is tonic i.e superior in
     duration to 2 seconds.
 
 
@@ -19,12 +19,16 @@ class burst():
     """
 
     def __init__(self, beg, end):
-        self.beg = beg
-        self.end = end
-        if (self.end - self.beg >= 2):
-            self.is_tonic=True
+        if end > beg :
+            self.beg = beg
+            self.end = end
         else:
-            self.is_tonic=False
+            self.beg = end
+            self.end = beg
+        if self.end - self.beg >= 2:
+            self.is_tonic = True
+        else:
+            self.is_tonic = False
         
     def is_equal(self, burst):
         """ identify if two burst are equal
@@ -38,7 +42,7 @@ class burst():
         -------
         boolean, True if beg and end are the same
         """
-        return self.beg==burst.beg and self.end==burst.end
+        return self.beg == burst.beg and self.end == burst.end
     
     def is_before(self, burst):
         """ test if the current burst is temporally before another given burst
@@ -52,7 +56,7 @@ class burst():
         boolean, True if the current burst beg is inferior to the other burst 
         beg
         """
-        return self.beg<burst.beg
+        return self.beg < burst.beg
     
     
     def is_overlapping(self, burst):
@@ -67,10 +71,10 @@ class burst():
         boolean, True if the bursts are overlapping
         """
         
-        is_contained= self.beg>=burst.beg and self.end<=burst.end
-        contains= self.beg<=burst.beg and self.end>=burst.end
-        ov_left = (self.beg>=burst.beg and self.end>=burst.end) and (burst.end-self.beg>0)
-        ov_right=(self.beg<=burst.beg and self.end<=burst.end) and (self.end-burst.beg>0)
+        is_contained = self.beg >= burst.beg and self.end <= burst.end
+        contains = self.beg <= burst.beg and self.end >= burst.end
+        ov_left = (self.beg >= burst.beg and self.end >= burst.end) and (burst.end - self.beg > 0)
+        ov_right = (self.beg <= burst.beg and self.end <= burst.end) and (self.end-burst.beg > 0)
         return is_contained or contains or ov_right or ov_left
             
     def merge_if_overlap(self, burst):
@@ -86,19 +90,17 @@ class burst():
         boolean, True if the bursts are overlapping
         """
         if burst.is_overlapping(self):
-            if self.beg>burst.beg:
+            if self.beg > burst.beg:
                 self.beg = burst.beg
-            if self.end<burst.end:
+            if self.end < burst.end:
                 self.end = burst.end
             
-            if (self.end - self.beg > 2):
-                self.is_tonic=True
+            if self.end - self.beg > 2:
+                self.is_tonic = True
             else:
-                self.is_tonic=False
-            
-            #print(self.beg)
-            #print(self.end)
-            return  True
+                self.is_tonic = False
+
+            return True
         else:
             return False
         
