@@ -14,5 +14,4 @@ dependencies:
     # Pip dependencies
     - pip
     - pip:
-        - mne
-        - coverage-badge
+        - mne==20
