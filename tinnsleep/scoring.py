@@ -10,11 +10,11 @@ def classif_to_burst(classif, time_interval=0.25):
     ----------
     classif : list of booleans, output of a classification algorithm that 
     detect non aggregated bursts from a recording
-    interval: float, time interval between 2 elements of classif
+    interval: float, time in seconds interval between 2 elements of classif
 
     Returns
     -------
-    burst_list : list of bursts instances 
+    burst_list : list of bursts instances
     """
 
     burst_list = []
@@ -48,7 +48,7 @@ def classif_to_burst(classif, time_interval=0.25):
         i += 1
     # Deals the case if the last input is True
     if flag:
-        burst_list.append(burst(beg * time_interval, (leny) * time_interval))
+        burst_list.append(burst(beg * time_interval, leny * time_interval))
     return burst_list
 
 
@@ -122,19 +122,20 @@ def get_event_label(episode):
         return 3
 
 
-def create_list_events(li_ep, interval):
+def create_list_events(li_ep, interval, recording_duration):
     """ Creates the list of events, 0 = no event, 1 = tonic episode, 2 = phasic 
     episode, 3 = mixed episode
     
     Parameters
     ----------
     li_ep : list of episode instances
-    interval: float, interval between 2 elementary events
+    interval: float, time interval in seconds between 2 elementary events
+    recording_duration : float, duration of the recording in seconds
     Returns
     -------
     list of integers, labels of the events 
     """
-    #Deals the case the input is empty
+    # Deals the case the input is empty
     li_events = []
     if len(li_ep) == 0:
         return []
@@ -157,5 +158,11 @@ def create_list_events(li_ep, interval):
             # Tagging the next episode
             label = get_event_label(li_ep[i + 1])
             li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / interval))])
+
+    # If necessary, adds 0s at the end of li_events until the end of the recording
+    if (recording_duration - li_ep[-1].end)/interval > 1.0:
+        li_0 = [0 for i in range(int((recording_duration - li_ep[-1].end) / interval))]
+        li_events.extend(li_0)
+
 
     return li_events
