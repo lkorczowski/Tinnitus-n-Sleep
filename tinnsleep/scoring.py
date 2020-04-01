@@ -134,7 +134,7 @@ def create_list_events(li_ep, interval):
     -------
     list of integers, labels of the events 
     """
-    #Deals the case the inpu is empty
+    #Deals the case the input is empty
     li_events = []
     if len(li_ep) == 0:
         return []

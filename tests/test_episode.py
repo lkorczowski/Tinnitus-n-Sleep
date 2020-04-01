@@ -64,6 +64,19 @@ def test_overlap_right_2_bursts():
     npt.assert_equal(epi.end, 3.5)
     npt.assert_equal(len(epi.burst_list), 2)
 
+def test_merge_3_bursts_right():
+    bursty = burst(1.5, 2.5)
+    bursty3 = burst(2.6, 2.9)
+    bursty2 = burst(2.75, 3.5)
+    bursty4 = burst(2.55, 2.65)
+    epi = episode(bursty)
+    epi.add_a_burst(bursty2)
+    epi.add_a_burst(bursty4)
+    epi.add_a_burst(bursty3)
+    npt.assert_equal(epi.beg, 1.5)
+    npt.assert_equal(epi.end, 3.5)
+    npt.assert_equal(len(epi.burst_list), 2)
+
 
 def test_overlapx2_right():
     bursty = burst(1.5, 2.5)
@@ -101,12 +114,16 @@ def test_megaburst():
 
 def test_burst_already_there():
     bursty = burst(1.5, 2.5)
-    bursty2 = burst(1.5, 2.5)
+    bursty2 = burst(3.5, 4.5)
+    bursty3 = burst(2.55, 3.4)
+    bursty4 = burst(2.55, 3.4)
     epi = episode(bursty2)
     epi.add_a_burst(bursty)
+    epi.add_a_burst(bursty3)
+    epi.add_a_burst(bursty4)
     npt.assert_equal(epi.beg, 1.5)
-    npt.assert_equal(epi.end, 2.5)
-    npt.assert_equal(len(epi.burst_list), 1)
+    npt.assert_equal(epi.end, 4.5)
+    npt.assert_equal(len(epi.burst_list), 3)
 
 def test_overlap_inside():
     bursty = burst(1.5, 2.5)
