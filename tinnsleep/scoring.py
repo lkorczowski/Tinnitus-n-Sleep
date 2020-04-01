@@ -53,16 +53,15 @@ def classif_to_burst(classif, time_interval=0.25):
     return burst_list
 
 
-def rearrange_chronological(burst_list):
-    """Rearrange a given burst_list in the chronological order according to the beg attribute"""
-    burst_list.sort(key=lambda x: x.beg)
-    return burst_list
+def rearrange_chronological(brux_list):
+    """Rearrange a given burst list or episode list in the chronological order according to the beg attribute"""
+    brux_list.sort(key=lambda x: x.beg)
+    return brux_list
 
 
 def burst_to_episode(burst_list, delim=3):
     """ Transforms a chronological list of bursts into a 
     chronological list of episodes
-    IMPORTANT: the list of bursts MUST be chronological
     
     Parameters
     ----------
@@ -109,6 +108,25 @@ def burst_to_episode(burst_list, delim=3):
         ep_list.append(current_epi)
 
     return ep_list
+
+def generate_annotations(li_ep):
+    """ Transforms a chronological list of episodes into a
+        chronological list of annotations
+
+        Parameters
+        ----------
+        li_ep : list of episode instances
+
+        Returns
+        -------
+        Annotations : Chronological list of annotations
+        """
+
+    annotations = []
+    li_ep = rearrange_chronological(li_ep)
+    for ep in li_ep:
+        annotations.append(ep.generate_annotation())
+    return annotations
 
 
 def get_event_label(episode):
@@ -191,6 +209,7 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     report["Number of bursts per episode"] = nb_burst / nb_episodes
     report["Number of episodes per hour"] = nb_episodes * 3600 / recording_duration
 
+    # Counting episodes according to types and listing their durations
     counts_type = [0, 0, 0]
     tonic = []
     phasic = []
@@ -216,3 +235,5 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     report["Mean duration of mixed episode"] = np.mean(mixed)
 
     return report
+
+

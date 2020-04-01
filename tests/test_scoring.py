@@ -1,7 +1,7 @@
 import pytest
 import numpy.testing as npt
 from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological, \
-    generate_clinical_report
+    generate_clinical_report,  generate_annotations
 from tinnsleep.burst import burst
 import numpy as np
 
@@ -60,11 +60,14 @@ def test_create_list_events():
               burst(5.5, 6.5), burst(7.5, 8.5), burst(15, 20), burst(25, 26), burst(26.5, 27), burst(28, 29)]
 
     li_ep = burst_to_episode(bursty)
+    anno = generate_annotations(li_ep)
+    npt.assert_equal(len(anno), 3)
     li_ev = create_list_events(li_ep, 0.25, 29)
     npt.assert_equal(li_ev, [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
                              3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                              0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
+
 
     # Test with empty initial inputs and ending
     bursty = [burst(1, 4)]
@@ -85,5 +88,7 @@ def test_generate_clinical_report():
     report = generate_clinical_report(classif, 1)
     npt.assert_equal(len(report), 12)
     npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
+
+
 
 

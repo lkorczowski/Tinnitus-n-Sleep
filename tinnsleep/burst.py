@@ -103,4 +103,19 @@ class burst():
             return True
         else:
             return False
-        
+
+    def generate_annotation(self, origin_time=0.0):
+        """ Generate an annotation on the format of a dictionary like:
+        annotation = {'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}
+        from a given burst
+        Parameters
+        ----------
+        self : burst instance
+        origin_time: float | default 0.0, sets the origin_time for the annotation
+
+        Returns
+        -------
+        Annotation object
+        """
+
+        return {'onset': self.beg, 'duration': self.end - self.beg, 'description': "burst", 'origin_time': origin_time}

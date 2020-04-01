@@ -9,6 +9,8 @@ def test_burst():
     bursty3 = burst(1, 3)
     bursty4 = burst(0.25, 1.75)
 
+    npt.assert_equal(bursty4.generate_annotation()["duration"], 1.5)
+
     npt.assert_equal(bursty.is_equal(bursty2), True)
     npt.assert_equal(bursty.is_equal(bursty3), False)
     npt.assert_equal(bursty.is_before(bursty2), False)
@@ -25,3 +27,5 @@ def test_burst():
     npt.assert_equal(bursty4.merge_if_overlap(bursty3), True)
     npt.assert_equal(bursty4.merge_if_overlap(bursty), True)
     npt.assert_equal(bursty.merge_if_overlap(bursty3), False)
+
+
