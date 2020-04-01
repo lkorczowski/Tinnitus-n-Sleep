@@ -53,6 +53,9 @@ def plotTimeSeries(data,
     elif isinstance(ch_names, (np.ndarray, list)):
         if not len(ch_names) == n_channels:
             raise ValueError('ch_names should be same length as the number of channels of data')
+    else:
+        msg = "`ch_names` must be a list or an iterable of shape (n_dimension,) or None"
+        raise ValueError(msg)
 
     if ax is None:
         ax = plt.gca()

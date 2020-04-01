@@ -4,6 +4,19 @@ from tinnsleep.visualization import plotTimeSeries
 import matplotlib.pyplot as plt
 
 
+def test_plotTimeSeries_superimpose():
+    """Test if two axes can be managed
+    """
+    np.random.seed(42)
+    data = np.random.randn(400, 2)
+    fig, ax = plotTimeSeries(data, color="red")
+
+    np.random.seed(42)
+    data = np.random.randn(400, 4)
+    fig, ax = plotTimeSeries(data, ax=ax, color="black", linestyle="--")
+    plt.show()
+
+
 def test_plotTimeSeries_subplots():
     """Test if two axes can be managed
     """
