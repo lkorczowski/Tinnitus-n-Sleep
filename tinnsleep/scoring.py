@@ -2,7 +2,7 @@ from tinnsleep.burst import burst
 from tinnsleep.episode import episode
 
 
-def classif_to_burst(classif, interval=0.25):
+def classif_to_burst(classif, time_interval=0.25):
     """ Transforms a classification boolean list of results into a 
     chronological list of bursts
     
@@ -37,7 +37,7 @@ def classif_to_burst(classif, interval=0.25):
             if not classif[i]:
                 # We close the burst
                 flag = False
-                burst_list.append(burst(beg * interval, (i) * interval))
+                burst_list.append(burst(beg * time_interval, (i) * time_interval))
 
         else:
             if classif[i]:
@@ -48,7 +48,7 @@ def classif_to_burst(classif, interval=0.25):
         i += 1
     # Deals the case if the last input is True
     if flag:
-        burst_list.append(burst(beg * interval, (leny) * interval))
+        burst_list.append(burst(beg * time_interval, (leny) * time_interval))
     return burst_list
 
 
