@@ -7,6 +7,7 @@ def plotTimeSeries(data,
                    sfreq=1,
                    scalings=None,
                    annotations=None,
+                   ax=None,
                    **kwargs):
     """Advanced plotting of multidimensional time series from ndarray
 
@@ -26,6 +27,8 @@ def plotTimeSeries(data,
         Example:
         >>> # a list of one annotation starting after 0.5 second of duration 1.0 second named 'blink'
         >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
+        the axe where to save the fig. By default a new figure is generated.
 
     Returns
     -------
@@ -51,6 +54,14 @@ def plotTimeSeries(data,
         if not len(ch_names) == n_channels:
             raise ValueError('ch_names should be same length as the number of channels of data')
 
+    if ax is None:
+        ax = plt.gca()
+        fig = ax.figure
+    elif isinstance(ax, plt.Axes):
+        fig = ax.figure
+    else:
+        msg = "`ax` must be a matplotlib Axes instance or None"
+        raise ValueError(msg)
 
     # remove median
     data = data - np.median(data, axis=0)
@@ -63,13 +74,13 @@ def plotTimeSeries(data,
     shifts = np.linspace(0, 2 * scalings * (n_channels-1), n_channels)
 
     # align timeseries with new offsets
-    data = data + shifts
+    data = data - shifts
 
     times = np.linspace(0, (n_samples-1) / sfreq, num=n_samples)
 
     # compute shift based on scalings
 
-    fig = plt.figure()
-    plt.plot(times, data, label=ch_names, **kwargs)
-
-    return fig
+    ax.plot(times, data, label=ch_names, **kwargs)
+    plt.yticks(-shifts, ch_names)
+    plt.xlim(np.min(times), np.max(times))
+    return fig, ax
