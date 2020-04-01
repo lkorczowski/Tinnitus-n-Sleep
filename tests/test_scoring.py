@@ -1,7 +1,9 @@
 import pytest
 import numpy.testing as npt
-from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological
+from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological, \
+    generate_clinical_report
 from tinnsleep.burst import burst
+import numpy as np
 
 
 def test_classif_to_burst():
@@ -69,3 +71,14 @@ def test_create_list_events():
     li_ep = burst_to_episode(bursty)
     li_ev = create_list_events(li_ep, 0.25, 5)
     npt.assert_equal(li_ev, [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
+
+def test_generate_clinical_report():
+    classif = [True, False, True, False, False, True, True, False, True, True, True,
+          True, False, False, False, False, False, True, True, True, False, True]
+    report = generate_clinical_report(classif, 1)
+    npt.assert_equal(len(report), 12)
+    npt.assert_equal(report["Mean duration of mixed episode"], 12.0)
+    npt.assert_equal(report["Mean duration of phasic episode"], np.nan)
+    npt.assert_equal(report["Number of bursts per episode"], 3.0)
+
+

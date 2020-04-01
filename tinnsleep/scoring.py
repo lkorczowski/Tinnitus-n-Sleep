@@ -1,5 +1,6 @@
 from tinnsleep.burst import burst
 from tinnsleep.episode import episode
+import numpy as np
 
 
 def classif_to_burst(classif, time_interval=0.25):
@@ -52,12 +53,10 @@ def classif_to_burst(classif, time_interval=0.25):
     return burst_list
 
 
-
 def rearrange_chronological(burst_list):
     """Rearrange a given burst_list in the chronological order according to the beg attribute"""
     burst_list.sort(key=lambda x: x.beg)
     return burst_list
-
 
 
 def burst_to_episode(burst_list, delim=3):
@@ -122,14 +121,14 @@ def get_event_label(episode):
         return 3
 
 
-def create_list_events(li_ep, interval, recording_duration):
+def create_list_events(li_ep, time_interval, recording_duration):
     """ Creates the list of events, 0 = no event, 1 = tonic episode, 2 = phasic 
     episode, 3 = mixed episode
     
     Parameters
     ----------
     li_ep : list of episode instances
-    interval: float, time interval in seconds between 2 elementary events
+    time_interval: float, time interval in seconds between 2 elementary events
     recording_duration : float, duration of the recording in seconds
     Returns
     -------
@@ -142,27 +141,78 @@ def create_list_events(li_ep, interval, recording_duration):
 
     # Initialization
     # Case where the first burst does not begin at time=0
-    if li_ep[0].beg / interval > 1:
-        li_0 = [0 for i in range(int(li_ep[0].beg / interval))]
+    if li_ep[0].beg / time_interval > 1:
+        li_0 = [0 for i in range(int(li_ep[0].beg / time_interval))]
         li_events.extend(li_0)
 
     # Tagging the first event
     label = get_event_label(li_ep[0])
-    li_events.extend([label for i in range(int((li_ep[0].end - li_ep[0].beg) / interval))])
+    li_events.extend([label for i in range(int((li_ep[0].end - li_ep[0].beg) / time_interval))])
 
     # Loop of tagging
     if len(li_ep) > 1:
         for i in range(len(li_ep) - 1):
             # Putting zeros between two episodes
-            li_events.extend([0 for i in range(int((li_ep[i + 1].beg - li_ep[i].end) / interval))])
+            li_events.extend([0 for i in range(int((li_ep[i + 1].beg - li_ep[i].end) / time_interval))])
             # Tagging the next episode
             label = get_event_label(li_ep[i + 1])
-            li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / interval))])
+            li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / time_interval))])
 
     # If necessary, adds 0s at the end of li_events until the end of the recording
-    if (recording_duration - li_ep[-1].end)/interval > 1.0:
-        li_0 = [0 for i in range(int((recording_duration - li_ep[-1].end) / interval))]
+    if (recording_duration - li_ep[-1].end) / time_interval > 1.0:
+        li_0 = [0 for i in range(int((recording_duration - li_ep[-1].end) / time_interval))]
         li_events.extend(li_0)
-
-
     return li_events
+
+
+def generate_clinical_report(classif, time_interval=0.25, delim=3):
+    """ Generates an automatic clinical bruxism report from a list of events
+
+       Parameters
+       ----------
+       li_ep : list of episode instances
+       interval: float, time interval in seconds between 2 elementary events
+       recording_duration : float, duration of the recording in seconds
+       Returns
+       -------
+       report as a dictionary
+       """
+    report = {}
+    recording_duration = len(classif) * time_interval
+    report["Recording duration"] = recording_duration
+
+    li_burst = classif_to_burst(classif, time_interval)
+    nb_burst = len(li_burst)
+    report["Total number of burst"] = nb_burst
+    report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
+    li_episodes = burst_to_episode(li_burst, delim)
+    nb_episodes = len(li_episodes)
+    report["Total number of episodes"] = nb_episodes
+    report["Number of bursts per episode"] = nb_burst / nb_episodes
+    report["Number of episodes per hour"] = nb_episodes * 3600 / recording_duration
+
+    counts_type = [0, 0, 0]
+    tonic = []
+    phasic = []
+    mixed = []
+    for epi in li_episodes:
+        if epi.is_tonic:
+            counts_type[0] += 1
+            tonic.append(epi.end - epi.beg)
+        if epi.is_phasic:
+            counts_type[1] += 1
+            phasic.append(epi.end - epi.beg)
+        if epi.is_mixed:
+            counts_type[2] += 1
+            mixed.append(epi.end - epi.beg)
+
+    report["Number of tonic episodes per hour"] = counts_type[0] * 3600 / recording_duration
+    report["Number of phasic episodes per hour"] = counts_type[1] * time_interval * 3600 / recording_duration
+    report["Number of mixed episodes per hour"] = counts_type[2] * time_interval * 3600 / recording_duration
+
+    # Mean durations of episodes per types, "nan" if no episode of a type recorded
+    report["Mean duration of tonic episode"] = np.mean(tonic)
+    report["Mean duration of phasic episode"] = np.mean(phasic)
+    report["Mean duration of mixed episode"] = np.mean(mixed)
+
+    return report
