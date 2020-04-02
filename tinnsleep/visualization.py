@@ -257,19 +257,18 @@ def connect_bbox(bbox1, bbox2,
     return c1, c2, bbox_patch1, bbox_patch2, p
 
 
-def zoom_effect01(ax1, ax2, xmin, xmax, **kwargs):
+def zoom_effect(ax1, ax2, xmin=None, xmax=None, **kwargs):
     """
-    Connect *ax1* and *ax2*. The *xmin*-to-*xmax* range in both axes will
-    be marked.
+    Connect *ax1* and *ax2*. The *xmin*-to-*xmax* range in both axes will be marked.
 
     Parameters
     ----------
     ax1
-        The main axes.
-    ax2
         The zoomed axes.
+    ax2
+        The main axes.
     xmin, xmax
-        The limits of the colored area in both plot axes.
+        The limits of the colored area in both plot axes. If None, xmin & xmax will be taken from the ax1.viewLim.
     **kwargs
         Arguments passed to the patch constructor.
 
@@ -278,48 +277,22 @@ def zoom_effect01(ax1, ax2, xmin, xmax, **kwargs):
     https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/axes_zoom_effect.html
     """
 
-    trans1 = blended_transform_factory(ax1.transData, ax1.transAxes)
-    trans2 = blended_transform_factory(ax2.transData, ax2.transAxes)
+    # with auto-xlim based on the x2 xlim
+    if (xmin is None) and (xmax is None):
+        tt = ax1.transScale + (ax1.transLimits + ax2.transAxes)
+        trans = blended_transform_factory(ax2.transData, tt)
+        mybbox1 = ax1.bbox
+        mybbox2 = TransformedBbox(ax1.viewLim, trans)
 
-    bbox = Bbox.from_extents(xmin, 0, xmax, 1)
-
-    mybbox1 = TransformedBbox(bbox, trans1)
-    mybbox2 = TransformedBbox(bbox, trans2)
-
-    prop_patches = {**kwargs}
-
-    c1, c2, bbox_patch1, bbox_patch2, p = connect_bbox(
-        mybbox1, mybbox2,
-        loc1a=3, loc2a=2, loc1b=4, loc2b=1,
-        prop_lines=kwargs, prop_patches=prop_patches)
-
-    ax1.add_patch(bbox_patch1)
-    ax2.add_patch(bbox_patch2)
-    ax2.add_patch(c1)
-    ax2.add_patch(c2)
-    ax2.add_patch(p)
-
-    return c1, c2, bbox_patch1, bbox_patch2, p
-
-
-def zoom_effect02(ax1, ax2, **kwargs):
-    """
-    ax1 : the main axes
-    ax1 : the zoomed axes
-
-    Similar to zoom_effect01.  The xmin & xmax will be taken from the
-    ax1.viewLim.
-
-    Reference
-    ---------
-    https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/axes_zoom_effect.html
-    """
-
-    tt = ax1.transScale + (ax1.transLimits + ax2.transAxes)
-    trans = blended_transform_factory(ax2.transData, tt)
-
-    mybbox1 = ax1.bbox
-    mybbox2 = TransformedBbox(ax1.viewLim, trans)
+    # with specific xlim
+    elif isinstance(xmin, float) and isinstance(xmax, float):
+        trans1 = blended_transform_factory(ax1.transData, ax1.transAxes)
+        trans2 = blended_transform_factory(ax2.transData, ax2.transAxes)
+        bbox = Bbox.from_extents(xmin, 0, xmax, 1)
+        mybbox1 = TransformedBbox(bbox, trans1)
+        mybbox2 = TransformedBbox(bbox, trans2)
+    else:
+        raise ValueError("xmin & xman should be None or float")
 
     prop_patches = {**kwargs}
 
