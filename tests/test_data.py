@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from tinnsleep.data import CreateRaw, RawToEpochs_sliding, Annotate, CleanAnnotations
+from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
@@ -36,7 +36,7 @@ def test_RawToEpochs_sliding(data):
 
 
 def test_Annotation(dummyraw):
-    raw = Annotate(dummyraw, labels=[False, True, False, False, False, 2, False, False])
+    raw = AnnotateRaw_sliding(dummyraw, labels=[False, True, False, False, False, 2, False, False])
     expected1 = OrderedDict([('onset', .25),
                  ('duration', .25),
                  ('description', 'bad EPOCH'),
@@ -53,7 +53,7 @@ def test_Annotation(dummyraw):
 
 def test_Annotation_withdict(dummyraw):
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
-    raw = Annotate(dummyraw, labels=[0, 1, 0, 0, 0, 2, 0, 0], dict_annotations=dict_annotations)
+    raw = AnnotateRaw_sliding(dummyraw, labels=[0, 1, 0, 0, 0, 2, 0, 0], dict_annotations=dict_annotations)
     expected1 = OrderedDict([('onset', .25),
                  ('duration', .25),
                  ('description', 'bad EPOCH'),
@@ -73,7 +73,7 @@ def test_Annotation_withinterval(dummyraw):
     duration = 200
     labels = [2, 1, 3]
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
-    raw = Annotate(dummyraw, labels=labels, dict_annotations=dict_annotations,
+    raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
                    interval=interval, duration=duration)
     expected1 = OrderedDict([('onset', 0.),
                  ('duration', 1.0),
@@ -101,7 +101,7 @@ def test_Annotation_outoflength(dummyraw):
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     with pytest.raises(ValueError,
                        match=f"Total length \({total_length}\) exceed length of raw \({dummyraw.__len__()}\)"):
-        raw = Annotate(dummyraw, labels=labels, dict_annotations=dict_annotations,
+        raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
                        interval=interval, duration=duration)
 
 
@@ -109,15 +109,15 @@ def test_Annotation_invalidrange(dummyraw):
     labels = [0, 1, 0]
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     with pytest.raises(ValueError, match="Invalid range for parameters"):
-        raw = Annotate(dummyraw, labels=labels, dict_annotations=dict_annotations,
+        raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
                        interval=0, duration=10)
     with pytest.raises(ValueError, match="Invalid range for parameters"):
-        raw = Annotate(dummyraw, labels=labels, dict_annotations=dict_annotations,
+        raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
                        interval=10, duration=0)
 
 
 def test_CleanAnnotations(dummyraw):
-    raw = Annotate(dummyraw, labels=[False, True, False, False, False, True, False, False])
+    raw = AnnotateRaw_sliding(dummyraw, labels=[False, True, False, False, False, True, False, False])
     raw = CleanAnnotations(raw)
 
     assert len(raw.annotations) == 0

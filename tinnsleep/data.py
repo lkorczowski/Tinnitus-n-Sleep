@@ -86,8 +86,8 @@ def CleanAnnotations(raw):
     return raw
 
 
-def Annotate(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interval=50):
-    """Annotate mne.Raw data based on an labels
+def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interval=50):
+    """Annotate mne.Raw data based on an labels with a sliding window strategy
 
     Parameters
     ----------
