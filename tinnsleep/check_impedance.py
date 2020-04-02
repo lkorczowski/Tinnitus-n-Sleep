@@ -129,3 +129,28 @@ def create_bad_epochs_annotation(check_imp, duration, interval, orig_time=0.0):
         if np.mean(check_imp[i]) == 1:
             annotations.append({'onset': i * interval, 'duration': duration, 'description': "1", 'orig_time': orig_time})
     return annotations
+
+def create_annotation_mne(check_imp):
+    """Create a list of annotations of all the bad epochs where all channels have abnormal impedance values to annotate
+    the raw file
+           Parameters
+           ----------
+           check_imp list of list of 0s and 1s, shape (nb_epochs, nb_electrodes) 0s marking bad channels for the designated
+           epoch
+           duration: int
+           Number of elements (i.e. samples) on the epoch.
+           interval: int
+           Number of elements (i.e. samples) to move for the next epoch.
+
+           Returns
+           -------
+           annotations : list of dictionaries
+           Chronological list of bad epoch annotations
+           """
+    labels = []
+    for i in range(len(check_imp)):
+        if np.mean(check_imp[i]) == 1:
+            labels.append(True)
+        else:
+            labels.append(False)
+    return labels

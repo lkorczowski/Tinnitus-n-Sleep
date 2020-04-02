@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw, RawToEpochs_sliding
 from tinnsleep.check_impedance import check_RMS, create_bad_epochs_annotation, Impedance_thresholding, \
-    fuse_with_classif_result
+    fuse_with_classif_result, create_annotation_mne
 import numpy.testing as npt
 
 @pytest.fixture
@@ -48,3 +48,8 @@ def test_bad_epochs_annotations():
     interval = 50
     anno = create_bad_epochs_annotation(check_imp, duration, interval)
     npt.assert_equal(anno, [{'onset': 100.0, 'duration': 50.0, 'description': "1", 'orig_time': 0.0}])
+
+def test_annotation_mne():
+    check_imp = [[False, False], [False, True], [True, True], [True, False]]
+    anno = create_annotation_mne(check_imp)
+    npt.assert_equal(anno, [False, False, True, False])
