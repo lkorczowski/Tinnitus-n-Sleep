@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
 from tinnsleep.visualization import (plotTimeSeries, assert_ax_equals_data,
-                                     assert_x_labels_correct, zoom_effect01, zoom_effect02)
+                                     assert_x_labels_correct, zoom_effect01, zoom_effect02,
+                                     plotAnnotations)
 import matplotlib.pyplot as plt
 import numpy.testing as npt
 
@@ -133,6 +134,10 @@ def test_plotTimeSeries_incorrect_parameters():
 
 
 def test_zoom_effect():
+    """Test the box connector that allows (in the future) to select specific range of value to show dynamically in
+    a jupyter notebook widget
+    """
+    plt.close("all")
     sfreq=100
     np.random.seed(42)
     data = np.random.randn(400, 2)
@@ -147,7 +152,22 @@ def test_zoom_effect():
 
     ax3 = plt.subplot(222)
     plotTimeSeries(data, ax=ax3, sfreq=100)
-    ax3.set_xlim(2, 3)
     zoom_effect02(ax3, ax2)
+    ax3.set_xlim(1.5, 3.5)
 
+    plt.show()
+
+def test_plotAnnotations():
+    plt.close("all")
+    sfreq=100
+    np.random.seed(42)
+    data = np.random.randn(400, 2)
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+
+    plt.figure(figsize=(5, 5))
+    ax1 = plt.subplot(212)
+    ax1.set_xlim(0, 2)
+
+   # plotTimeSeries(data, ax=ax1, sfreq=100)
+    plotAnnotations(annotations, ax=ax1, alpha=0.1, ec="red")
     plt.show()

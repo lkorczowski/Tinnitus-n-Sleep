@@ -137,10 +137,96 @@ def assert_x_labels_correct(data, expected_labels):
         assert label.get_text() == expected_labels[k], "labels are not the same"
 
 
+def plotAnnotations(annotations, ax=None, **kwargs):
+    """Add a box for each annotation
+
+    Parameters
+    ----------
+    annotations: a instance mne.Annotations | list of dictionary (default: {})
+        a list of annotation or dictionary containing the following fields:
+        {'onset': float (seconds), 'duration': float (seconds), 'description': str, orig_time': float (seconds)}
+        Example:
+        >>> # a list of one annotation starting after 0.5 second of duration 1.0 second named 'blink'
+        >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+        """
+    if isinstance(annotations, (np.ndarray, list)):
+        for annotation in annotations:
+            if not isinstance(annotation, dict):
+                ValueError("annotations should contains dict")
+            else:
+                for key in annotation.keys():
+                    if key not in ['onset', 'duration', 'description', 'origin_time']:
+                        ValueError(f"{key} is an invalid key as annotation")
+    else:
+        ValueError("annotations should be a list or ndarray of dict")
+
+    if ax is None:
+        ax = plt.gca()
+        fig = ax.figure
+    elif isinstance(ax, plt.Axes):
+        fig = ax.figure
+    else:
+        msg = "`ax` must be a matplotlib Axes instance or None"
+        raise ValueError(msg)
+
+    if kwargs == {}:
+        kwargs = {
+            "alpha": 0.2,
+        }
+
+    for annotation in annotations:
+        xmin = annotation["onset"]
+        xmax = xmin + annotation["duration"]
+        trans = blended_transform_factory(ax.transData, ax.transAxes)
+
+        bbox = Bbox.from_extents(xmin, 0, xmax, 1)
+        mybbox = TransformedBbox(bbox, trans)
+
+        bbox_patch = BboxPatch(mybbox, **kwargs)
+        ax.add_patch(bbox_patch)
+
+
+
 def connect_bbox(bbox1, bbox2,
                  loc1a, loc2a, loc1b, loc2b,
                  prop_lines, prop_patches=None):
-    """
+    """ Create patch and lines to connect two bbox instances' opposite corner together
+
+    Parameters
+    ----------
+    bbox1, bbox2 : `matplotlib.transforms.Bbox`
+        Bounding boxes to connect.
+
+    loc1a, loc2a : {1, 2, 3, 4}
+        Corners of *bbox1* and *bbox2* to draw the first line.
+        Valid values are::
+
+            'upper right'  : 1,
+            'upper left'   : 2,
+            'lower left'   : 3,
+            'lower right'  : 4
+
+    loc1b, loc2b : {1, 2, 3, 4}
+        Corners of *bbox1* and *bbox2* to draw the second line.
+        Valid values are::
+
+            'upper right'  : 1,
+            'upper left'   : 2,
+            'lower left'   : 3,
+            'lower right'  : 4
+
+    propo_lines:
+            Patch properties for the line drawn:
+            %(Patch)s
+
+    Returns
+    -------
+    c1 : a instance of mpl_toolkits.axes_grid1.inset_locator.BboxConnector
+    c2 : a instance of mpl_toolkits.axes_grid1.inset_locator.BboxConnector
+    bbox_patch1 : a instance of mpl_toolkits.axes_grid1.inset_locator.BboxPatch
+    bbox_patch2 : a instance of mpl_toolkits.axes_grid1.inset_locator.BboxPatch
+    p : a instance of mpl_toolkits.axes_grid1.inset_locator.BboxConnectorPatch
+
     Reference
     ---------
     https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/axes_zoom_effect.html
@@ -151,11 +237,13 @@ def connect_bbox(bbox1, bbox2,
             "alpha": prop_lines.get("alpha", 1) * 0.2,
         }
 
+    # build two lines
     c1 = BboxConnector(bbox1, bbox2, loc1=loc1a, loc2=loc2a, **prop_lines)
     c1.set_clip_on(False)
     c2 = BboxConnector(bbox1, bbox2, loc1=loc1b, loc2=loc2b, **prop_lines)
     c2.set_clip_on(False)
 
+    #
     bbox_patch1 = BboxPatch(bbox1, **prop_patches)
     bbox_patch2 = BboxPatch(bbox2, **prop_patches)
 
@@ -246,3 +334,4 @@ def zoom_effect02(ax1, ax2, **kwargs):
     ax2.add_patch(p)
 
     return c1, c2, bbox_patch1, bbox_patch2, p
+
