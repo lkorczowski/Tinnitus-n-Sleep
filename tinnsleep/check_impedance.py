@@ -43,9 +43,9 @@ def Impedance_thresholding(data, imp_chan, duration, interval, THR = 4000, monta
         small_check = []
         for chan in elm:
             if chan > THR:
-                small_check.append(0)
+                small_check.append(True)
             else:
-                small_check.append(1)
+                small_check.append(False)
         check_imp.append(small_check)
     return check_imp
 
@@ -72,20 +72,40 @@ def check_RMS(X, check_imp):
 
     mod_X=[]
     for i in range(len(X)):
-        if not np.mean(check_imp[i]) == 0.0:
+        if not np.mean(check_imp[i]) == 1:
             remaining_chan = []
             bad_chan_ind = []
             mod_X.append(X[i])
             for j in range(len(X[0])):
-                if check_imp[i][j] == 1:
+                if check_imp[i][j] == 0:
                     remaining_chan.append(X[i][j])
                 else:
                     bad_chan_ind.append(j)
             rem_chan_av = np.mean(remaining_chan)
             for ind in bad_chan_ind:
-                mod_X[i][ind] = rem_chan_av
+                mod_X[-1][ind] = rem_chan_av
 
     return mod_X
+
+def fuse_with_classif_result(check_imp, labels):
+    """Adds at the good indexes the missing elements of labels because of the use of check_RMS
+            Parameters
+            ----------
+            check_imp list of list of 0s and 1s, shape (nb_epochs, nb_electrodes) 0s marking bad channels for the
+            designated epoch
+            labels : ndarray, shape (n_trials - nb_bad_epochs,) array of the classification prediction results
+
+            Returns
+            -------
+            mod_labels : ndarray, shape (n_trials,)
+            Modified labels to fit a length of n_trials
+            """
+    labels = labels.tolist()
+    for i in range(len(check_imp)):
+        if np.mean(check_imp[i]) == 1:
+            labels.insert(i, False)
+    return labels
+
 
 def create_bad_epochs_annotation(check_imp, duration, interval, orig_time=0.0):
     """Create a list of annotations of all the bad epochs where all channels have abnormal impedance values to annotate
@@ -106,6 +126,6 @@ def create_bad_epochs_annotation(check_imp, duration, interval, orig_time=0.0):
            """
     annotations = []
     for i in range(len(check_imp)):
-        if np.mean(check_imp[i]) == 1.0:
+        if np.mean(check_imp[i]) == 1:
             annotations.append({'onset': i * interval, 'duration': duration, 'description': "1", 'orig_time': orig_time})
     return annotations

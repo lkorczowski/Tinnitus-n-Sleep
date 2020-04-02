@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw, RawToEpochs_sliding
-from tinnsleep.check_impedance import check_RMS, create_bad_epochs_annotation, Impedance_thresholding
+from tinnsleep.check_impedance import check_RMS, create_bad_epochs_annotation, Impedance_thresholding, \
+    fuse_with_classif_result
 import numpy.testing as npt
 
 @pytest.fixture
@@ -20,20 +21,29 @@ def test_Impedance_thresholding():
     interval = 50
     THR = 20.0
     check_imp = Impedance_thresholding(data, ch_names, duration, interval, THR, ch_types=['emg'])
-    npt.assert_equal(check_imp, [[0, 0], [0, 0], [0, 0], [0, 0], [1, 1], [1, 1], [1, 1], [1, 1]])
+    npt.assert_equal(check_imp, [[True, True], [True, True], [True, True], [True, True], [False, False], [False, False],
+                                 [False, False], [False, False]])
 
 def test_check_RMS():
-    check_imp = [[1, 1], [1, 0], [0, 1], [0, 0]]
+    check_imp = [[False, False], [False, True], [True, True], [True, False]]
     RMS=[]
     with pytest.raises(ValueError, match="Inputs shapes don't match"):
         check_RMS(RMS, check_imp)
-    RMS = [[1, 1], [1, 12], [12, 1], [12, 12]]
+    RMS = [[1, 1], [1, 12], [12, 12], [1, 1]]
     RMS = check_RMS(RMS, check_imp)
     print(RMS)
     npt.assert_equal(RMS, [[1, 1], [1, 1], [1, 1]])
 
+def test_fuse_with_classif_result():
+    check_imp = [[False, False], [False, True], [True, True], [True, False], [True, True], [True, False]]
+    classif=np.asanyarray([1, 2, 3, 4])
+    classif = fuse_with_classif_result(check_imp, classif)
+    print(classif)
+    npt.assert_equal(classif, [1, 2, False, 3, False, 4])
+
+
 def test_bad_epochs_annotations():
-    check_imp = [[0, 1], [1, 0], [1, 1], [0, 0]]
+    check_imp = [[False, False], [False, True], [True, True], [True, False]]
     duration = 50
     interval = 50
     anno = create_bad_epochs_annotation(check_imp, duration, interval)
