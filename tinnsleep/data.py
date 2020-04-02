@@ -131,3 +131,25 @@ def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration
                                    dict_annotations[label])
 
     return raw
+
+
+def convert_Annotations(annotations):
+    """convert the instance mne.Annotations to a list of dict to make it iterable
+
+    Parameters
+    ----------
+    annotations: dict
+        e.g. mne.Annotations
+        accepted keys: ['onset', 'duration', 'description', 'origin_time']
+        each key can have a ndarray but the length
+
+    Returns
+    -------
+    converted_annot: list of dict
+        the converted annotations
+    """
+    converted_annot = []
+    for annot in annotations:
+        converted_annot.append(annot)
+
+    return converted_annot

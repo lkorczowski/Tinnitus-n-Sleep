@@ -5,6 +5,7 @@ from tinnsleep.visualization import (plotTimeSeries, assert_ax_equals_data,
                                      plotAnnotations)
 import matplotlib.pyplot as plt
 import numpy.testing as npt
+import mne
 
 
 def test_asserts_homemade():
@@ -212,8 +213,6 @@ def test_plotAnnotations():
     ax1.set_xlim(0, 2)
     bbox_patches = plotAnnotations(annotations, ax=ax1)
 
-    plt.show()
-
 
 def test_plotAnnotations2():
     plt.close("all")
@@ -229,6 +228,18 @@ def test_plotAnnotations2():
     plotTimeSeries(data, ax=ax1, sfreq=100)
     bbox_patches = plotAnnotations(annotations, ax=ax1)
     ax1.set_xlim(0, 10)
+
+
+def test_plotAnnotations3():
+    sfreq=100
+    np.random.seed(42)
+    data = np.random.randn(2, 400)
+    info = mne.create_info(["Fz", "Pz"], sfreq=sfreq)
+    raw = mne.io.RawArray(data, info, verbose=False)
+    raw.annotations.append([.5], [1.], ["lol"])
+    ax1 = plt.subplot(212)
+    plotTimeSeries(data.T, ax=ax1, sfreq=sfreq)
+    plotAnnotations(raw.annotations)
 
 
 def test_plotAnnotations_incorrectparams():

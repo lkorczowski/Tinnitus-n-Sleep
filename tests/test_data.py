@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations
+from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations, convert_Annotations
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
@@ -121,3 +121,30 @@ def test_CleanAnnotations(dummyraw):
     raw = CleanAnnotations(raw)
 
     assert len(raw.annotations) == 0
+
+
+def test_convert_Annotations(dummyraw):
+    interval = 50
+    duration = 200
+    labels = [2, 1, 3]
+    dict_annotations = {1: "bad EPOCH", 2: "nice"}
+    raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
+                   interval=interval, duration=duration)
+    expected_annots = [
+                    OrderedDict([('onset', 0.),
+                                 ('duration', 1.0),
+                                 ('description', 'nice'),
+                                 ('orig_time', None)]),
+                    OrderedDict([('onset', .25),
+                                 ('duration', 1.),
+                                 ('description', 'bad EPOCH'),
+                                 ('orig_time', None)]),
+                    OrderedDict([('onset', .5),
+                                 ('duration', 1.),
+                                 ('description', '3'),
+                                 ('orig_time', None)])
+                    ]
+
+    annots = convert_Annotations(raw.annotations)
+
+    assert annots == expected_annots

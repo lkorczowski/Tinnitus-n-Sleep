@@ -5,12 +5,12 @@ from matplotlib.transforms import (
     Bbox, TransformedBbox, blended_transform_factory)
 from mpl_toolkits.axes_grid1.inset_locator import (
     BboxPatch, BboxConnector, BboxConnectorPatch)
+import mne
 
 def plotTimeSeries(data,
                    ch_names=None,
                    sfreq=1,
                    scalings=None,
-                   annotations=None,
                    ax=None,
                    **kwargs):
     """Advanced plotting of multidimensional time series from ndarray
@@ -25,12 +25,6 @@ def plotTimeSeries(data,
         sample rate (in Hz)
     scalings: float | iterable, shape (n_dimension,)
         value between two channels
-    annotations: a instance mne.Annotations | list of dictionary (default: {})
-        a list of annotation or dictionary containing the following fields:
-        {'onset': float (seconds), 'duration': float (seconds), 'description': str, orig_time': float (seconds)}
-        Example:
-        >>> # a list of one annotation starting after 0.5 second of duration 1.0 second named 'blink'
-        >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
     ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
         the axe where to save the fig. By default a new figure is generated.
 
@@ -142,12 +136,17 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
 
     Parameters
     ----------
-    annotations: a instance mne.Annotations | list of dictionary (default: {})
+    annotations: a instance mne.Annotations | list of dictionary | dict
         a list of annotation or dictionary containing the following fields:
         {'onset': float (seconds), 'duration': float (seconds), 'description': str, orig_time': float (seconds)}
         Example:
-        >>> # a list of one annotation starting after 0.5 second of duration 1.0 second named 'blink'
-        >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+        >>> # a list of two annotations starting after 0.5 and 1 second of duration 1.0 second named 'blink'
+        >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0},
+        >>>                {'onset': 1., 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+        or
+        >>> # a list of two annotations starting after 0.5 and 1 second of duration 1.0 second named 'blink'
+        >>> annotations = {'onset': [0.5, 1.0], 'duration': [1.0, 1.0],
+        >>>                'description': ["blink", "blink"], 'origin_time': [0., 0.]}
     ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
         the axe where to save the fig. By default a new figure is generated.
     text_prop: dict
@@ -162,9 +161,10 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
                 raise ValueError("annotations should contains dict")
             else:
                 for key in annotation.keys():
-                    print(key)
                     if key not in ['onset', 'duration', 'description', 'origin_time']:
                         raise ValueError(f"{key} is an invalid key as annotation")
+    elif isinstance(annotations, mne.Annotations):
+        pass
     else:
         raise ValueError("annotations should be a list or ndarray of dict")
 
