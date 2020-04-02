@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.testing as npt
 
 
 def plotTimeSeries(data,
@@ -78,12 +79,55 @@ def plotTimeSeries(data,
 
     # align timeseries with new offsets
     data = data - shifts
-
     times = np.linspace(0, (n_samples-1) / sfreq, num=n_samples)
 
     # compute shift based on scalings
-
     ax.plot(times, data, label=ch_names, **kwargs)
     plt.yticks(-shifts, ch_names)
     plt.xlim(np.min(times), np.max(times))
+
     return fig, ax
+
+
+def assert_ax_equals_data(data, ax, sfreq=1):
+    """Return assert error if the ax is not comming from data
+
+     Parameters
+     ----------
+     data: array-line, shape (n_samples, n_dimension)
+         multidimensional time series
+     ax: a instance of ``matplotlib.pyplot.Axes``
+        the ax where the data were plotted
+     sfreq: float (default: 1)
+         sample rate (in Hz)
+     """
+    # check if correct values
+    for n, line in enumerate(ax.get_lines()):
+        x, y = line.get_data()
+        # check if data correlated perfectly (there aren't equal due to transformation)
+        npt.assert_approx_equal(np.corrcoef(y, data[:, n])[0][1], 1)  # data y-axis correlate to 1
+        npt.assert_equal(x, np.linspace(0, (data.shape[0]-1)/sfreq, data.shape[0]))  # time x-axis match
+
+
+def assert_x_labels_correct(data, expected_labels):
+    """Return assert error if the ax is not comming from data
+
+     Parameters
+     ----------
+     data: array-line, shape (n_samples, n_dimension)
+         multidimensional time series
+     expected_labels: a list of str
+         the expected label names
+     """
+    # prepare data to double check
+    data = data - np.median(data, axis=0)
+    scalings = np.max(np.quantile(np.abs(data), 0.975, axis=0))
+
+    # calculate multidimensional shifts based on scalings
+    shifts = - np.linspace(0, 2 * scalings * (data.shape[1]-1), data.shape[1])
+
+    # check if label position and values are correct
+    locs, labels = plt.yticks()
+    npt.assert_equal(locs, shifts)
+    for k, label in enumerate(labels):
+        assert label.get_text() == expected_labels[k], "labels are not the same"
