@@ -152,13 +152,14 @@ def plotAnnotations(annotations, ax=None, **kwargs):
     if isinstance(annotations, (np.ndarray, list)):
         for annotation in annotations:
             if not isinstance(annotation, dict):
-                ValueError("annotations should contains dict")
+                raise ValueError("annotations should contains dict")
             else:
                 for key in annotation.keys():
+                    print(key)
                     if key not in ['onset', 'duration', 'description', 'origin_time']:
-                        ValueError(f"{key} is an invalid key as annotation")
+                        raise ValueError(f"{key} is an invalid key as annotation")
     else:
-        ValueError("annotations should be a list or ndarray of dict")
+        raise ValueError("annotations should be a list or ndarray of dict")
 
     if ax is None:
         ax = plt.gca()

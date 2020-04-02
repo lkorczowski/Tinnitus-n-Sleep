@@ -157,17 +157,42 @@ def test_zoom_effect():
 
     plt.show()
 
+
+def test_plotAnnotations_init():
+    plt.close("all")
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    plotAnnotations(annotations)
+
+
 def test_plotAnnotations():
     plt.close("all")
     sfreq=100
     np.random.seed(42)
     data = np.random.randn(400, 2)
     annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
-
     plt.figure(figsize=(5, 5))
     ax1 = plt.subplot(212)
+    plotTimeSeries(data, ax=ax1, sfreq=100)
     ax1.set_xlim(0, 2)
+    plotAnnotations(annotations, ax=ax1)
 
-   # plotTimeSeries(data, ax=ax1, sfreq=100)
-    plotAnnotations(annotations, ax=ax1, alpha=0.1, ec="red")
-    plt.show()
+
+def test_plotAnnotations_incorrectparams():
+    plt.close("all")
+
+    annotations = [{'lol': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    with pytest.raises(ValueError, match="lol is an invalid key as annotation"):
+        plotAnnotations(annotations)
+
+    annotations = {'lol': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}
+    with pytest.raises(ValueError, match="annotations should be a list or ndarray of dict"):
+        plotAnnotations(annotations)
+
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    with pytest.raises(ValueError, match=r"`ax` must be a matplotlib Axes instance or None"):
+        plotAnnotations(annotations, ax='lol')
+
+    annotations = ["lol", "lol"]
+    with pytest.raises(ValueError, match="annotations should contains dict"):
+        plotAnnotations(annotations)
+
