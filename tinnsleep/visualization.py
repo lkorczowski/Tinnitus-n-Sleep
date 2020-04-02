@@ -82,7 +82,7 @@ def plotTimeSeries(data,
     ax.plot(times, data, **kwargs)
     plt.yticks(-shifts, ch_names)
     plt.xlim(np.min(times), np.max(times))
-
+    plt.ylim(np.min(-shifts)-(1.5*scalings), 1.5*scalings)
     return fig, ax
 
 
@@ -182,7 +182,6 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
     if kwargs == {}:
         kwargs = {**text_prop, "ec": "none", "alpha": 0.2}
 
-    bbox_patchs = []
     for annotation in annotations:
         xmin = annotation["onset"]
         xmax = xmin + annotation["duration"]
@@ -193,12 +192,9 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
 
         bbox_patch = BboxPatch(mybbox, **kwargs)
         ax.add_patch(bbox_patch)
-        ax.text(np.mean([xmin,xmax]), 1.05, annotation["description"], transform=trans,
+        ax.text(np.mean([xmin, xmax]), 1.05, annotation["description"], transform=trans,
                 horizontalalignment='center',
                 **text_prop)
-        bbox_patchs.append(bbox_patch)
-
-    return bbox_patchs
 
 
 def connect_bbox(bbox1, bbox2,

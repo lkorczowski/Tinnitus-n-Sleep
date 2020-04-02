@@ -107,7 +107,8 @@ def test_plotTimeSeries_subplots():
 
 def test_plotTimeSeries_1dim():
     np.random.seed(42)
-    data = np.random.randn(10)
+    data = np.random.randn(100)
+    data[50] = 1000
     plotTimeSeries(data)
 
 
