@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
-from tinnsleep.visualization import plotTimeSeries, assert_ax_equals_data, assert_x_labels_correct
+from tinnsleep.visualization import (plotTimeSeries, assert_ax_equals_data,
+                                     assert_x_labels_correct, zoom_effect01, zoom_effect02)
 import matplotlib.pyplot as plt
 import numpy.testing as npt
 
@@ -130,3 +131,23 @@ def test_plotTimeSeries_incorrect_parameters():
     with pytest.raises(ValueError, match="\`ax\` must be a matplotlib Axes instance or None"):
         plotTimeSeries(data, ax=True)
 
+
+def test_zoom_effect():
+    sfreq=100
+    np.random.seed(42)
+    data = np.random.randn(400, 2)
+
+    plt.figure(figsize=(5, 5))
+    ax1 = plt.subplot(221)
+    plotTimeSeries(data, ax=ax1, sfreq=100)
+    ax1.set_xlim(0, 1)
+    ax2 = plt.subplot(212)
+    plotTimeSeries(data, ax=ax2, sfreq=100)
+    zoom_effect01(ax1, ax2, 0.2, 0.8)
+
+    ax3 = plt.subplot(222)
+    plotTimeSeries(data, ax=ax3, sfreq=100)
+    ax3.set_xlim(2, 3)
+    zoom_effect02(ax3, ax2)
+
+    plt.show()
