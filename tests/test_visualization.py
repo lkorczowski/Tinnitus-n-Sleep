@@ -63,8 +63,6 @@ def test_plotTimeSeries_superimpose():
     np.random.seed(42)
     data = np.random.randn(400, 4)
     fig, ax = plotTimeSeries(data, ax=ax, color="black", linestyle="--")
-    plt.legend()
-    plt.show()
 
 
 def test_plotTimeSeries_chnames_propagation():
@@ -153,8 +151,27 @@ def test_zoom_effect():
 
     ax3 = plt.subplot(222)
     plotTimeSeries(data, ax=ax3, sfreq=100)
-    zoom_effect(ax3, ax2)
-    ax3.set_xlim(1.5, 3.5)
+    zoom_effect(ax3, ax2, fc="red", alpha=0.1, ec="red")
+    ax3.set_xlim(2, 2.5)  # move the cursor only with that
+
+
+def test_zoom_effect2():
+    """Test the box connector that allows (in the future) to select specific range of value to show dynamically in
+    a jupyter notebook widget
+    """
+    plt.close("all")
+    sfreq=100
+    np.random.seed(42)
+    data = np.random.randn(400, 2)
+
+    plt.figure(figsize=(5, 5))
+    ax1 = plt.subplot(211)
+    plotTimeSeries(data, ax=ax1, sfreq=100)
+    #ax1.set_xlim(0, 1)
+    ax2 = plt.subplot(212)
+    plotTimeSeries(data, ax=ax2, sfreq=100)
+    zoom_effect(ax1, ax2, prop_lines=dict(linestyle="-."))
+    ax1.set_xlim(0.5, 1)
 
 
 def test_zoom_effect_incorrectparams():
@@ -193,7 +210,25 @@ def test_plotAnnotations():
     ax1 = plt.subplot(212)
     plotTimeSeries(data, ax=ax1, sfreq=100)
     ax1.set_xlim(0, 2)
-    plotAnnotations(annotations, ax=ax1)
+    bbox_patches = plotAnnotations(annotations, ax=ax1)
+
+    plt.show()
+
+
+def test_plotAnnotations2():
+    plt.close("all")
+    sfreq=100
+    np.random.seed(42)
+    data = np.random.randn(400, 2)
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0},
+                   {'onset': 1., 'duration': 1.0, 'description': "blink", 'origin_time': 0.0},
+                   {'onset': 4.0, 'duration': 10.0, 'description': "dead", 'origin_time': 0.0}
+                   ]
+    plt.figure(figsize=(5, 5))
+    ax1 = plt.subplot(212)
+    plotTimeSeries(data, ax=ax1, sfreq=100)
+    bbox_patches = plotAnnotations(annotations, ax=ax1)
+    ax1.set_xlim(0, 10)
 
 
 def test_plotAnnotations_incorrectparams():

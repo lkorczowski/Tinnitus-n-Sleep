@@ -85,7 +85,7 @@ def plotTimeSeries(data,
     times = np.linspace(0, (n_samples-1) / sfreq, num=n_samples)
 
     # compute shift based on scalings
-    ax.plot(times, data, label=ch_names, **kwargs)
+    ax.plot(times, data, **kwargs)
     plt.yticks(-shifts, ch_names)
     plt.xlim(np.min(times), np.max(times))
 
@@ -137,7 +137,7 @@ def assert_x_labels_correct(data, expected_labels):
         assert label.get_text() == expected_labels[k], "labels are not the same"
 
 
-def plotAnnotations(annotations, ax=None, **kwargs):
+def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
     """Add a box for each annotation
 
     Parameters
@@ -148,7 +148,14 @@ def plotAnnotations(annotations, ax=None, **kwargs):
         Example:
         >>> # a list of one annotation starting after 0.5 second of duration 1.0 second named 'blink'
         >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
-        """
+    ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
+        the axe where to save the fig. By default a new figure is generated.
+    text_prop: dict
+        parameters send to ``matplotlib.text.Text`` instance
+    **kwargs
+        Arguments passed to the patch constructor `mpl_toolkits.axes_grid1.inset_locator.BboxPatch`` (e.g. fc, ec).
+
+    """
     if isinstance(annotations, (np.ndarray, list)):
         for annotation in annotations:
             if not isinstance(annotation, dict):
@@ -170,11 +177,12 @@ def plotAnnotations(annotations, ax=None, **kwargs):
         msg = "`ax` must be a matplotlib Axes instance or None"
         raise ValueError(msg)
 
+    if text_prop == {}:
+        text_prop = {"color": "red"}
     if kwargs == {}:
-        kwargs = {
-            "alpha": 0.2,
-        }
+        kwargs = {**text_prop, "ec": "none", "alpha": 0.2}
 
+    bbox_patchs = []
     for annotation in annotations:
         xmin = annotation["onset"]
         xmax = xmin + annotation["duration"]
@@ -185,12 +193,17 @@ def plotAnnotations(annotations, ax=None, **kwargs):
 
         bbox_patch = BboxPatch(mybbox, **kwargs)
         ax.add_patch(bbox_patch)
+        ax.text(np.mean([xmin,xmax]), 1.05, annotation["description"], transform=trans,
+                horizontalalignment='center',
+                **text_prop)
+        bbox_patchs.append(bbox_patch)
 
+    return bbox_patchs
 
 
 def connect_bbox(bbox1, bbox2,
                  loc1a, loc2a, loc1b, loc2b,
-                 prop_lines, prop_patches=None):
+                 prop_lines, **prop_patches):
     """ Create patch and lines to connect two bbox instances' opposite corner together
 
     Parameters
@@ -249,15 +262,15 @@ def connect_bbox(bbox1, bbox2,
     bbox_patch2 = BboxPatch(bbox2, **prop_patches)
 
     p = BboxConnectorPatch(bbox1, bbox2,
-                           # loc1a=3, loc2a=2, loc1b=4, loc2b=1,
                            loc1a=loc1a, loc2a=loc2a, loc1b=loc1b, loc2b=loc2b,
-                           **prop_patches)
+                           **prop_lines
+                           )
     p.set_clip_on(False)
 
     return c1, c2, bbox_patch1, bbox_patch2, p
 
 
-def zoom_effect(ax1, ax2, xmin=None, xmax=None, **kwargs):
+def zoom_effect(ax1, ax2, xmin=None, xmax=None, prop_lines={}, **kwargs):
     """
     Connect *ax1* and *ax2*. The *xmin*-to-*xmax* range in both axes will be marked.
 
@@ -269,12 +282,14 @@ def zoom_effect(ax1, ax2, xmin=None, xmax=None, **kwargs):
         The main axes.
     xmin, xmax
         The limits of the colored area in both plot axes. If None, xmin & xmax will be taken from the ax1.viewLim.
+    prop_lines: dict (default: {})
+        Arguments passed to the line constructor ``mpl_toolkits.axes_grid1.inset_locator.BboxConnector``
     **kwargs
-        Arguments passed to the patch constructor.
+        Arguments passed to the patch constructor `mpl_toolkits.axes_grid1.inset_locator.BboxPatch`` (e.g. fc, ec).
 
-    Reference
-    ---------
-    https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/axes_zoom_effect.html
+    References
+    ----------
+    https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/axes`_zoom_effect.html
     """
 
     # with auto-xlim based on the x2 xlim
@@ -294,17 +309,14 @@ def zoom_effect(ax1, ax2, xmin=None, xmax=None, **kwargs):
     else:
         raise ValueError("xmin & xman should be None or float")
 
-    prop_patches = {**kwargs}
-
-    c1, c2, bbox_patch1, bbox_patch2, p = connect_bbox(
-        mybbox1, mybbox2,
-        loc1a=3, loc2a=2, loc1b=4, loc2b=1,
-        prop_lines=kwargs, prop_patches=prop_patches)
-
+    c1, c2, bbox_patch1, bbox_patch2, p = connect_bbox(mybbox1, mybbox2,
+                                                       loc1a=3, loc2a=2, loc1b=4, loc2b=1,
+                                                       prop_lines=prop_lines, **kwargs)
     ax1.add_patch(bbox_patch1)
     ax2.add_patch(bbox_patch2)
     ax2.add_patch(c1)
     ax2.add_patch(c2)
+    p.set_clip_on(False)
     ax2.add_patch(p)
 
     return c1, c2, bbox_patch1, bbox_patch2, p
