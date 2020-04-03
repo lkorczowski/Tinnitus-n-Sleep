@@ -11,6 +11,7 @@ def test_episode():
     npt.assert_equal(epi.end, 1)
     npt.assert_equal(len(epi.burst_list), 1)
 
+
 def test_overlap_left():
     bursty = burst(1.5, 2.5)
     bursty2 = burst(1.75, 3.5)
@@ -19,6 +20,7 @@ def test_overlap_left():
     npt.assert_equal(epi.beg, 1.5)
     npt.assert_equal(epi.end, 3.5)
     npt.assert_equal(len(epi.burst_list), 1)
+
 
 def test_overlapx2_left():
     bursty = burst(1.5, 2.5)
@@ -53,6 +55,7 @@ def test_overlap_right():
     npt.assert_equal(epi.end, 3.5)
     npt.assert_equal(len(epi.burst_list), 1)
 
+
 def test_overlap_right_2_bursts():
     bursty = burst(1.5, 2.5)
     bursty3 = burst(2.6, 2.9)
@@ -63,6 +66,7 @@ def test_overlap_right_2_bursts():
     npt.assert_equal(epi.beg, 1.5)
     npt.assert_equal(epi.end, 3.5)
     npt.assert_equal(len(epi.burst_list), 2)
+
 
 def test_merge_3_bursts_right():
     bursty = burst(1.5, 2.5)
@@ -125,6 +129,7 @@ def test_burst_already_there():
     npt.assert_equal(epi.end, 4.5)
     npt.assert_equal(len(epi.burst_list), 3)
 
+
 def test_overlap_inside():
     bursty = burst(1.5, 2.5)
     bursty2 = burst(4.75, 5.5)
@@ -137,6 +142,7 @@ def test_overlap_inside():
     npt.assert_equal(epi.burst_list[1].beg, 2.7)
     npt.assert_equal(epi.burst_list[1].end, 3.9)
     npt.assert_equal(len(epi.burst_list), 3)
+
 
 def test_overlapx2_inside():
     bursty = burst(1.5, 2.5)
@@ -152,6 +158,7 @@ def test_overlapx2_inside():
     npt.assert_equal(epi.burst_list[1].beg, 2.7)
     npt.assert_equal(epi.burst_list[1].end, 3.9)
     npt.assert_equal(len(epi.burst_list), 3)
+
 
 def test_no_overlap_inside():
     bursty = burst(1.5, 2.5)
@@ -171,7 +178,7 @@ def test_assess_type_is_valid():
     bursty3 = burst(3, 3.5)
     bursty4 = burst(2.7, 2.9)
 
-    #Test tonic
+    # Test tonic
     epi1 = episode(bursty2)
     epi1.assess_type()
     npt.assert_equal(epi1.is_tonic, True)
@@ -186,7 +193,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi1.is_mixed, False)
     npt.assert_equal(epi1.is_valid(), True)
 
-    #Test mixed
+    # Test mixed
     epi1.add_a_burst(bursty3)
     epi1.add_a_burst(bursty4)
     epi1.assess_type()
@@ -194,7 +201,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi1.is_phasic, False)
     npt.assert_equal(epi1.is_mixed, True)
 
-    #Test no type 1 burst
+    # Test no type 1 burst
     epi = episode(bursty)
     epi.assess_type()
     npt.assert_equal(epi.is_tonic, False)
@@ -202,17 +209,47 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi.is_mixed, False)
     npt.assert_equal(epi.is_valid(), False)
 
-    #Test no type 2 burst
+    # Test no type 2 burst
     epi.add_a_burst(bursty3)
     epi.assess_type()
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
 
-    #Test phasic
+    # Test phasic
     epi.add_a_burst(bursty4)
     epi.assess_type()
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, True)
     npt.assert_equal(epi.is_mixed, False)
+
+
+def test_generate_annotation():
+    bursty = burst(0, 2.5)
+    bursty2 = burst(4, 5.5)
+    bursty3 = burst(3, 3.5)
+    bursty4 = burst(2.7, 2.9)
+
+    # Empty annotation
+    epi1 = episode(bursty2)
+    epi1.assess_type()
+    npt.assert_equal(len(epi1.generate_annotation()), 0)
+
+    # Case Phasic
+    epi1.add_a_burst(bursty3)
+    epi1.add_a_burst(bursty4)
+    epi1.assess_type()
+    npt.assert_equal(epi1.generate_annotation()["description"], "Phasic")
+
+    # Case Mixed
+    epi1.add_a_burst(bursty)
+    epi1.assess_type()
+    npt.assert_equal(epi1.generate_annotation()["description"], "Mixed")
+
+    # Case Tonic
+    epi = episode(bursty)
+    epi.assess_type()
+    npt.assert_equal(epi.generate_annotation()["duration"], 2.5)
+
+
 
