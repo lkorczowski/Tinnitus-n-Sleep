@@ -10,8 +10,8 @@ dependencies:
     - seaborn
     - jupyter
     - coverage
+    - pytest
     # Pip dependencies
     - pip
     - pip:
         - mne
-        - coverage-badge

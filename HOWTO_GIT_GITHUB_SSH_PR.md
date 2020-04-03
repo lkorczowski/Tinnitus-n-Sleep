@@ -59,10 +59,16 @@ git config --global pull.default current
     `git config --global push.default current` and  `git config --global pull.default current`
 1. to check all branch (even the remote):
     `git branch -a` (you should see the branch that you want e.g. "origin/feature_branch_remotename")
-2.  Get the remote branch locally linked with upstream
+
+THEN
+1.  Fetch all the remote branch locally linked with upstream
+    `git fetch -a` # it will download all remote branches not on your computer
+    
+OR
+1.  Get the remote branch locally linked with upstream
 	`git checkout -b feature_branch_localname origin/feature_branch_remotename`
 	 example: `git checkout -b test origin/test`
-3. If you missed the step to connect the upstream 
+1. If you missed the step to connect the upstream 
     (e.g. you did only `git checkout -b feature_branch_localname` or you got the following error
     ```
     There is no tracking information for the current branch.

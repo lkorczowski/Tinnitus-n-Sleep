@@ -1,7 +1,8 @@
 import mne
 from tinnsleep.utils import epoch
+import numpy as np
 
-#Create Raw file
+
 def CreateRaw(data, ch_names, montage=None, ch_types=None):
     """Generate a mne raw structure based on hardcoded info for bruxisme data
 
@@ -37,6 +38,7 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     raw.set_montage(montage)
     return raw
 
+
 def RawToEpochs_sliding(raw, duration, interval, picks=None):
     """Generate an epoch array from mne.Raw given the duration and interval (in samples) using sliding window.
 
@@ -63,5 +65,91 @@ def RawToEpochs_sliding(raw, duration, interval, picks=None):
     """
 
     raw = raw.pick(picks=picks)
-    epochs = epoch(raw.get_data(), duration, interval, axis=1)
-    return epochs
+    return epoch(raw.get_data(), duration, interval, axis=1)
+
+
+def CleanAnnotations(raw):
+    """Clean annotations from existing mne.Raw if exists
+    
+    Parameters
+    ----------
+    raw: Instance of mne.Raw
+        the signal
+        
+    Returns
+    -------
+    raw: Instance of mne.Raw
+        the signal without annotations
+    """
+    if len(raw.annotations) > 0:
+        raw.annotations.delete(np.arange(0, len(raw.annotations)))
+    return raw
+
+
+def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interval=50):
+    """Annotate mne.Raw data based on an labels with a sliding window strategy
+
+    Parameters
+    ----------
+    raw: Instance of mne.Raw
+        the signal
+    labels: array-like, shape (n_annotations,)
+        A array of labels code to annotate (e.g. ints or booleans)
+    dict_annotations: dict (default: {1: "bad EPOCH"})
+        Map the labels code to annotation description. By default, 1 are converted to "bad EPOCH".
+        If None or if the key doesn't exist, the labels are added to the dictionary without a description.
+    duration: int
+        Number of elements (i.e. samples) for all annotations.
+    interval: int
+        Number of elements (i.e. samples) to move for the next annotations (if interval>=duration, no overlap).
+
+
+    Returns
+    -------
+    raw: Instance of mne.Raw
+        the signal
+
+    """
+    # if the raw is too short
+    total_length = interval * (len(labels) - 1) + duration
+    if raw.__len__() < total_length:
+        raise ValueError(f"Total length ({total_length}) exceed length of raw ({raw.__len__()})")
+
+    # if the key doesn't exist, it just create dictionary with the description being the label
+    for label in np.unique(labels):
+        if not label == 0:
+            if label not in dict_annotations.keys():
+                dict_annotations[label] = str(label)
+
+    if (duration < 1) | (interval < 1):
+        raise ValueError("Invalid range for parameters")
+
+    for k, label in enumerate(labels):
+        if label in dict_annotations:
+            raw.annotations.append([interval * k / raw.info["sfreq"]],
+                                   [duration / raw.info["sfreq"]],
+                                   dict_annotations[label])
+
+    return raw
+
+
+def convert_Annotations(annotations):
+    """convert the instance mne.Annotations to a list of dict to make it iterable
+
+    Parameters
+    ----------
+    annotations: dict
+        e.g. mne.Annotations
+        accepted keys: ['onset', 'duration', 'description', 'origin_time']
+        each key can have a ndarray but the length
+
+    Returns
+    -------
+    converted_annot: list of dict
+        the converted annotations
+    """
+    converted_annot = []
+    for annot in annotations:
+        converted_annot.append(annot)
+
+    return converted_annot
