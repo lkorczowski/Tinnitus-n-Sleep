@@ -36,15 +36,7 @@ def Impedance_thresholding(data, imp_chan, duration, interval, THR = 4000, monta
     """
     epochs = epoch(data, duration, interval)
     mean_imp = np.mean(abs(epochs), axis=axis)
-    check_imp = []
-    for elm in mean_imp:
-        small_check = []
-        for chan in elm:
-            if chan > THR:
-                small_check.append(True)
-            else:
-                small_check.append(False)
-        check_imp.append(small_check)
+    check_imp = np.where(mean_imp > THR, True, False)
     return check_imp
 
 
@@ -145,10 +137,4 @@ def create_annotation_mne(check_imp):
     annotations : list of dictionaries
     Chronological list of bad epoch annotations
     """
-    labels = []
-    for i in range(len(check_imp)):
-        if np.mean(check_imp[i]) == 1:
-            labels.append(True)
-        else:
-            labels.append(False)
-    return labels
+    return np.where(np.mean(check_imp, axis=-1) == 1, True, False)
