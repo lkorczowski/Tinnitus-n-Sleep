@@ -123,7 +123,6 @@ def generate_annotations(li_ep):
         """
 
     annotations = []
-    li_ep = rearrange_chronological(li_ep)
     for ep in li_ep:
         annotations.append(ep.generate_annotation())
     return annotations
@@ -139,7 +138,7 @@ def get_event_label(episode):
         return 3
 
 
-def create_list_events(li_ep, time_interval, recording_duration):
+def create_list_events(li_ep, time_interval, time_recording):
     """ Creates the list of events, 0 = no event, 1 = tonic episode, 2 = phasic 
     episode, 3 = mixed episode
     
@@ -147,7 +146,7 @@ def create_list_events(li_ep, time_interval, recording_duration):
     ----------
     li_ep : list of episode instances
     time_interval: float, time interval in seconds between 2 elementary events
-    recording_duration : float, duration of the recording in seconds
+    time_recording : float, duration of the recording in seconds
     Returns
     -------
     list of integers, labels of the events 
@@ -177,8 +176,8 @@ def create_list_events(li_ep, time_interval, recording_duration):
             li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / time_interval))])
 
     # If necessary, adds 0s at the end of li_events until the end of the recording
-    if (recording_duration - li_ep[-1].end) / time_interval > 1.0:
-        li_0 = [0 for i in range(int((recording_duration - li_ep[-1].end) / time_interval))]
+    if (time_recording - li_ep[-1].end) / time_interval > 1.0:
+        li_0 = [0 for i in range(int((time_recording - li_ep[-1].end) / time_interval))]
         li_events.extend(li_0)
     return li_events
 
