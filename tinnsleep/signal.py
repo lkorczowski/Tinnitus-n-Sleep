@@ -27,7 +27,8 @@ def rms(epochs, axis=-1):
 
 
 def is_good_epochs(epochs, **kwargs):
-    """
+    """Test if epochs are good according to reject and flat by on intra-epoch min-max thresholding.
+
     Parameters
     ----------
     epochs: ndarray, shape (n_epochs, n_channels, n_samples)
@@ -48,20 +49,27 @@ def is_good_epochs(epochs, **kwargs):
     full_report : bool (default: False)
         If full_report=True, it will give True/False as well as a list of all offending channels.
 
+    Returns
+    -------
+
     """
     if "full_report" in kwargs:
         full_report = kwargs["full_report"]
     else:
         full_report = False
     kwargs["full_report"] = True
-
+    labels = []
+    bad_lists = []
     for epoc in epochs:
         [label, bad_list] = _is_good_epoch(epoc, **kwargs)
+        labels.append(label)
+        bad_lists.append(bad_list)
 
     if full_report:
-        return label, bad_list
+        return labels, bad_lists
     else:
-        return label
+        return labels
+
 
 def _is_good_epoch(data, ch_names=None,
                    channel_type_idx=None,
@@ -69,7 +77,7 @@ def _is_good_epoch(data, ch_names=None,
                    flat_thresholds=None,
                    full_report=False,
                    ignore_chs=[]):
-    """Test if data segment data is good according to reject and flat.
+    """Test if data segment data is good according to reject and flat based on min-max thresholding.
 
     see ``tinnsleep.signal.is_good_epochs`` for detailed documentation
 
