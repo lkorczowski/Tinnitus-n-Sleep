@@ -48,6 +48,7 @@ def epoch(data, duration, interval, axis=-1):
 
     return stride_tricks.as_strided(data, new_shape, new_strides)
 
+
 def compute_nb_epochs(N, T, I):
     """Return the exact number of expected windows based on the samples (N), window_length (T) and interval (I)
         Parameters
