@@ -18,7 +18,7 @@ def epoch(data, duration, interval, axis=-1):
 
     Parameters
     ----------
-    data: array_like
+    data: array_like, shape (n_channels, n_samples)
         Input array
     duration: int
         Number of elements (i.e. samples) on the epoch.
@@ -29,8 +29,8 @@ def epoch(data, duration, interval, axis=-1):
         `(num_observation, num_samples, num_channels)`, then use `axis=1`.
     Returns
     -------
-    ndarray
-        Epoched view of `a`. Epochs are in the first dimension.
+    ndarray, shape (n_epochs, n_channels, duration)
+        Epoched view of `data`. Epochs are in the first dimension.
     """
     data = np.asarray(data)
     data = check_array(data)
