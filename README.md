@@ -40,9 +40,10 @@ If you have trouble using git, a [tutorial](HOWTO_GIT_GITHUB_SSH_PR.md) is avail
 - how to set git with github and ssh
 - how to contribute, create a new repository, participate
 - how to branch, how to pull-request
+- several tips while using git
 
 ## How to contribute
 
-A [guideline](HOWTO_CONTRIBUTE.md) is proposed to understand how to contribute and understand the best pratices with
- branchs and Pull-Requests.
+A (incomplete) [guideline](CONTRIBUTING.md) is proposed to understand how to contribute and understand the best
+practices with branchs and Pull-Requests.
 

@@ -89,3 +89,8 @@ OR (only for small changes that doesn't require a pull request and code review)
    `git branch -d feature_branch_name`
 4. Push the delete remote branch
     ` git push origin --delete feature_branch_name`
+    
+## Cleaning your local git
+After several sprint, usually your local git will be crowded with obsolete branchs, you can check that doing:
+1. ``git branch -a`` # how all branches, you'll see plenty of dead branches in the remote
+2. clean the remote: `git remote prune origin` # you'll clean all the dead branches that has been deleted on GitHub
