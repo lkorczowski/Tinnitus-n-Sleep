@@ -13,7 +13,7 @@ def epoch(data, duration, interval, axis=-1):
     to create several smaller views as arrays of size `(size, n_channels)`,
     without copying the input array.
     This function uses a new stride definition in order to produce a view of
-    `a` that has shape `(num_epochs, ..., size, ...)`. Dimensions other than
+    `data` that has shape `(num_epochs, ..., size, ...)`. Dimensions other than
     the one represented by `axis` do not change.
 
     Parameters
@@ -27,6 +27,7 @@ def epoch(data, duration, interval, axis=-1):
     axis: int
         Axis of the samples on `a`. For example, if `a` has a shape of
         `(num_observation, num_samples, num_channels)`, then use `axis=1`.
+
     Returns
     -------
     ndarray, shape (n_epochs, n_channels, duration)
