@@ -1,5 +1,7 @@
 import numpy as np
 import logging
+from tinnsleep.validation import is_valid_ch_names
+
 
 def rms(epochs, axis=-1):
     """ Estimate Root Mean Square Amplitude for each epoch and each electrode over the samples.
@@ -24,38 +26,73 @@ def rms(epochs, axis=-1):
     return np.sqrt(np.mean(epochs ** 2, axis=axis))
 
 
-def is_good_epoch(epochs, ch_names=None, channel_type_idx=None, reject=None, flat=None, full_report=False,
-             ignore_chs=[], verbose=None):
-    """Test if data segment e is good according to reject and flat.
-    If full_report=True, it will give True/False as well as a list of all
-    offending channels.
-    Inspired and extended from ``mne.Epochs._is_good()`` by Louis Korczowski, 2020
-
+def is_good_epochs(epochs, **kwargs):
+    """
     Parameters
     ----------
     epochs: ndarray, shape (n_epochs, n_channels, n_samples)
         the epochs to test
-    ch_names:
+    ch_names: array-like, shape (n_channels,)
+        list of str corresponding of the name of each channel
+    channel_type_idx: dict
+        dictionary with channel category as key with the index of channels, e.g.
+        >>> channel_type_idx = dict(eeg=[0,1,2,4], eog=[5,6])  # first 4 channels eeg and two last eog
+    rejection_thresholds: dict | None
+        the rejection threshold used for bad channel per channel_type, e.g.
+        >>> reject = dict(eog=150e-6, eeg=150e-6, emg=50e-3)
+        If None, bad channels won't be tested
+    flat_thresholds: dict | None
+        the flat threshold used for bad channel per channel_type, e.g.
+        >>> reject = dict(eog=5e-6, eeg=5e-6, emg=50e-6)
+        If None, flat channels won't be tested
+    full_report : bool (default: False)
+        If full_report=True, it will give True/False as well as a list of all offending channels.
 
-    References
-    ----------
+    """
+    if "full_report" in kwargs:
+        full_report = kwargs["full_report"]
+    else:
+        full_report = False
+    kwargs["full_report"] = True
+
+    for epoc in epochs:
+        [label, bad_list] = _is_good_epoch(epoc, **kwargs)
+
+    if full_report:
+        return label, bad_list
+    else:
+        return label
+
+def _is_good_epoch(data, ch_names=None,
+                   channel_type_idx=None,
+                   rejection_thresholds=None,
+                   flat_thresholds=None,
+                   full_report=False,
+                   ignore_chs=[]):
+    """Test if data segment data is good according to reject and flat.
+
+    see ``tinnsleep.signal.is_good_epochs`` for detailed documentation
+
+    Inspired and extended from ``mne.Epochs._is_good()`` by Louis Korczowski, 2020
 
     """
 
-    ch_names = is_valid_ch_names(ch_names)
+    n_channels, n_samples = data.shape
+
+    ch_names = is_valid_ch_names(ch_names, n_channels)
 
     bad_list = list()
     has_printed = False
     checkable = np.ones(len(ch_names), dtype=bool)
     checkable[np.array([c in ignore_chs
                         for c in ch_names], dtype=bool)] = False
-    for refl, f, t in zip([reject, flat], [np.greater, np.less], ['', 'flat']):
+    for refl, f, t in zip([rejection_thresholds, flat_thresholds], [np.greater, np.less], ['', 'flat']):
         if refl is not None:
             for key, thresh in refl.items():
                 idx = channel_type_idx[key]
                 name = key.upper()
                 if len(idx) > 0:
-                    e_idx = epochs[idx]
+                    e_idx = data[idx]
                     deltas = np.max(e_idx, axis=1) - np.min(e_idx, axis=1)
                     checkable_idx = checkable[idx]
                     idx_deltas = np.where(np.logical_and(f(deltas, thresh),
@@ -81,16 +118,3 @@ def is_good_epoch(epochs, ch_names=None, channel_type_idx=None, reject=None, fla
             return False, bad_list
 
 
-def is_valid_ch_names(ch_names, n_channels):
-    """Check if ch_names is correct or generate a numerical ch_names list"""
-    if (ch_names is None) or (ch_names == []):
-        ch_names = np.arange(0, n_channels)
-    elif isinstance(ch_names, str):
-        ch_names = [ch_names] * n_channels
-    elif isinstance(ch_names, (np.ndarray, list)):
-        if not len(ch_names) == n_channels:
-            raise ValueError('`ch_names` should be same length as the number of channels of data')
-    else:
-        msg = "`ch_names` must be a list or an iterable of shape (n_channels,) or None"
-        raise ValueError(msg)
-    return ch_names
