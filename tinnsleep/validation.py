@@ -17,7 +17,7 @@ def is_valid_ch_names(ch_names, n_channels):
 
 
 def assert_ax_equals_data(data, ax, sfreq=1):
-    """Return assert error if the ax is not comming from data
+    """Return assert error if the ax in figure does not correspond exactly to the data.
 
      Parameters
      ----------
@@ -27,7 +27,17 @@ def assert_ax_equals_data(data, ax, sfreq=1):
         the ax where the data were plotted
      sfreq: float (default: 1)
          sample rate (in Hz)
-     """
+
+    Examples
+    --------
+    >>> data = np.random.randn(20, 4)
+    >>> ax1 = plt.subplot(211)
+    >>> ax1.plot(data)
+    >>> assert_ax_equals_data(data, ax1)   # values shown in ax1 of figure corresponds to data
+    >>> ax2 = plt.subplot(212)
+    >>> ax1.plot(data + 1e-4)
+    >>> assert_ax_equals_data(data, ax2)   # values shown in ax2 of figure does not correspond to data
+    """
     # check if correct values
     for n, line in enumerate(ax.get_lines()):
         x, y = line.get_data()
