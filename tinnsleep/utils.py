@@ -13,12 +13,12 @@ def epoch(data, duration, interval, axis=-1):
     to create several smaller views as arrays of size `(size, n_channels)`,
     without copying the input array.
     This function uses a new stride definition in order to produce a view of
-    `a` that has shape `(num_epochs, ..., size, ...)`. Dimensions other than
+    `data` that has shape `(num_epochs, ..., size, ...)`. Dimensions other than
     the one represented by `axis` do not change.
 
     Parameters
     ----------
-    data: array_like
+    data: array_like, shape (n_channels, n_samples)
         Input array
     duration: int
         Number of elements (i.e. samples) on the epoch.
@@ -27,10 +27,11 @@ def epoch(data, duration, interval, axis=-1):
     axis: int
         Axis of the samples on `a`. For example, if `a` has a shape of
         `(num_observation, num_samples, num_channels)`, then use `axis=1`.
+
     Returns
     -------
-    ndarray
-        Epoched view of `a`. Epochs are in the first dimension.
+    ndarray, shape (n_epochs, n_channels, duration)
+        Epoched view of `data`. Epochs are in the first dimension.
     """
     data = np.asarray(data)
     data = check_array(data)
@@ -47,6 +48,7 @@ def epoch(data, duration, interval, axis=-1):
     new_strides = (data.strides[axis] * interval,) + data.strides
 
     return stride_tricks.as_strided(data, new_shape, new_strides)
+
 
 def compute_nb_epochs(N, T, I):
     """Return the exact number of expected windows based on the samples (N), window_length (T) and interval (I)

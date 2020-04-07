@@ -6,6 +6,8 @@ from matplotlib.transforms import (
 from mpl_toolkits.axes_grid1.inset_locator import (
     BboxPatch, BboxConnector, BboxConnectorPatch)
 import mne
+from tinnsleep.validation import is_valid_ch_names
+
 
 def plotTimeSeries(data,
                    ch_names=None,
@@ -44,16 +46,7 @@ def plotTimeSeries(data,
     elif len(shapeD) > 2:
         raise ValueError("data should be two-dimensional")
 
-    if ch_names is None:
-        ch_names = np.arange(0, n_channels)
-    elif isinstance(ch_names, str):
-        ch_names = [ch_names] * n_channels
-    elif isinstance(ch_names, (np.ndarray, list)):
-        if not len(ch_names) == n_channels:
-            raise ValueError('ch_names should be same length as the number of channels of data')
-    else:
-        msg = "`ch_names` must be a list or an iterable of shape (n_dimension,) or None"
-        raise ValueError(msg)
+    ch_names = is_valid_ch_names(ch_names, n_channels)
 
     if ax is None:
         ax = plt.gca()
@@ -84,27 +77,6 @@ def plotTimeSeries(data,
     plt.xlim(np.min(times), np.max(times))
     plt.ylim(np.min(-shifts)-(1.5*scalings), 1.5*scalings)
     return fig, ax
-
-
-
-def assert_ax_equals_data(data, ax, sfreq=1):
-    """Return assert error if the ax is not comming from data
-
-     Parameters
-     ----------
-     data: array-line, shape (n_samples, n_dimension)
-         multidimensional time series
-     ax: a instance of ``matplotlib.pyplot.Axes``
-        the ax where the data were plotted
-     sfreq: float (default: 1)
-         sample rate (in Hz)
-     """
-    # check if correct values
-    for n, line in enumerate(ax.get_lines()):
-        x, y = line.get_data()
-        # check if data correlated perfectly (there aren't equal due to transformation)
-        npt.assert_approx_equal(np.corrcoef(y, data[:, n])[0][1], 1)  # data y-axis correlate to 1
-        npt.assert_equal(x, np.linspace(0, (data.shape[0]-1)/sfreq, data.shape[0]))  # time x-axis match
 
 
 def assert_x_labels_correct(data, expected_labels):
