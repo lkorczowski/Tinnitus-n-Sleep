@@ -37,7 +37,7 @@ def is_good_epochs(epochs, **kwargs):
         list of str corresponding of the name of each channel
     channel_type_idx: dict
         dictionary with channel category as key with the index of channels, e.g.
-        >>> channel_type_idx = dict(eeg=[0,1,2,4], eog=[5,6])  # first 4 channels eeg and two last eog
+        >>> channel_type_idx = dict(eeg=[0, 1, 2, 4], eog=[5, 6])  # first 4 channels eeg and two last eog
     rejection_thresholds: dict | None
         the rejection threshold used for bad channel per channel_type, e.g.
         >>> reject = dict(eog=150e-6, eeg=150e-6, emg=50e-3)
@@ -83,6 +83,8 @@ def _is_good_epoch(data, ch_names=None,
 
     Inspired and extended from ``mne.Epochs._is_good()`` by Louis Korczowski, 2020
 
+    TODO: pretty unefficient because of the loop for each epoch and each test (bad and flat).
+    TODO: Everything could be done very fast on all epoch with ONE line actually (not urgent)
     """
 
     n_channels, n_samples = data.shape
@@ -94,24 +96,26 @@ def _is_good_epoch(data, ch_names=None,
     checkable = np.ones(len(ch_names), dtype=bool)
     checkable[np.array([c in ignore_chs
                         for c in ch_names], dtype=bool)] = False
-    for refl, f, t in zip([rejection_thresholds, flat_thresholds], [np.greater, np.less], ['', 'flat']):
-        if refl is not None:
-            for key, thresh in refl.items():
-                idx = channel_type_idx[key]
+
+    # check data for each type of threshold (here 'bad' and 'flat')
+    for refl, f, t in zip([rejection_thresholds, flat_thresholds], [np.greater, np.less], ['bad', 'flat']):
+        if refl is not None:  # performs test only if threshold exists
+            for key, thresh in refl.items():  # performs test for each category of channel (e.g. 'eeg' or 'meg')
+                idx = channel_type_idx[key]   # get indexes for each category
                 name = key.upper()
                 if len(idx) > 0:
                     e_idx = data[idx]
-                    deltas = np.max(e_idx, axis=1) - np.min(e_idx, axis=1)
-                    checkable_idx = checkable[idx]
-                    idx_deltas = np.where(np.logical_and(f(deltas, thresh),
+                    deltas = np.max(e_idx, axis=1) - np.min(e_idx, axis=1)   # compute min-max
+                    checkable_idx = checkable[idx]                           # take only channel to check
+                    idx_deltas = np.where(np.logical_and(f(deltas, thresh),  # find bad channels
                                                          checkable_idx))[0]
-
                     if len(idx_deltas) > 0:
                         ch_name = [ch_names[idx[i]] for i in idx_deltas]
                         if (not has_printed):
                             logging.info('    Rejecting %s epoch based on %s : '
                                         '%s' % (t, name, ch_name))
                             has_printed = True
+                        # return channels names if bad
                         if not full_report:
                             return False
                         else:
