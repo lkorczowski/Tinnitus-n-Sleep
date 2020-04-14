@@ -47,6 +47,9 @@ If you have trouble using git, a [tutorial](HOWTO_GIT_GITHUB_SSH_PR.md) is avail
 - how to branch, how to pull-request
 - several tips while using git
 
+I love also the great [git setup guideline](https://github.com/bbci/bbci_public/blob/master/HACKING.markdown) written
+ for [BBCI Toolbox](https://github.com/bbci/bbci_public), just check it out! 
+ 
 ## How to contribute
 
 A (incomplete) [guideline](CONTRIBUTING.md) is proposed to understand how to contribute and understand the best
