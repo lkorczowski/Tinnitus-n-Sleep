@@ -13,8 +13,8 @@ dependencies:
     # jupyter lab dependencies (optional)
     - jupyter
     - jupyterlab
-    - ipympl
-    - ipykernel
+    - ipympl            # for widget visualization
+    - ipykernel         # for managing jupyter kernel
 
     # test dependencies (optional)
     - coverage
