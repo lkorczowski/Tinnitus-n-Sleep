@@ -1,5 +1,6 @@
 name: tinnsleep-env
 dependencies:
+    # mandatory dependencies
     - python>=3.7
     - numpy>=1.16.4
     - pytest>=4.0.2
@@ -8,10 +9,19 @@ dependencies:
     - scipy
     - matplotlib
     - seaborn
+
+    # jupyter lab dependencies (optional)
     - jupyter
+    - jupyterlab
+    - ipympl
+    - ipykernel
+
+    # test dependencies (optional)
     - coverage
     - pytest
+
     # Pip dependencies
     - pip
     - pip:
+        # mandatory dependencies
         - mne
