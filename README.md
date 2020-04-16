@@ -42,10 +42,27 @@ the `conda` command is found.
 5. (optional) If you want to use the notebook, we advice Jupyter Lab (already in requirements) with additional steps:
     ```
     $ conda activate tinnsleep-env
-    (tinnsleep-env)$ jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib
-    # make tinnsleep-env available as a kernel (make sure it is selected in jupyter lab)
+    # install jupyter lab 
+    (tinnsleep-env)$ conda install -c conda-forge jupyterlab 
     (tinnsleep-env)$ ipython kernel install --user --name=tinnsleep-env  
-    (tinnsleep-env)$ jupyter lab  # run jupyter lab (CTRL+C to quit) and select tinnsleep-env kernel
+    (tinnsleep-env)$ jupyter lab  # run jupyter lab and select tinnsleep-env kernel
+    # quit jupyter lab with CTRL+C then
+    (tinnsleep-env)$ conda install -c conda-forge ipympl
+    (tinnsleep-env)$ conda install -c conda-forge nodejs 
+    (tinnsleep-env)$ jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib
+    ```
+   
+    To test if widget is working if fresh notebook:
+    ```
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    %matplotlib widget
+    
+    df = pd.DataFrame({'a': [1,2,3]})
+    
+    plt.figure(2)
+    plt.plot(df['a'])
+    plt.show()
     ```
 
 ## How to have Git working
