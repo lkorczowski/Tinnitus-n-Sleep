@@ -16,29 +16,39 @@ the `conda` command is found.
    for the following steps.
 
     ```
-    $ git clone git@github.com:lkorczowski/Tinnitus-n-Sleep.git
-    $ cd Tinnitus-n-Sleep
+    git clone git@github.com:lkorczowski/Tinnitus-n-Sleep.git
+    cd Tinnitus-n-Sleep
     ```
     
 2. Create a virtual environment with all dependencies.
 
     ```
     $ conda env create -f environment.yaml
+    $ conda activate tinnsleep-env
     ```
     
 3. Activate the environment and install this package (optionally with the `-e` 
     flag).
-
     ```
     $ conda activate tinnsleep-env
-    $ pip install -e .
+    (tinnsleep-env)$ pip install -e .
     ```
 
-4. If you have a problem with a missing package, add it to the `environment.yaml`, then:
+4. (optional) If you have a problem with a missing package, add it to the `environment.yaml`, then:
     ```
-    $ conda env update --file environment.yaml
+    (tinnsleep-env)$ conda env update --file environment.yaml
     ```
-   
+
+5. (optional) If you want to use the notebook, we advice Jupyter Lab (already in requirements) with additional steps:
+    ```
+    $ conda activate tinnsleep-env
+    (tinnsleep-env)$ conda install -c conda-forge nodejs   # additional dependencies for jupyter lab
+    (tinnsleep-env)$ jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib
+    # make tinnsleep-env available as a kernel (make sure it is selected in jupyter lab)
+    (tinnsleep-env)$ ipython kernel install --user --name=tinnsleep-env  
+    (tinnsleep-env)$ jupyter lab  # run jupyter lab
+    ```
+
 ## How to have Git working
 
 If you have trouble using git, a [tutorial](HOWTO_GIT_GITHUB_SSH_PR.md) is available to describe :
