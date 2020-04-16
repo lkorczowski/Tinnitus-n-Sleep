@@ -14,6 +14,7 @@ def plotTimeSeries(data,
                    sfreq=1,
                    scalings=None,
                    ax=None,
+                   offset=0,
                    **kwargs):
     """Advanced plotting of multidimensional time series from ndarray
 
@@ -29,6 +30,8 @@ def plotTimeSeries(data,
         value between two channels
     ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
         the axe where to save the fig. By default a new figure is generated.
+    offset: float (default:0)
+        offset for the xlabels
 
     Returns
     -------
@@ -69,7 +72,7 @@ def plotTimeSeries(data,
 
     # align timeseries with new offsets
     data = data - shifts
-    times = np.linspace(0, (n_samples-1) / sfreq, num=n_samples)
+    times = np.linspace(offset, (n_samples-1) / sfreq, num=n_samples)
 
     # compute shift based on scalings
     ax.plot(times, data, **kwargs)
@@ -155,8 +158,8 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
         kwargs = {**text_prop, "ec": "none", "alpha": 0.2}
 
     for annotation in annotations:
-        xmin = annotation["onset"]
-        xmax = xmin + annotation["duration"]
+        xmin = annotation["origin_time"] + annotation["onset"]
+        xmax = annotation["origin_time"] + xmin + annotation["duration"]
         trans = blended_transform_factory(ax.transData, ax.transAxes)
 
         bbox = Bbox.from_extents(xmin, 0, xmax, 1)
