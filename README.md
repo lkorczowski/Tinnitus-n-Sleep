@@ -42,11 +42,10 @@ the `conda` command is found.
 5. (optional) If you want to use the notebook, we advice Jupyter Lab (already in requirements) with additional steps:
     ```
     $ conda activate tinnsleep-env
-    (tinnsleep-env)$ conda install -c conda-forge nodejs   # additional dependencies for jupyter lab
     (tinnsleep-env)$ jupyter labextension install @jupyter-widgets/jupyterlab-manager jupyter-matplotlib
     # make tinnsleep-env available as a kernel (make sure it is selected in jupyter lab)
     (tinnsleep-env)$ ipython kernel install --user --name=tinnsleep-env  
-    (tinnsleep-env)$ jupyter lab  # run jupyter lab
+    (tinnsleep-env)$ jupyter lab  # run jupyter lab (CTRL+C to quit) and select tinnsleep-env kernel
     ```
 
 ## How to have Git working

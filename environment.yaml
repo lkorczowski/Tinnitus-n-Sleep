@@ -15,6 +15,7 @@ dependencies:
     - jupyterlab
     - ipympl            # for widget visualization
     - ipykernel         # for managing jupyter kernel
+    - nodejs            # for widget visualization
 
     # test dependencies (optional)
     - coverage
