@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw, RawToEpochs_sliding
-from tinnsleep.check_impedance import check_RMS, create_annotation_sliding, Impedance_thresholding, \
+from tinnsleep.check_impedance import check_RMS, create_annotation_sliding, Impedance_thresholding_sliding, \
     fuse_with_classif_result, create_annotation_mne
 import numpy.testing as npt
 
@@ -10,7 +10,8 @@ def data():
     np.random.seed(42)
     return np.random.randn(2, 400)
 
-def test_Impedance_thresholding():
+
+def test_Impedance_thresholding_sliding():
     np.random.seed(42)
     data = np.random.randn(2, 400)
     for i in range(200):
@@ -21,7 +22,7 @@ def test_Impedance_thresholding():
     duration = 50
     interval = 50
     THR = 20.0
-    check_imp = Impedance_thresholding(data, ch_names, duration, interval, THR, ch_types=['emg'])
+    check_imp = Impedance_thresholding_sliding(data, duration, interval, THR)
     npt.assert_equal(check_imp, [[True, True], [True, True], [True, False], [True, False], [False, False], [False, False],
                                  [False, False], [False, False]])
 
