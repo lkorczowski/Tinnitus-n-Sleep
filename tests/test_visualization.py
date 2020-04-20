@@ -169,7 +169,7 @@ def test_zoom_effect_incorrectparams():
 
 def test_plotAnnotations_init():
     plt.close("all")
-    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}]
     plotAnnotations(annotations)
 
 
@@ -178,7 +178,7 @@ def test_plotAnnotations():
     sfreq=100
     np.random.seed(42)
     data = np.random.randn(400, 2)
-    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}]
     plt.figure(figsize=(5, 5))
     ax1 = plt.subplot(212)
     plotTimeSeries(data, ax=ax1, sfreq=100)
@@ -191,9 +191,9 @@ def test_plotAnnotations2():
     sfreq=100
     np.random.seed(42)
     data = np.random.randn(400, 2)
-    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0},
-                   {'onset': 1., 'duration': 1.0, 'description': "blink", 'origin_time': 0.0},
-                   {'onset': 4.0, 'duration': 10.0, 'description': "dead", 'origin_time': 0.0}
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0},
+                   {'onset': 1., 'duration': 1.0, 'description': "blink", 'orig_time': 0.0},
+                   {'onset': 4.0, 'duration': 10.0, 'description': "dead", 'orig_time': 0.0}
                    ]
     plt.figure(figsize=(5, 5))
     ax1 = plt.subplot(212)
@@ -217,15 +217,15 @@ def test_plotAnnotations3():
 def test_plotAnnotations_incorrectparams():
     plt.close("all")
 
-    annotations = [{'lol': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    annotations = [{'lol': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}]
     with pytest.raises(ValueError, match="lol is an invalid key as annotation"):
         plotAnnotations(annotations)
 
-    annotations = {'lol': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}
+    annotations = {'lol': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}
     with pytest.raises(ValueError, match="annotations should be a list or ndarray of dict"):
         plotAnnotations(annotations)
 
-    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+    annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}]
     with pytest.raises(ValueError, match=r"`ax` must be a matplotlib Axes instance or None"):
         plotAnnotations(annotations, ax='lol')
 

@@ -51,7 +51,7 @@ def check_RMS(X, check_imp):
     """
     # Verify that X and check_imp have the same shape
     # TO DO Throw an error if else
-    if not (len(X) == len(check_imp) and len(X[0]) == len(check_imp[0])) :
+    if not (len(X) == len(check_imp) and len(X[0]) == len(check_imp[0])):
         raise ValueError("Inputs shapes don't match")
 
     mod_X=[]
@@ -71,12 +71,13 @@ def check_RMS(X, check_imp):
 
     return mod_X
 
+
 def fuse_with_classif_result(check_imp, labels):
     """Adds at the good indexes the missing elements of labels because of the use of check_RMS
     Parameters
     ----------
-    check_imp list of list of booleans, shape (nb_epochs, nb_electrodes) True marking bad channels for the
-    designated epoch
+    check_imp : list of list , shape (nb_epochs, nb_electrodes)
+         0s and 1s 0s marking bad channels for the designated epoch
     labels : ndarray, shape (n_trials - nb_bad_epochs,)
         array of the classification prediction results
 
