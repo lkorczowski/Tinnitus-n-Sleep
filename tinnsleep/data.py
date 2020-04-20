@@ -140,7 +140,7 @@ def convert_Annotations(annotations):
     ----------
     annotations: dict
         e.g. mne.Annotations
-        accepted keys: ['onset', 'duration', 'description', 'origin_time']
+        accepted keys: ['onset', 'duration', 'description', 'orig_time']
         each key can have a ndarray but the length
 
     Returns

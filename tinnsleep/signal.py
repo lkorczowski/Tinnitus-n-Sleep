@@ -128,5 +128,3 @@ def _is_good_epoch(data, ch_names=None,
             return True, None
         else:
             return False, bad_list
-
-

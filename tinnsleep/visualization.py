@@ -14,6 +14,7 @@ def plotTimeSeries(data,
                    sfreq=1,
                    scalings=None,
                    ax=None,
+                   offset=0,
                    **kwargs):
     """Advanced plotting of multidimensional time series from ndarray
 
@@ -29,6 +30,8 @@ def plotTimeSeries(data,
         value between two channels
     ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
         the axe where to save the fig. By default a new figure is generated.
+    offset: float (default:0)
+        offset for the xlabels
 
     Returns
     -------
@@ -69,7 +72,7 @@ def plotTimeSeries(data,
 
     # align timeseries with new offsets
     data = data - shifts
-    times = np.linspace(0, (n_samples-1) / sfreq, num=n_samples)
+    times = np.linspace(offset, (n_samples-1) / sfreq, num=n_samples)
 
     # compute shift based on scalings
     ax.plot(times, data, **kwargs)
@@ -113,12 +116,12 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
         {'onset': float (seconds), 'duration': float (seconds), 'description': str, orig_time': float (seconds)}
         Example:
         >>> # a list of two annotations starting after 0.5 and 1 second of duration 1.0 second named 'blink'
-        >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0},
-        >>>                {'onset': 1., 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}]
+        >>> annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0},
+        >>>                {'onset': 1., 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}]
         or
         >>> # a list of two annotations starting after 0.5 and 1 second of duration 1.0 second named 'blink'
         >>> annotations = {'onset': [0.5, 1.0], 'duration': [1.0, 1.0],
-        >>>                'description': ["blink", "blink"], 'origin_time': [0., 0.]}
+        >>>                'description': ["blink", "blink"], 'orig_time': [0., 0.]}
     ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
         the axe where to save the fig. By default a new figure is generated.
     text_prop: dict
@@ -133,7 +136,7 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
                 raise ValueError("annotations should contains dict")
             else:
                 for key in annotation.keys():
-                    if key not in ['onset', 'duration', 'description', 'origin_time']:
+                    if key not in ['onset', 'duration', 'description', 'orig_time']:
                         raise ValueError(f"{key} is an invalid key as annotation")
     elif isinstance(annotations, mne.Annotations):
         pass
@@ -155,8 +158,10 @@ def plotAnnotations(annotations, ax=None, text_prop={}, **kwargs):
         kwargs = {**text_prop, "ec": "none", "alpha": 0.2}
 
     for annotation in annotations:
-        xmin = annotation["onset"]
-        xmax = xmin + annotation["duration"]
+        if annotation["orig_time"] is None:
+            annotation["orig_time"] = 0.0
+        xmin = annotation["orig_time"] + annotation["onset"]
+        xmax = annotation["orig_time"] + xmin + annotation["duration"]
         trans = blended_transform_factory(ax.transData, ax.transAxes)
 
         bbox = Bbox.from_extents(xmin, 0, xmax, 1)
