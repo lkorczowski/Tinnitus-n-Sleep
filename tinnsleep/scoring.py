@@ -109,6 +109,7 @@ def burst_to_episode(burst_list, delim=3):
 
     return ep_list
 
+
 def generate_annotations(li_ep):
     """ Transforms a chronological list of episodes into a
         chronological list of annotations
