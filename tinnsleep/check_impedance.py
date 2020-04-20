@@ -4,38 +4,32 @@ from tinnsleep.utils import epoch
 
 
 # Create Raw file
-def Impedance_thresholding_sliding(data, duration, interval, THR = 4000, montage=None, ch_types=None, axis = -1):
+def Impedance_thresholding_sliding(data, duration, interval, THR = 4000, axis = -1):
     """Tags each electrode of each epoch of a recording with a label, 1 meaning fine, 0 meaning Bad epoch for this
     channel
     Parameters
     ----------
     data : array, shape (n_channels, n_times)
-        The channels' time series. See notes for proper units of measure.
-    imp_chan : list of str
-        Channel names of the impedance measurement channels
+    The channels' time series. See notes for proper units of measure.
     duration: int
-        Number of elements (i.e. samples) on the epoch.
+    Number of elements (i.e. samples) on the epoch.
     interval: int
-        Number of elements (i.e. samples) to move for the next epoch.
+    Number of elements (i.e. samples) to move for the next epoch.
     THR : float
-        Threshold for impedance checking. If mean value of an epoch above for a certain channel, this epoch will be
-        flagged for this channel.
-    montage: None | str | DigMontage
-        A montage containing channel positions. If str or DigMontage is specified, the channel info will be updated
-        with the channel positions. Default is None. See also the documentation of mne.channels.DigMontage for more
-        information.
-    ch_types: ‘mag’ | ‘grad’ | ‘planar1’ | ‘planar2’ | ‘eeg’ | None | list
-        The channel type to plot. For ‘grad’, the gradiometers are collec- ted in pairs and the RMS for each pair
-        is plotted. If None (default), it will return all channel types present. If a list of ch_types is provided,
-        it will return multiple figures.
-
+    Threshold for impedance checking. If mean value of an epoch above for a certain channel, this epoch will be
+    flagged for this channel.
+    axis : float
+    Axis of the averaging, to adapt with the epochs table shape
     Returns
     -------
     check_imp list of list of 0s and 1s shape (nb_epochs, nb_electrodes) 0s marking bad channels for the designated
     epoch
     """
+    # Epoching of the data
     epochs = epoch(data, duration, interval)
+    # Averaging impedance signal per epoch per electrode
     mean_imp = np.mean(abs(epochs), axis=axis)
+    # Thresholding
     check_imp = np.where(mean_imp > THR, True, False)
     return check_imp
 
