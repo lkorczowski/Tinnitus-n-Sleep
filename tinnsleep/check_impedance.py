@@ -4,7 +4,7 @@ from tinnsleep.utils import epoch
 
 
 # Create Raw file
-def Impedance_thresholding(data, imp_chan, duration, interval, THR = 4000, montage=None, ch_types=None, axis = -1):
+def Impedance_thresholding_sliding(data, duration, interval, THR = 4000, montage=None, ch_types=None, axis = -1):
     """Tags each electrode of each epoch of a recording with a label, 1 meaning fine, 0 meaning Bad epoch for this
     channel
     Parameters
