@@ -88,6 +88,7 @@ def test_generate_clinical_report():
     report = generate_clinical_report(classif, 1)
     npt.assert_equal(len(report), 12)
     npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
+    npt.assert_equal(report["Total burst duration"], 2.0)
 
 
 

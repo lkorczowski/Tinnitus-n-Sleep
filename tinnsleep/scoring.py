@@ -197,7 +197,7 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     report = {}
     recording_duration = len(classif) * time_interval
     report["Recording duration"] = recording_duration
-
+    report["Total burst duration"] = np.sum(classif) * time_interval
     li_burst = classif_to_burst(classif, time_interval)
     nb_burst = len(li_burst)
     report["Total number of burst"] = nb_burst
@@ -205,7 +205,10 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     li_episodes = burst_to_episode(li_burst, delim)
     nb_episodes = len(li_episodes)
     report["Total number of episodes"] = nb_episodes
-    report["Number of bursts per episode"] = nb_burst / nb_episodes
+    if nb_episodes > 0:
+        report["Number of bursts per episode"] = nb_burst / nb_episodes
+    else:
+        report["Number of bursts per episode"] = 0
     report["Number of episodes per hour"] = nb_episodes * 3600 / recording_duration
 
     # Counting episodes according to types and listing their durations
@@ -232,6 +235,7 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     report["Mean duration of tonic episode"] = np.mean(tonic)
     report["Mean duration of phasic episode"] = np.mean(phasic)
     report["Mean duration of mixed episode"] = np.mean(mixed)
+
 
     return report
 
