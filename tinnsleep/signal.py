@@ -40,11 +40,11 @@ def is_good_epochs(epochs, **kwargs):
         >>> channel_type_idx = dict(eeg=[0, 1, 2, 4], eog=[5, 6])  # first 4 channels eeg and two last eog
     rejection_thresholds: dict | None
         the rejection threshold used for bad channel per channel_type, e.g.
-        >>> reject = dict(eog=150e-6, eeg=150e-6, emg=50e-3)
+        >>> rejection_thresholds = dict(eog=150e-6, eeg=150e-6, emg=50e-3)
         If None, bad channels won't be tested
     flat_thresholds: dict | None
         the flat threshold used for bad channel per channel_type, e.g.
-        >>> reject = dict(eog=5e-6, eeg=5e-6, emg=50e-6)
+        >>> flat_thresholds = dict(eog=5e-6, eeg=5e-6, emg=50e-6)
         If None, flat channels won't be tested
     full_report : bool (default: False)
         If full_report=True, it will give True/False as well as a list of all offending channels.
