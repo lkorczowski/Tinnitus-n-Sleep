@@ -16,7 +16,7 @@ def is_valid_ch_names(ch_names, n_channels):
     return ch_names
 
 
-def assert_ax_equals_data(data, ax, sfreq=1):
+def assert_ax_equals_data(data, ax, sfreq=1, offset=0):
     """Return assert error if the ax in figure does not correspond exactly to the data.
 
      Parameters
@@ -43,4 +43,4 @@ def assert_ax_equals_data(data, ax, sfreq=1):
         x, y = line.get_data()
         # check if data correlated perfectly (there aren't equal due to transformation)
         npt.assert_approx_equal(np.corrcoef(y, data[:, n])[0][1], 1)  # data y-axis correlate to 1
-        npt.assert_equal(x, np.linspace(0, (data.shape[0]-1)/sfreq, data.shape[0]))  # time x-axis match
+        npt.assert_equal(x, np.linspace(offset+0, offset+ (data.shape[0]-1)/sfreq, data.shape[0]))  # time x-axis match
