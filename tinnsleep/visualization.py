@@ -17,6 +17,7 @@ def plotTimeSeries(data,
                    offset=0,
                    **kwargs):
     """Advanced plotting of multidimensional time series from numpy ndarray in one single matplotlib ax
+    Useful for physiological timeseries such as EEG, EMG, MEG, etc.
 
     Works better for centered time series (zero-mean) and with same order of magnitude variance. You can try to
     normalize if needed (e.g. subtracting mean and dividing by the variance of each individual channels).
