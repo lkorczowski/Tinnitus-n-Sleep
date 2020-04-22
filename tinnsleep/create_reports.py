@@ -137,6 +137,7 @@ def reporting(epochs, valid_labels, THR_classif, log={}):
         pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1])
         X = rms(epochs[valid_labels])  # take only valid labels
         labels = pipeline.fit_predict(X)
+        print(labels)
         report = generate_clinical_report(labels)
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts

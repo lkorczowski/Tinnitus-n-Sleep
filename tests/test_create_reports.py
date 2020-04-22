@@ -49,19 +49,32 @@ def test_preprocess():
 
 def test_reporting():
     np.random.seed(42)
-    data = np.random.randn(2, 400)
+    data = np.random.randn(2, 800)
     for i in range(400):
         data[0][i] = data[0][i] * 0.00001
         data[1][i] = data[1][i] * 0.00001
 
-    for i in range(150):
+    for i in range(50):
         data[0][i + 100] += 100
+        data[1][i + 100] += 100
 
+        data[0][i + 200] += 100
+        data[1][i + 200] += 100
+
+        data[0][i + 300] += 100
+        data[1][i + 300] += 100
+
+        data[0][i + 400] += 100
+        data[1][i + 400] += 100
 
     duration = 50
     interval = 50
 
     epochs = epoch(data, duration, interval, axis=-1)
     THR_classif = [[0, 2], [0, 3]]
-    valid_labels = [True, True, False, True, True, True, True, True]
-    print(reporting(epochs, valid_labels, THR_classif, log={}))
+    valid_labels = [True, True, False, True, True, True, True, True, True, True, True, True, True, True, True, True]
+    report = reporting(epochs, valid_labels, THR_classif, log={})
+    npt.assert_equal(report["labels"][0], [False, False, False, False, True, False, True, False, True, False, False,
+                                           False, False, False, False, False])
+    npt.assert_equal(report["reports"][0]['Total number of burst'], 3)
+    npt.assert_equal(report["reports"][0]['Mean duration of phasic episode'], 1.25)

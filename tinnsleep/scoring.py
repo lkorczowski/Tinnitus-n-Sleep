@@ -196,7 +196,7 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
        """
     report = {}
     recording_duration = len(classif) * time_interval
-    report["Recording duration"] = recording_duration
+    report["Clean data duration"] = recording_duration
     report["Total burst duration"] = np.sum(classif) * time_interval
     li_burst = classif_to_burst(classif, time_interval)
     nb_burst = len(li_burst)
