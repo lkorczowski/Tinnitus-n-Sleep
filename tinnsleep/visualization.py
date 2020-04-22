@@ -16,28 +16,62 @@ def plotTimeSeries(data,
                    ax=None,
                    offset=0,
                    **kwargs):
-    """Advanced plotting of multidimensional time series from ndarray
+    """Advanced plotting of multidimensional time series from numpy ndarray in one single matplotlib ax
+    Useful for physiological timeseries such as EEG, EMG, MEG, etc.
+
+    Works better for centered time series (zero-mean) and with same order of magnitude variance. You can try to
+    normalize if needed (e.g. subtracting mean and dividing by the variance of each individual channels).
+
+    License: The MIT Licence
+    Copyright: Louis Korczowski <louis.korczowski@gmail.com>, 2020.
 
     Parameters
     ----------
     data: array-line, shape (n_samples, n_dimension)
         multidimensional time series
-    ch_names: list | iterable, shape (n_dimension,) | None
-        the labels for the time series
+    ch_names: list | iterable, shape (n_dimension,) | None (default: None)
+        the labels for the time series, if None the channels are named by their numerical index.
     sfreq: float (default: 1)
         sample rate (in Hz)
-    scalings: float | iterable, shape (n_dimension,)
-        value between two channels
+    scalings: float | None (default: None)
+        value between two channels, If None, try to find the best scalings automatically.
     ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
         the axe where to save the fig. By default a new figure is generated.
     offset: float (default:0)
-        offset for the xlabels
+        offset for the xlabels in seconds (or samples if `sfreq=1`)
+        e.g.: `offset=-2` the axis will starts at at -2
+    **kwargs:
+        parameters to pass to plt.plot()
 
     Returns
     -------
-    n_epochs: int
-        estimated number of epochs
+    fig: a `matplotlib.figure.Figure` instance
+        the linked figure instance (if `ax=None` then it is a new figure)
+    ax: a instance of ``matplotlib.pyplot.Axes`` (default: None)
+        the linked axe
+
+    Example
+    -------
+    The following example will output four channels timeseries into a unique ax using subplot (automatic scalings)
+
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> data = np.random.randn(200, 4)
+    >>> ax = plt.subplot(212)
+    >>> plotTimeSeries(data, ax=ax)
+    >>> plt.show()
+
+    The following example superpose two two channels timeseries for comparison.
+    Note that automatic scalings is robust to artifacts because of the use of median.
+    >>> data = np.random.randn(400, 2)
+    >>> ax = plt.subplot(212)
+    >>> plotTimeSeries(data, ax=ax, color="black")
+    >>> data[10, 1] += 100; data[150, 0] += 25; data[170, 1] += -1e9;  # add artifacts
+    >>> plotTimeSeries(data, ax=ax, ch_names=["Fz", "Cz"], color="red", zorder=0)
+    >>> plt.legend(["clean", "_nolegend_", "with artefacts", "_nolegend_"])  # legend require to hide
+    >>> plt.show()
     """
+
     shapeD = data.shape
     if len(shapeD) == 1:
         n_channels = 1
@@ -72,7 +106,7 @@ def plotTimeSeries(data,
 
     # align timeseries with new offsets
     data = data - shifts
-    times = np.linspace(offset, (n_samples-1) / sfreq, num=n_samples)
+    times = np.linspace(offset, offset + (n_samples-1) / sfreq, num=n_samples)
 
     # compute shift based on scalings
     ax.plot(times, data, **kwargs)
@@ -82,8 +116,8 @@ def plotTimeSeries(data,
     return fig, ax
 
 
-def assert_x_labels_correct(data, expected_labels):
-    """Return assert error if the ax is not comming from data
+def assert_y_labels_correct(data, expected_labels):
+    """Return assert error if the ax is not coming from data
 
      Parameters
      ----------

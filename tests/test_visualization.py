@@ -1,12 +1,13 @@
 import pytest
 import numpy as np
 from tinnsleep.visualization import (plotTimeSeries,
-                                     assert_x_labels_correct, zoom_effect,
+                                     assert_y_labels_correct, zoom_effect,
                                      plotAnnotations)
 import matplotlib.pyplot as plt
 import numpy.testing as npt
 import mne
 from tinnsleep.validation import assert_ax_equals_data
+
 
 def test_plotTimeSeries_noparams():
     """Complete test suite for plotTimeSeries
@@ -18,10 +19,27 @@ def test_plotTimeSeries_noparams():
     fig, ax = plotTimeSeries(data)
 
     # check if label position and values are correct
-    assert_x_labels_correct(data, [str(k) for k in range(data.shape[1])])
+    assert_y_labels_correct(data, [str(k) for k in range(data.shape[1])])
 
     # check if correct values
     assert_ax_equals_data(data, ax, sfreq=sfreq)
+
+
+def test_plotTimeSeries_offset():
+    """Complete test suite for plotTimeSeries
+    """
+    plt.close("all")
+    sfreq = 100
+    offset=-10
+    np.random.seed(42)
+    data = np.random.randn(400, 2)
+    fig, ax = plotTimeSeries(data, sfreq=100, offset=offset)
+
+    # check if label position and values are correct
+    assert_y_labels_correct(data, [str(k) for k in range(data.shape[1])])
+
+    # check if correct values
+    assert_ax_equals_data(data, ax, sfreq=sfreq, offset=offset)
 
 
 def test_plotTimeSeries_superimpose():
@@ -37,6 +55,16 @@ def test_plotTimeSeries_superimpose():
     fig, ax = plotTimeSeries(data, ax=ax, color="black", linestyle="--")
 
 
+def test_plotTimeSeries_superimpose2():
+    data = np.random.randn(400, 2)
+    ax = plt.subplot(212)
+    plotTimeSeries(data, ax=ax, color="black")
+    data[10, 1] += 100; data[150, 0] += 25; data[170, 1] += -1e9;  # add artifacts
+    plotTimeSeries(data, ax=ax, color="red", zorder=0, ch_names=["Fz", "Cz"])
+    plt.legend(["clean", "_nolegend_", "with artefacts", "_nolegend_"])
+    plt.show()
+
+
 def test_plotTimeSeries_chnames_propagation():
     """test if ch_names propagate to all channels
     """
@@ -46,7 +74,7 @@ def test_plotTimeSeries_chnames_propagation():
     data = np.random.randn(400, 2)
     fig, ax = plotTimeSeries(data, ch_names="EMG")
     # check if label position and values are correct
-    assert_x_labels_correct(data, ['EMG' for k in range(data.shape[1])])
+    assert_y_labels_correct(data, ['EMG' for k in range(data.shape[1])])
 
 
 def test_plotTimeSeries_subplots():
@@ -62,7 +90,7 @@ def test_plotTimeSeries_subplots():
                              linewidth=2, markersize=0.5, ch_names=ch_names, sfreq=sfreq)
     plt.title("lava platform")
     assert_ax_equals_data(data, ax, sfreq=sfreq)
-    assert_x_labels_correct(data, ch_names)
+    assert_y_labels_correct(data, ch_names)
 
     sfreq=200
     np.random.seed(42)
@@ -73,7 +101,7 @@ def test_plotTimeSeries_subplots():
                              linewidth=2, markersize=0.5, ch_names=ch_names, sfreq=sfreq)
     plt.title("higher ground")
     assert_ax_equals_data(data, ax, sfreq=sfreq)
-    assert_x_labels_correct(data, ch_names)
+    assert_y_labels_correct(data, ch_names)
 
 
 def test_plotTimeSeries_1dim():
@@ -94,13 +122,13 @@ def test_plotTimeSeries_incorrect_parameters():
     np.random.seed(42)
     data = np.random.randn(400, 4)
 
-    with pytest.raises(ValueError, match="\`ch_names\` must be a list or an iterable of shape \(n_channels,\) or None"):
+    with pytest.raises(ValueError, match="`ch_names` must be a list or an iterable of shape \(n_channels,\) or None"):
         plotTimeSeries(data, ch_names=True)
 
     with pytest.raises(ValueError, match='`ch_names` should be same length as the number of channels of data'):
         plotTimeSeries(data, ch_names=[1, 2])
 
-    with pytest.raises(ValueError, match="\`ax\` must be a matplotlib Axes instance or None"):
+    with pytest.raises(ValueError, match="`ax` must be a matplotlib Axes instance or None"):
         plotTimeSeries(data, ax=True)
 
 

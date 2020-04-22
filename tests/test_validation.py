@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from tinnsleep.visualization import (plotTimeSeries,
-                                     assert_x_labels_correct)
+                                     assert_y_labels_correct)
 from tinnsleep.validation import assert_ax_equals_data, is_valid_ch_names
 
 
@@ -21,14 +21,14 @@ def test_asserts_homemade():
 
     # check if y-label values are incorrect
     with pytest.raises(AssertionError, match="labels are not the same"):
-        assert_x_labels_correct(data, ["0" for k in range(data.shape[1])])
+        assert_y_labels_correct(data, ["0" for k in range(data.shape[1])])
 
     np.random.seed(10)
     data = np.random.randn(400, 2)
 
     # check if y-label position are incorrect
     with pytest.raises(AssertionError, match="Arrays are not equal"):
-        assert_x_labels_correct(data, ["0" for k in range(data.shape[1])])
+        assert_y_labels_correct(data, ["0" for k in range(data.shape[1])])
 
     # check if data values are incorrect values
     with pytest.raises(AssertionError, match=r"Items are not equal to 7 significant digits:"):
