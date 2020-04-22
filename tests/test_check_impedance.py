@@ -33,7 +33,6 @@ def test_check_RMS():
         check_RMS(RMS, check_imp)
     RMS = [[1, 1], [1, 12], [12, 12], [1, 1]]
     RMS = check_RMS(RMS, check_imp)
-    print(RMS)
     npt.assert_equal(RMS, [[1, 1], [1, 1], [1, 1]])
 
 def test_fuse_with_classif_result():

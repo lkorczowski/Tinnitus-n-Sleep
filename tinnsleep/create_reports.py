@@ -90,10 +90,11 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, THR_imp=6000, get
                   full_report=True
                   )
     amplitude_labels, bad_lists = is_good_epochs(epochs, **params)
+
     suppressed_amp = np.sum(np.invert(amplitude_labels))
 
     # Reuniting the rejection algorithms
-    valid_labels = np.any(np.c_[np.invert(impedance_labels), amplitude_labels], axis=-1)  # Logical OR
+    valid_labels = valid_labels = np.invert(np.any(np.c_[impedance_labels, np.invert(amplitude_labels)], axis=-1))
     suppressed_all = np.sum(np.invert(valid_labels))
 
     if get_log:
