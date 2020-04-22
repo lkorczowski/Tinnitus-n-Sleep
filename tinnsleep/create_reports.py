@@ -10,36 +10,7 @@ from tinnsleep.scoring import generate_clinical_report
 from tinnsleep.signal import is_good_epochs
 
 
-def setting_channels(raw, ind_picks_chan, ind_picks_imp):
-
-    """Setting channel names from indexes
-        ----------
-        raw: Instance of mne.Raw
-            the signal to analyze
-        ind_picks_chan: array-like, shape (n_channels,)
-            list of INDEXES corresponding of the name of each channel to analyze
-        ind_picks_imp: array-like, shape (n_channels,)
-            list of INDEXES corresponding of the name of each channel of impedance values associated with the channels to
-            analyze
-        Returns
-        -------
-        picks_chan: array-like, shape (n_channels,)
-            list of str corresponding of the name of each channel to analyze
-        picks_imp:
-            list of str corresponding of the name of each channel of impedance values associated with the channels to
-            analyze
-        """
-    picks_imp = []
-    picks_chan = []
-    ch_names = raw.info["ch_names"]
-    for elm in ind_picks_imp:
-        picks_imp.append(ch_names[elm])
-    for elm in ind_picks_chan:
-        picks_chan.append(ch_names[elm])
-    return picks_chan, picks_imp
-
-
-def preprocess(raw, picks_chan, picks_imp, duration, interval, THR_imp=6000, get_log=False):
+def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False):
     """Preprocesses raw for reporting
     Parameters
     ----------
@@ -83,18 +54,12 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, THR_imp=6000, get
     epochs = RawToEpochs_sliding(raw, duration=duration, interval=interval)
 
     # Epoch rejection based on |min-max| thresholding
-    params = dict(ch_names=raw.info["ch_names"],
-                  rejection_thresholds=dict(emg=1e-04),  # two order of magnitude higher q0.01
-                  flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
-                  channel_type_idx=dict(emg=[0, 1]),
-                  full_report=True
-                  )
     amplitude_labels, bad_lists = is_good_epochs(epochs, **params)
 
     suppressed_amp = np.sum(np.invert(amplitude_labels))
 
     # Reuniting the rejection algorithms
-    valid_labels = valid_labels = np.invert(np.any(np.c_[impedance_labels, np.invert(amplitude_labels)], axis=-1))
+    valid_labels = np.invert(np.any(np.c_[impedance_labels, np.invert(amplitude_labels)], axis=-1))
     suppressed_all = np.sum(np.invert(valid_labels))
 
     if get_log:
