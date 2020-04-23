@@ -10,9 +10,9 @@ def test_preprocess():
     np.random.seed(42)
     data = np.random.randn(4, 400)
 
-    data[0] = 1e-7 * data[0]
-    data[1] = 1e-7 * data[1]
-    data[1][100:200] += 100
+    data[0] = 1e-6 * data[0]
+    data[1] = 1e-6 * data[1]
+    data[1][110:120] = 1000 * data[1][110:120]
     data[2][:100] += 100
     data[3][:100] += 100
 
@@ -34,9 +34,10 @@ def test_preprocess():
 
     epochs, valid_labels = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50, get_log=False)
     npt.assert_equal(len(epochs), 8)
-    npt.assert_equal(valid_labels, [False, False, False, False, True, True, True, True])
+
     epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50, get_log=True)
-    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 2, 'suppressed_overall': 4})
+    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3})
+    npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
 
 def test_reporting():
@@ -44,7 +45,7 @@ def test_reporting():
     data = np.random.randn(2, 800)
 
     data[0] = 1e-7 * data[0]
-    data[2] = 1e-7 * data[2]
+    data[1] = 1e-7 * data[1]
     data[0][100:150] += 100
     data[1][100:150] += 100
     data[0][200:250] += 100

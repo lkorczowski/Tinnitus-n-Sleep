@@ -59,7 +59,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
     suppressed_amp = np.sum(np.invert(amplitude_labels))
 
     # Reuniting the rejection algorithms
-    valid_labels = np.invert(np.any(np.c_[impedance_labels, np.invert(amplitude_labels)], axis=-1))
+    valid_labels = np.all(np.c_[np.invert(impedance_labels), amplitude_labels], axis=-1)
     suppressed_all = np.sum(np.invert(valid_labels))
 
     if get_log:
