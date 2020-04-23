@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw
-from tinnsleep.create_reports import  preprocess, reporting
+from tinnsleep.create_reports import preprocess, reporting
 import numpy.testing as npt
 from tinnsleep.utils import epoch
 
@@ -15,8 +15,6 @@ def test_preprocess():
     data[1][110:120] = 1000 * data[1][110:120]
     data[2][:100] += 100
     data[3][:100] += 100
-
-
 
     ch_names = ['1', '2', 'IMP_1', 'IMP_2']
     raw = CreateRaw(data, ch_names, ch_types=["emg"])
@@ -35,10 +33,24 @@ def test_preprocess():
     epochs, valid_labels = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50, get_log=False)
     npt.assert_equal(len(epochs), 8)
 
-    epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50, get_log=True)
+    epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
+                                           get_log=True, filter=None)
     npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
+    with pytest.raises(ValueError, match=r'`filter` should be default, a dict of parameters to pass to raw.filter, '
+                                         r'or None'):
+        epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
+                                               get_log=True, filter="nice")
+
+    filtering = {"l_freq" : 21., "h_freq" : 99., "n_jobs" : 4,
+                         "fir_design" : 'firwin', "filter_length" : 'auto', "phase" :'zero-double',
+                         "picks" : picks_chan}
+    epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
+                                           get_log=True, filter=filtering)
+
+    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3})
+    npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
 def test_reporting():
     np.random.seed(42)

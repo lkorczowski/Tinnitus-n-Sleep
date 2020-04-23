@@ -10,7 +10,7 @@ from tinnsleep.scoring import generate_clinical_report
 from tinnsleep.signal import is_good_epochs
 
 
-def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False):
+def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default"):
     """Preprocesses raw for reporting
     Parameters
     ----------
@@ -39,6 +39,8 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         logs of the preprocessing steps, including the number of epochs rejected at each step
 
     """
+
+
     # Epoch rejection based on impedance
     check_imp = Impedance_thresholding_sliding(raw[picks_imp][0], duration, interval, THR=THR_imp)
     impedance_labels = np.any(check_imp, axis=-1)
@@ -46,9 +48,16 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
 
     raw = CreateRaw(raw[picks_chan][0], picks_chan, ch_types=['emg'])  # pick channels and load
     # Filtering data
-    raw = raw.filter(20., 99., n_jobs=4,
-                     fir_design='firwin', filter_length='auto', phase='zero-double',
-                     picks=picks_chan)
+    if filter == "default":
+        raw = raw.filter(l_freq = 20., h_freq = 99., n_jobs=4,
+                         fir_design='firwin', filter_length='auto', phase='zero-double',
+                         picks=picks_chan)
+    elif isinstance(filter, dict):
+        raw = raw.filter(**filter)
+    elif filter is None:
+        pass  # do nothing
+    else:
+        raise ValueError('`filter` should be default, a dict of parameters to pass to raw.filter, or None')
 
     # Creating epochs
     epochs = RawToEpochs_sliding(raw, duration=duration, interval=interval)
