@@ -10,7 +10,7 @@ class Config():
     """
 
     username = getpass.getuser()
-    known_users = {"Zeta": 'C:\\Users\\zeta\\documents\\EEG_polysomno\\PSG2',
+    known_users = {"Zeta": 'E:/Acou_sommeil/EDF_V2_PAUL',
                     "louis": "/Users/louis/Data/SIOPI/bruxisme",
                     "runner": "/runner/"}
 

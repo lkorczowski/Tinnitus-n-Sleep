@@ -47,6 +47,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
     suppressed_imp = np.sum(impedance_labels)
 
     raw = CreateRaw(raw[picks_chan][0], picks_chan, ch_types=['emg'])  # pick channels and load
+
     # Filtering data
     if filter == "default":
         raw = raw.filter(l_freq = 20., h_freq = 99., n_jobs=4,
@@ -74,7 +75,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
     if get_log:
         # Creating log report
         log = {"suppressed_imp_THR": suppressed_imp, "suppressed_amp_THR": suppressed_amp,
-                                         "suppressed_overall": suppressed_all}
+                                         "suppressed_overall": suppressed_all, "total_nb_epochs": len(valid_labels)}
 
         return epochs, valid_labels, log
     else:
