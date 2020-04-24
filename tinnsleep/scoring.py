@@ -75,7 +75,7 @@ def burst_to_episode(burst_list, delim=3):
     leny = len(burst_list)
     # test if input is empty
     if leny == 0:
-        print("burst list empty")
+        #print("burst list empty")
         return []
 
     # Rearranges the list of burst in chronological order
