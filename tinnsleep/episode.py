@@ -127,16 +127,17 @@ class episode():
 
     def generate_annotation(self, orig_time = 0.0):
         """ Generate an annotation on the format of a dictionary like:
-        annotation = {'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}
+        annotation = {'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}
         from a given episode
         Parameters
         ----------
-        self : episode instance
-        orig_time: float | default 0.0, sets the origin_time for the annotation
+        orig_time: float | default 0.0
+            sets the time of offset for the annotation
 
         Returns
         -------
-        Annotation object
+        annotation: dict
+            the mne compatible dictionary of annotation
         """
         # First test if it is a valid episode
         if self.is_valid():
