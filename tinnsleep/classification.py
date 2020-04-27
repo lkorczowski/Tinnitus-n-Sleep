@@ -103,7 +103,7 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
 
         # Input validation
         X = check_array(X)
-        distances = self._predict_distances(X)
+        distances = self.transform(X)
 
         return np.all(distances > 0, axis=1)
 
