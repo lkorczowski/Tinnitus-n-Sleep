@@ -35,7 +35,9 @@ def test_preprocess():
 
     epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
                                            get_log=True, filter=None)
-    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3})
+    print(log)
+    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3,
+                           'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
     with pytest.raises(ValueError, match=r'`filter` should be default, a dict of parameters to pass to raw.filter, '
@@ -49,7 +51,8 @@ def test_preprocess():
     epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
                                            get_log=True, filter=filtering)
 
-    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3})
+    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3,
+                           'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
 def test_reporting():

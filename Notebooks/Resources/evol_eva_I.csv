@@ -5,10 +5,10 @@ Patient;Evol_EVA_I;pourc_Evol_EVA_I
 1CC05_nuit_son.edf;-2;-0.4
 1PT06_nuit_hab.edf;-2;-0.25
 1PT06_nuit_son.edf;0;0
-1BA07_nuit_hab.edf;-4;-0.571428571428571
-1BA07_nuit_son.edf;2;0.666666666666667
-1PI07_nuit_hab.edf;0;0
-1PI07_nuit_son.edf;-4;-0.8
+1PI07_nuit_hab.edf;-4;-0.571428571428571
+1PI07_nuit_son.edf;2;0.666666666666667
+1BA07_nuit_hab.edf;0;0
+1BA07_nuit_son.edf;-4;-0.8
 1MN09_nuit_hab.edf;-3;-0.375
 1MN09_nuit_son.edf;1;0.2
 1DL12_nuit_hab.edf;-1;-0.166666666666667
