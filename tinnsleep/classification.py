@@ -87,7 +87,6 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         X = check_array(X)
         sample_weight = [(self.n_adaptive-1)/self.n_adaptive, 1/self.n_adaptive]
         for x in X:
-            print(x)
             self.center_ = np.average(np.array([self.center_, x]), axis=0, weights=sample_weight)
 
         # Return the classifier
