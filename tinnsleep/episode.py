@@ -125,18 +125,19 @@ class episode():
         if it is"""
         return self.is_tonic or self.is_phasic or self.is_mixed
 
-    def generate_annotation(self, origin_time = 0.0):
+    def generate_annotation(self, orig_time = 0.0):
         """ Generate an annotation on the format of a dictionary like:
-        annotation = {'onset': 0.5, 'duration': 1.0, 'description': "blink", 'origin_time': 0.0}
+        annotation = {'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}
         from a given episode
         Parameters
         ----------
-        self : episode instance
-        origin_time: float | default 0.0, sets the origin_time for the annotation
+        orig_time: float | default 0.0
+            sets the time of offset for the annotation
 
         Returns
         -------
-        Annotation object
+        annotation: dict
+            the mne compatible dictionary of annotation
         """
         # First test if it is a valid episode
         if self.is_valid():
@@ -148,7 +149,7 @@ class episode():
             if self.is_mixed:
                 descrip="Mixed"
 
-            return {'onset': self.beg, 'duration': self.end-self.beg, 'description': descrip, 'origin_time': origin_time}
+            return {'onset': self.beg, 'duration': self.end-self.beg, 'description': descrip, 'orig_time': orig_time}
         # Case it is not a valid episode
         else:
             return {}

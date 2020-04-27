@@ -18,6 +18,10 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         absolute value to add to the centroid for thresholding
     rel_threshold : float, (default: 2.)
         multiplicator factor of the centroid for thresholding
+    adaptive_n : int, (default: 0)
+        number of past observations used to update the centroid during transform by moving average.
+        If 0, then no update is applied.
+        .. math:: \bar{X}_k = \frac{n-1}{n}(\bar(X)_{k-1} + \frac{1}{n}X_{k-1}
 
     Attributes
     ----------
@@ -28,9 +32,10 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
 
     """
 
-    def __init__(self, abs_threshold=0., rel_threshold=2.):
+    def __init__(self, abs_threshold=0., rel_threshold=2., n_adaptive=0):
         self.abs_threshold = abs_threshold
         self.rel_threshold = rel_threshold
+        self.n_adaptive = n_adaptive
 
     def fit(self, X, y=[], sample_weight=None):
         """Compute average amplitude
@@ -59,6 +64,33 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         # Return the classifier
         return self
 
+    def partial_fit(self, X, y=[]):
+        """Updating average amplitude for adaptive thresholding
+
+                Parameters
+                ----------
+                X : {array-like} of shape (n_samples, n_features)
+
+                y : Ignored
+                    Not used, present here for API consistency by convention.
+
+                sample_weight : array-like of shape (n_samples,), default=None
+                    The weights for each observation in X. If None, all observations
+                    are assigned equal weight.
+                Returns
+                -------
+                self
+                    Fitted estimator.
+                """
+
+        # Check that X and y have correct shape
+        X = check_array(X)
+        sample_weight = [(self.n_adaptive-1)/self.n_adaptive, 1/self.n_adaptive]
+        for x in X:
+            self.center_ = np.average(np.array([self.center_, x]), axis=0, weights=sample_weight)
+
+        # Return the classifier
+        return self
 
     def _predict_distances(self, X):
         distances = np.nan * np.ones(X.shape)
@@ -70,7 +102,7 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
 
         # Input validation
         X = check_array(X)
-        distances = self._predict_distances(X)
+        distances = self.transform(X)
 
         return np.all(distances > 0, axis=1)
 
@@ -85,7 +117,15 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         dist : ndarray, shape (n_trials, n_classes)
             the distance to each centroid according to the metric.
         """
-        return self._predict_distances(X)
+        if self.n_adaptive == 0:
+            d = self._predict_distances(X)
+        else:
+            d = np.zeros(X.shape)
+            for (k, x) in enumerate(X):
+                x = np.expand_dims(x, axis=0)
+                d[k, :] = self._predict_distances(x)
+                self.partial_fit(x)
+        return d
 
     def fit_predict(self, X, y=[]):
         """Fit and predict in one function."""
