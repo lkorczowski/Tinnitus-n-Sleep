@@ -9,10 +9,10 @@ def classif_to_burst(classif, time_interval=0.25):
     
     Parameters
     ----------
-    classif : list of booleans, output of a classification algorithm that 
-    detect non aggregated bursts from a recording
-    interval: float, time in seconds interval between 2 elements of classif
-
+    classif : list of booleans,
+        output of a classification algorithm that detect non aggregated bursts from a recording
+    interval: float,
+        time in seconds interval between 2 elements of classif
     Returns
     -------
     burst_list : list of bursts instances
@@ -54,7 +54,18 @@ def classif_to_burst(classif, time_interval=0.25):
 
 
 def rearrange_chronological(brux_list):
-    """Rearrange a given burst list or episode list in the chronological order according to the beg attribute"""
+    """Rearrange a given burst list or episode list in the chronological order according to the beg attribute
+
+    Parameters
+    ----------
+    burst_list : list of bursts instances
+    potentially non-chronologically ordered
+    Returns
+    -------
+    burst_list : list of bursts instances
+        same list, chronologically ordered
+        """
+
     brux_list.sort(key=lambda x: x.beg)
     return brux_list
 
@@ -66,8 +77,8 @@ def burst_to_episode(burst_list, delim=3):
     Parameters
     ----------
     burst_list : list of burst instances
-    delim: float, maximal time interval considered eligible between two bursts 
-    within a episode
+    delim: float,
+        maximal time interval considered eligible between two bursts within a episode
     Returns
     -------
     ep_list : list of episodes instances 
@@ -75,7 +86,7 @@ def burst_to_episode(burst_list, delim=3):
     leny = len(burst_list)
     # test if input is empty
     if leny == 0:
-        print("burst list empty")
+        #print("burst list empty")
         return []
 
     # Rearranges the list of burst in chronological order
@@ -119,7 +130,8 @@ def generate_annotations(li_ep):
 
         Returns
         -------
-        Annotations : Chronological list of annotations
+        Annotations : list of dictionaries
+            Chronological list of annotations
         """
 
     annotations = []
@@ -129,7 +141,18 @@ def generate_annotations(li_ep):
 
 
 def get_event_label(episode):
-    """ return the label of the episode"""
+    """ return the label of the episode
+
+    Parameters
+    ----------
+    episode : episode instance
+
+    Returns
+    -------
+    int
+        int label of the type of episode
+    """
+
     if episode.is_tonic:
         return 1
     if episode.is_phasic:
@@ -145,11 +168,14 @@ def create_list_events(li_ep, time_interval, time_recording):
     Parameters
     ----------
     li_ep : list of episode instances
-    time_interval: float, time interval in seconds between 2 elementary events
-    time_recording : float, duration of the recording in seconds
+    time_interval: float,
+        time interval in seconds between 2 elementary events
+    time_recording : float,
+        duration of the recording in seconds
     Returns
     -------
-    list of integers, labels of the events 
+    list of integers,
+        labels of the events
     """
     # Deals the case the input is empty
     li_events = []
@@ -185,19 +211,22 @@ def create_list_events(li_ep, time_interval, time_recording):
 def generate_clinical_report(classif, time_interval=0.25, delim=3):
     """ Generates an automatic clinical bruxism report from a list of events
 
-       Parameters
-       ----------
-       li_ep : list of episode instances
-       interval: float, time interval in seconds between 2 elementary events
-       recording_duration : float, duration of the recording in seconds
-       Returns
-       -------
-       report as a dictionary
-       """
+   Parameters
+   ----------
+   classif : list of booleans,
+        output of a classification algorithm that detect non aggregated bursts from a recording
+   interval: float,
+        time interval in seconds between 2 elementary events
+   recording_duration : float,
+        duration of the recording in seconds
+   Returns
+   -------
+   report as a dictionary
+   """
     report = {}
     recording_duration = len(classif) * time_interval
-    report["Recording duration"] = recording_duration
-
+    report["Clean data duration"] = recording_duration
+    report["Total burst duration"] = np.sum(classif) * time_interval
     li_burst = classif_to_burst(classif, time_interval)
     nb_burst = len(li_burst)
     report["Total number of burst"] = nb_burst
@@ -205,7 +234,10 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     li_episodes = burst_to_episode(li_burst, delim)
     nb_episodes = len(li_episodes)
     report["Total number of episodes"] = nb_episodes
-    report["Number of bursts per episode"] = nb_burst / nb_episodes
+    if nb_episodes > 0:
+        report["Number of bursts per episode"] = nb_burst / nb_episodes
+    else:
+        report["Number of bursts per episode"] = 0
     report["Number of episodes per hour"] = nb_episodes * 3600 / recording_duration
 
     # Counting episodes according to types and listing their durations
@@ -232,7 +264,6 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     report["Mean duration of tonic episode"] = np.mean(tonic)
     report["Mean duration of phasic episode"] = np.mean(phasic)
     report["Mean duration of mixed episode"] = np.mean(mixed)
-
     return report
 
 

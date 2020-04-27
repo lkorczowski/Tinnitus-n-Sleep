@@ -4,11 +4,12 @@ import numpy.testing as npt
 from tinnsleep.visualization import (plotTimeSeries,
                                      assert_y_labels_correct)
 from tinnsleep.validation import assert_ax_equals_data, is_valid_ch_names
-
+import matplotlib.pyplot as plt
 
 
 def test_asserts_homemade():
     """Check if homemade asserts catch the error"""
+    plt.close("all")
     sfreq = 1
     np.random.seed(42)
     data = np.random.randn(400, 2)

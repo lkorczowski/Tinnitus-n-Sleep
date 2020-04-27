@@ -76,18 +76,24 @@ def test_create_list_events():
     npt.assert_equal(li_ev, [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
 
 def test_generate_clinical_report():
+    classif = [False, False]
+    report = generate_clinical_report(classif, 1)
+    npt.assert_equal( report["Number of bursts per episode"], 0)
+
     classif = [True, False, True, False, False, True, True, False, True, True, True,
           True, False, False, False, False, False, True, True, True, False, True]
     report = generate_clinical_report(classif, 1)
-    npt.assert_equal(len(report), 12)
+    npt.assert_equal(len(report), 13)
     npt.assert_equal(report["Mean duration of mixed episode"], 12.0)
     npt.assert_equal(report["Mean duration of phasic episode"], np.nan)
     npt.assert_equal(report["Number of bursts per episode"], 3.0)
 
+
     classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
     report = generate_clinical_report(classif, 1)
-    npt.assert_equal(len(report), 12)
+    npt.assert_equal(len(report), 13)
     npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
+    npt.assert_equal(report["Total burst duration"], 15)
 
 
 
