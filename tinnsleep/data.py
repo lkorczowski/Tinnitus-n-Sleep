@@ -27,9 +27,9 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     raw: Instance of mne.Raw
         the signal
     """
-    if ch_types is None:
-        ch_types = ['eeg']
-    ch_types = ch_types * len(ch_names)
+    # if ch_types is None:
+    #     ch_types = ['eeg']
+    # ch_types = ch_types * len(ch_names)
     sfreq = 200
     if montage is None:
         montage = 'standard_1020'
