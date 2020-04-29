@@ -17,19 +17,21 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
         A montage containing channel positions. If str or DigMontage is specified, the channel info will be updated
         with the channel positions. Default is None. See also the documentation of mne.channels.DigMontage for more
         information.
-    ch_types: ‘mag’ | ‘grad’ | ‘planar1’ | ‘planar2’ | ‘eeg’ | None | list
-        The channel type to plot. For ‘grad’, the gradiometers are collec- ted in pairs and the RMS for each pair
-        is plotted. If None (default), it will return all channel types present. If a list of ch_types is provided,
-        it will return multiple figures.
+    ch_types : list of str | str
+        Channel types, default is ``'misc'`` which is not a
+        :term:`data channel <data channels>`.
+        Currently supported fields are 'ecg', 'bio', 'stim', 'eog', 'misc',
+        'seeg', 'ecog', 'mag', 'eeg', 'ref_meg', 'grad', 'emg', 'hbr' or 'hbo'.
+        If str, then all channels are assumed to be of the same type.
 
     Returns
     -------
     raw: Instance of mne.Raw
         the signal
     """
-    if ch_types is None:
-        ch_types = ['eeg']
-    ch_types = ch_types * len(ch_names)
+    # if ch_types is None:
+    #     ch_types = ['eeg']
+    # ch_types = ch_types * len(ch_names)
     sfreq = 200
     if montage is None:
         montage = 'standard_1020'

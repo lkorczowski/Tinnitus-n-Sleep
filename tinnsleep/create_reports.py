@@ -46,7 +46,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
     impedance_labels = np.any(check_imp, axis=-1)
     suppressed_imp = np.sum(impedance_labels)
 
-    raw = CreateRaw(raw[picks_chan][0], picks_chan, ch_types=['emg'])  # pick channels and load
+    raw = CreateRaw(raw[picks_chan][0], picks_chan, ch_types='emg')  # pick channels and load
 
     # Filtering data
     if filter == "default":

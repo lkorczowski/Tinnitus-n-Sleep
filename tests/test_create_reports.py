@@ -17,7 +17,7 @@ def test_preprocess():
     data[3][:100] += 100
 
     ch_names = ['1', '2', 'IMP_1', 'IMP_2']
-    raw = CreateRaw(data, ch_names, ch_types=["emg"])
+    raw = CreateRaw(data, ch_names, ch_types="emg")
     picks_chan = ['1', '2']
     picks_imp = ['IMP_1', 'IMP_2']
     duration = 50

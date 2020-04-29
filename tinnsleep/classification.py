@@ -74,9 +74,6 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
                 y : Ignored
                     Not used, present here for API consistency by convention.
 
-                sample_weight : array-like of shape (n_samples,), default=None
-                    The weights for each observation in X. If None, all observations
-                    are assigned equal weight.
                 Returns
                 -------
                 self
