@@ -123,9 +123,8 @@ def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}, generate_
         if n_adaptive < -1:
             # -----------------Classification backward ---------------------------------------
             # Reversing epochs array, computing backward and reversing labels
-            pipeline = AmplitudeThresholding(abs_threshold=0., rel_threshold=3.5, n_adaptive=60)
-            labels_b   = pipeline.fit_predict(X[::-1])[::-1]
-
+            pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=abs(n_adaptive))
+            labels_b = pipeline.fit_predict(X[::-1])[::-1]
             #-----------------foward-backward merge ---------------------------------------
             # Logical OR -- merged backward and forward
             labels = np.any(np.c_[labels, labels_b], axis=-1)
