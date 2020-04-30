@@ -90,8 +90,9 @@ def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}, generate_
         Epoched view of `data`. Epochs are in the first dimension.
     valid_labels : list of booleans
         labels of the epochs as good (True) or bad (False) for future annotation and reporting
-    THR_classif : list of couple of floats
+    THR_classif : list of a list floats
        list of couples of absolute and relative thresholds values of the classifier to test
+       example: THR_classif=[[0,2],[0,3]]
     n_adaptative : int (default: 0)
         number of epochs for adaptive baseline calculation
         if positive uses casual adaptive scheme
