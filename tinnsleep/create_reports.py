@@ -93,7 +93,9 @@ def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}, generate_
     THR_classif : list of couple of floats
        list of couples of absolute and relative thresholds values of the classifier to test
     n_adaptative : int (default: 0)
-        number of epochs for adaptative baseline calculation
+        number of epochs for adaptive baseline calculation
+        if positive uses casual adaptive scheme
+        if negative uses acasual forward-backward adaptive scheme
     log : dictionary (default: {})
         logs of the preprocessing steps, including the number of epochs rejected at each step
     generate_report: function (default: tinnsleep.scoring.generate_clinical_report)
@@ -114,9 +116,20 @@ def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}, generate_
     reps = []
     # for each value of THR_classif, create a report and a list of labels
     for THR in THR_classif:
-        pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=n_adaptive)
         X = rms(epochs[valid_labels])  # take only valid labels
+        # -----------------Classification Forward ------------------------------------------------
+        pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=abs(n_adaptive))
         labels = pipeline.fit_predict(X)
+        if n_adaptive < -1:
+            # -----------------Classification backward ---------------------------------------
+            # Reversing epochs array, computing backward and reversing labels
+            pipeline = AmplitudeThresholding(abs_threshold=0., rel_threshold=3.5, n_adaptive=60)
+            labels_b   = pipeline.fit_predict(X[::-1])[::-1]
+
+            #-----------------foward-backward merge ---------------------------------------
+            # Logical OR -- merged backward and forward
+            labels = np.any(np.c_[labels, labels_b], axis=-1)
+
         report = generate_report(labels)
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
