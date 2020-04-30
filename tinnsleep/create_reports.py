@@ -82,31 +82,34 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         return epochs, valid_labels
 
 
-def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}):
+def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}, generate_report=generate_clinical_report):
     """creates clinical reports of bruxism out of a epoch array, for different thresholding values
-       Parameters
-       ----------
-       epochs : ndarray, shape (n_epochs, n_channels, duration)
-            Epoched view of `data`. Epochs are in the first dimension.
-       valid_labels : lsit of booleans
-            labels of the epochs as good (True) or bad (False) for future annotation and reporting
-       THR_classif : list of couple of floats
-           list of couples of absolute and relative thresholds values of the classifier to test
-        n_adaptative: OPTIONAL int, default 0
-            number of epochs for adaptative baseline calculation
-       log : OPTIONAL dictionary
-            logs of the preprocessing steps, including the number of epochs rejected at each step
+    Parameters
+    ----------
+    epochs : ndarray, shape (n_epochs, n_channels, duration)
+        Epoched view of `data`. Epochs are in the first dimension.
+    valid_labels : list of booleans
+        labels of the epochs as good (True) or bad (False) for future annotation and reporting
+    THR_classif : list of couple of floats
+       list of couples of absolute and relative thresholds values of the classifier to test
+    n_adaptative : int (default: 0)
+        number of epochs for adaptative baseline calculation
+    log : dictionary (default: {})
+        logs of the preprocessing steps, including the number of epochs rejected at each step
+    generate_report: function (default: tinnsleep.scoring.generate_clinical_report)
+        function to convert labels into a report
 
-       Returns
-       -------
 
-        dictionary
-           Dictionary containing fields:
-           - THR_classif: threshold(s) of classification tested
-           - labels : list of labels of bursts for the epochs of the recording for each THR_classif in the same order
-           - reports: list of clinical reports of the recording for each THR_classif tested in the same order
-           - log : log of the pre-processing operations
-       """
+    Returns
+    -------
+
+    dictionary
+       Dictionary containing fields:
+       - THR_classif: threshold(s) of classification tested
+       - labels : list of labels of bursts for the epochs of the recording for each THR_classif in the same order
+       - reports: list of clinical reports of the recording for each THR_classif tested in the same order
+       - log : log of the pre-processing operations
+    """
     labs = []
     reps = []
     # for each value of THR_classif, create a report and a list of labels
@@ -114,7 +117,7 @@ def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}):
         pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=n_adaptive)
         X = rms(epochs[valid_labels])  # take only valid labels
         labels = pipeline.fit_predict(X)
-        report = generate_clinical_report(labels)
+        report = generate_report(labels)
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
         labs.append(labels)
