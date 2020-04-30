@@ -286,59 +286,39 @@ def generate_bruxism_report(classif, time_interval=0.25, delim=3):
 
 
 def generate_MEMA_report(classif, time_interval=1, delim=3):
-    """ Generates an automatic clinical bruxism report from a list of events
+    """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
 
-   Parameters
-   ----------
-   classif : list of booleans,
+    Parameters
+    ----------
+    classif : list of booleans,
         output of a classification algorithm that detect non aggregated bursts from a recording
-   interval: float,
+    interval : float,
         time interval in seconds between 2 elementary events
-   recording_duration : float,
-        duration of the recording in seconds
-   Returns
-   -------
-   report as a dictionary
-   """
+    delim : float,
+        maximal time interval considered eligible between two bursts within a episode
+    Returns
+    -------
+    report : dict
+    """
     report = {}
     recording_duration = len(classif) * time_interval
-    report["Clean data duration"] = recording_duration
-    report["Total burst duration"] = np.sum(classif) * time_interval
-    li_burst = classif_to_burst(classif, time_interval)
+    report["Clean MEMA duration"] = recording_duration
+    report["Total MEMA burst duration"] = np.sum(classif) * time_interval
+    li_burst = classif_to_burst(classif, time_interval=time_interval)
     nb_burst = len(li_burst)
-    report["Total number of burst"] = nb_burst
-    report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
-    li_episodes = burst_to_episode(li_burst, delim)
+    report["Total number of MEMA burst"] = nb_burst
+    report["Number of MEMA bursts per hour"] = nb_burst * 3600 / recording_duration
+    li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
     nb_episodes = len(li_episodes)
-    report["Total number of episodes"] = nb_episodes
+    report["Total number of MEMA episodes"] = nb_episodes
     if nb_episodes > 0:
-        report["Number of bursts per episode"] = nb_burst / nb_episodes
+        report["Number of MEMA bursts per episode"] = nb_burst / nb_episodes
     else:
-        report["Number of bursts per episode"] = 0
-    report["Number of episodes per hour"] = nb_episodes * 3600 / recording_duration
+        report["Number of MEMA bursts per episode"] = 0
+    report["Number of MEMA episodes per hour"] = nb_episodes * 3600 / recording_duration
 
-    # Counting episodes according to types and listing their durations
-    counts_type = [0, 0, 0]
-    tonic = []
-    phasic = []
-    mixed = []
-    for epi in li_episodes:
-        if epi.is_tonic:
-            counts_type[0] += 1
-            tonic.append(epi.end - epi.beg)
-        if epi.is_phasic:
-            counts_type[1] += 1
-            phasic.append(epi.end - epi.beg)
-        if epi.is_mixed:
-            counts_type[2] += 1
-            mixed.append(epi.end - epi.beg)
+    episodes_duration = [(epi.end - epi.beg) for epi in li_episodes]
 
-    report["Number of tonic episodes per hour"] = counts_type[0] * 3600 / recording_duration
-    report["Number of phasic episodes per hour"] = counts_type[1] * time_interval * 3600 / recording_duration
-    report["Number of mixed episodes per hour"] = counts_type[2] * time_interval * 3600 / recording_duration
+    report["Mean duration of MEA episode"] = np.mean(episodes_duration)
 
-    # Mean durations of episodes per types, "nan" if no episode of a type recorded
-    report["Mean duration of tonic episode"] = np.mean(tonic)
-    report["Mean duration of phasic episode"] = np.mean(phasic)
-    report["Mean duration of mixed episode"] = np.mean(mixed)
     return report

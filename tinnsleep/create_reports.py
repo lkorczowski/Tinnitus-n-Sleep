@@ -105,7 +105,6 @@ def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}, generate_
 
     Returns
     -------
-
     dictionary
        Dictionary containing fields:
        - THR_classif: threshold(s) of classification tested
