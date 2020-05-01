@@ -70,15 +70,17 @@ def rearrange_chronological(brux_list):
     return brux_list
 
 
-def burst_to_episode(burst_list, delim=3):
+def burst_to_episode(burst_list, delim=3, min_burst_joining=2):
     """ Transforms a chronological list of bursts into a 
     chronological list of episodes
     
     Parameters
     ----------
     burst_list : list of burst instances
-    delim: float,
+    delim: Optional, float,
         maximal time interval considered eligible between two bursts within a episode
+    min_burst_joining: Optional, int, default 2
+        Minimum of bursts to join to form an episode.
     Returns
     -------
     ep_list : list of episodes instances 
@@ -104,7 +106,7 @@ def burst_to_episode(burst_list, delim=3):
 
         else:
             # conclusion of the current_episode
-            current_epi.assess_type()
+            current_epi.assess_type(min_burst_joining=min_burst_joining)
             # Adding the episode only if valid
             if current_epi.is_valid():
                 ep_list.append(current_epi)
