@@ -1,7 +1,7 @@
 import pytest
 import numpy.testing as npt
 from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological, \
-    generate_clinical_report,  generate_annotations
+    generate_clinical_report,  generate_annotations, generate_MEMA_report
 from tinnsleep.burst import burst
 import numpy as np
 
@@ -96,5 +96,23 @@ def test_generate_clinical_report():
     npt.assert_equal(report["Total burst duration"], 15)
 
 
+def test_generate_MEMA_report():
+    classif = [False, False]
+    report = generate_MEMA_report(classif, 1)
+    npt.assert_equal( report["Number of MEMA bursts per episode"], 0)
+
+    classif = [True, False, True, False, False, True, True, False, True, True, True,
+          True, False, False, False, False, False, True, True, True, False, True]
+    report = generate_MEMA_report(classif, 1)
+    npt.assert_equal(len(report), 13)
+    npt.assert_equal(report["Mean duration of MEMA episode"], 12.0)
+    npt.assert_equal(report["Number of MEMA bursts per episode"], 3.0)
+
+
+    classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
+    report = generate_MEMA_report(classif, 1)
+    npt.assert_equal(len(report), 13)
+    npt.assert_equal(report["Mean duration of MEMA episode"], 7.0)
+    npt.assert_equal(report["Total MEMA burst duration"], 15)
 
 
