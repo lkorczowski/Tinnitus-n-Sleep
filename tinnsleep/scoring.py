@@ -321,6 +321,6 @@ def generate_MEMA_report(classif, time_interval=1, delim=3):
 
     episodes_duration = [(epi.end - epi.beg) for epi in li_episodes]
 
-    report["Mean duration of MEA episode"] = np.mean(episodes_duration)
+    report["Mean duration of MEMA episode"] = np.mean(episodes_duration)
 
     return report

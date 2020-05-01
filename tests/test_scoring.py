@@ -39,6 +39,14 @@ def test_burst_to_episode():
     npt.assert_equal(li_ep[0].is_tonic, True)
 
 
+def test_burst_to_episode_withparam():
+    bursty = [burst(0.1, 1), burst(0.1, 1), burst(3, 6), burst(1.5, 2.5), burst(1.25, 3.5), burst(0, 0.2),
+              burst(5.5, 6.5), burst(15, 20)]
+    li_ep = burst_to_episode(bursty,  delim=1, min_burst_joining=0)
+    # TODO: test change in delim and change in min_burst_joining
+    assert False
+
+
 def test_rearrange_chronological():
     """Test if a given burst_list is in the chronological order"""
     bursty = [burst(0.1, 1), burst(0.1, 1), burst(3, 6), burst(1.5, 2.5)]
@@ -101,18 +109,17 @@ def test_generate_MEMA_report():
     report = generate_MEMA_report(classif, 1)
     npt.assert_equal( report["Number of MEMA bursts per episode"], 0)
 
-    classif = [True, False, True, False, False, True, True, False, True, True, True,
-          True, False, False, False, False, False, True, True, True, False, True]
+    classif = [True, True, True, False, False, True, True, True]
     report = generate_MEMA_report(classif, 1)
-    npt.assert_equal(len(report), 13)
-    npt.assert_equal(report["Mean duration of MEMA episode"], 12.0)
-    npt.assert_equal(report["Number of MEMA bursts per episode"], 3.0)
+    npt.assert_equal(len(report), 8)
+    npt.assert_equal(report["Total number of MEMA burst"], 2)
+    npt.assert_equal(report["Mean duration of MEMA episode"], 8.0)
+    npt.assert_equal(report["Number of MEMA bursts per episode"], 2.0)
 
 
     classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
     report = generate_MEMA_report(classif, 1)
-    npt.assert_equal(len(report), 13)
-    npt.assert_equal(report["Mean duration of MEMA episode"], 7.0)
-    npt.assert_equal(report["Total MEMA burst duration"], 15)
+    npt.assert_equal(report["Mean duration of MEMA episode"], 7.0) # TODO: why this test fails ?
+    npt.assert_equal(report["Total MEMA burst duration"], 15) # TODO: 15 doesn't seems right
 
 
