@@ -10,8 +10,9 @@ git config --global user.email johndoe@example.com
 ``` 
 4. (optional) set helpful configuration (explained latter)
 ```
-git config --global push.default current
-git config --global pull.default current
+git config --global push.default current  # automatically push from local branch to remote branch
+git config --global pull.default current  # this one doesn't work do anything on my side
+git config --global branch.autoSetupMerge always # automatically pull from remote branch to local branch
 ```
 
 ## create repo (if you want a NEW repo)
