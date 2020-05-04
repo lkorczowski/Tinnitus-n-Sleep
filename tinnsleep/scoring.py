@@ -77,7 +77,7 @@ def burst_to_episode(burst_list, delim=3, min_burst_joining=2):
     Parameters
     ----------
     burst_list : list of burst instances
-    delim: Optional, float,
+    delim: float (default 3),
         maximal time interval considered eligible between two bursts within a episode
     min_burst_joining: Optional, int, default 2
         Minimum of bursts to join to form an episode.
