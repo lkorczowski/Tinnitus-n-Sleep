@@ -57,10 +57,7 @@ def test_preprocess():
 
 def test_reporting():
     np.random.seed(42)
-    data = np.random.randn(2, 800)
-
-    data[0] = 1e-7 * data[0]
-    data[1] = 1e-7 * data[1]
+    data = 1e-7 * np.random.randn(2, 800)
     data[0][100:150] += 100
     data[1][100:150] += 100
     data[0][200:250] += 100
@@ -76,8 +73,35 @@ def test_reporting():
     epochs = epoch(data, duration, interval, axis=-1)
     THR_classif = [[0, 2], [0, 3]]
     valid_labels = [True, True, False, True, True, True, True, True, True, True, True, True, True, True, True, True]
-    report = reporting(epochs, valid_labels, THR_classif, log={})
+    report = reporting(epochs, valid_labels, THR_classif, time_interval=0.25, delim=3, log={})
     npt.assert_equal(report["labels"][0], [False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
     npt.assert_equal(report["reports"][0]['Total number of burst'], 3)
     npt.assert_equal(report["reports"][0]['Mean duration of phasic episode'], 1.25)
+    npt.assert_equal(report["reports"][0]["Mean duration of tonic episode"], np.nan)
+    npt.assert_equal(report["reports"][0]['Mean duration of mixed episode'], np.nan)
+
+
+def test_reporting2():
+    from tinnsleep.scoring import generate_bruxism_report
+    np.random.seed(42)
+    n_epochs = 6
+    duration = 3
+    interval = 50
+    time_interval = 0.25
+    delim = 3
+    epochs = np.random.randn(n_epochs, 2, duration)
+    epochs[-3::] += 100
+    print(epochs)
+
+    classif = [False, False, False, True, True, True]
+
+    THR_classif = [[0, 1.5], [0, 1.6]]
+    valid_labels = [True] * n_epochs
+    report = reporting(epochs, valid_labels, THR_classif, time_interval=time_interval, delim=delim, log={})
+    print(report["labels"][0])
+    npt.assert_equal(report["labels"][0], classif)
+    report_expected = generate_bruxism_report(classif, time_interval, delim)
+
+    npt.assert_equal(report["reports"][0], report_expected)
+
