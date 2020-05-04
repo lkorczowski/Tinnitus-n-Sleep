@@ -210,7 +210,7 @@ def create_list_events(li_ep, time_interval, time_recording):
     return li_events
 
 
-def generate_clinical_report(classif, time_interval=0.25, delim=3):
+def generate_clinical_report(*args):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -225,10 +225,10 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     -------
     report :  dict
     """
-    return generate_bruxism_report(classif, time_interval, delim)
+    return generate_bruxism_report(*args)
 
 
-def generate_bruxism_report(classif, time_interval=0.25, delim=3):
+def generate_bruxism_report(classif, time_interval, delim):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -287,7 +287,7 @@ def generate_bruxism_report(classif, time_interval=0.25, delim=3):
     return report
 
 
-def generate_MEMA_report(classif, time_interval=1, delim=3):
+def generate_MEMA_report(classif, time_interval, delim):
     """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
 
     Parameters
