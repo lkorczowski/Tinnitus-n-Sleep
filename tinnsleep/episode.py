@@ -98,9 +98,9 @@ class episode():
             if bu.is_tonic:
                 self.is_tonic = True
 
-    def set_phasic(self):
+    def set_phasic(self, min_burst_joining=2):
         """ set the is_phasic episode attribute"""
-        if len(self.burst_list) > 2:
+        if len(self.burst_list) > min_burst_joining:
             self.is_phasic = True
         else:
             self.is_phasic = False
@@ -114,10 +114,10 @@ class episode():
         else:
             self.is_mixed = False
 
-    def assess_type(self):
+    def assess_type(self, min_burst_joining=2):
         """ characterizes fully the episode"""
         self.set_tonic()
-        self.set_phasic()
+        self.set_phasic(min_burst_joining=min_burst_joining)
         self.set_mixed()
 
     def is_valid(self):
