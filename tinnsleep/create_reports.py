@@ -93,6 +93,10 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     THR_classif : list of a list floats
        list of couples of absolute and relative thresholds values of the classifier to test
        example: THR_classif=[[0,2],[0,3]]
+    time_interval: float
+        time interval in seconds between 2 elementary events
+    delim: float, (default 3)
+        maximal time interval considered eligible between two bursts within a episode
     n_adaptative : int (default: 0)
         number of epochs for adaptive baseline calculation
         if positive uses casual adaptive scheme
