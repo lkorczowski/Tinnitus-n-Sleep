@@ -160,6 +160,25 @@ def test_generate_MEMA_report():
     npt.assert_equal(report["Mean duration of MEMA episode"], 7.5)
 
 
+def test_generate_bruxism_report2():
+    classif = [False, False, False, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3)
+    npt.assert_equal(len(report), 13)
+
+    npt.assert_equal(report["Clean data duration"], len(classif))
+    npt.assert_equal(report["Total burst duration"], 3)
+    npt.assert_equal(report["Total number of burst"], 1)
+    npt.assert_almost_equal(report["Number of bursts per hour"], 3600/len(classif)*1)
+    npt.assert_equal(report["Total number of episodes"], 1)
+    npt.assert_equal(report["Number of bursts per episode"], 1)
+    npt.assert_almost_equal(report["Number of episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of tonic episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of mixed episodes per hour"], 3600/len(classif)*0)
+    npt.assert_almost_equal(report["Number of phasic episodes per hour"], 3600/len(classif)*0)
+    npt.assert_almost_equal(report["Mean duration of mixed episode"], np.nan)
+    npt.assert_almost_equal(report["Mean duration of phasic episode"], np.nan)
+    npt.assert_almost_equal(report["Mean duration of tonic episode"], 3)
+
 def test_generate_report_fails_noparams():
     """check if the parameters are required or test fails"""
     classif = [False, False]
