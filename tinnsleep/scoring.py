@@ -210,24 +210,6 @@ def create_list_events(li_ep, time_interval, time_recording):
     return li_events
 
 
-def generate_clinical_report(*args):
-    """ Generates an automatic clinical bruxism report from a list of events
-
-    Parameters
-    ----------
-    classif : list of booleans,
-        output of a classification algorithm that detect non aggregated bursts from a recording
-    time_interval: float,
-        time interval in seconds between 2 elementary events
-    delim: float,
-        maximal time interval considered eligible between two bursts within a episode
-    Returns
-    -------
-    report :  dict
-    """
-    return generate_bruxism_report(*args)
-
-
 def generate_bruxism_report(classif, time_interval, delim):
     """ Generates an automatic clinical bruxism report from a list of events
 
