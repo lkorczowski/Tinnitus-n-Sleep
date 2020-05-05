@@ -4,6 +4,7 @@ from tinnsleep.data import CreateRaw
 from tinnsleep.create_reports import preprocess, reporting
 import numpy.testing as npt
 from tinnsleep.utils import epoch
+from tinnsleep.scoring import generate_bruxism_report, generate_MEMA_report
 
 
 def test_preprocess():
@@ -57,10 +58,7 @@ def test_preprocess():
 
 def test_reporting():
     np.random.seed(42)
-    data = np.random.randn(2, 800)
-
-    data[0] = 1e-7 * data[0]
-    data[1] = 1e-7 * data[1]
+    data = 1e-7 * np.random.randn(2, 800)
     data[0][100:150] += 100
     data[1][100:150] += 100
     data[0][200:250] += 100
@@ -76,8 +74,80 @@ def test_reporting():
     epochs = epoch(data, duration, interval, axis=-1)
     THR_classif = [[0, 2], [0, 3]]
     valid_labels = [True, True, False, True, True, True, True, True, True, True, True, True, True, True, True, True]
-    report = reporting(epochs, valid_labels, THR_classif, log={})
-    npt.assert_equal(report["labels"][0], [False, False, False, False, True, False, True, False, True, False, False,
-                                           False, False, False, False, False])
-    npt.assert_equal(report["reports"][0]['Total number of burst'], 3)
-    npt.assert_equal(report["reports"][0]['Mean duration of phasic episode'], 1.25)
+    report = reporting(epochs, valid_labels, THR_classif, time_interval=0.25, delim=3, log={})
+    classif_expected = [False, False, False, False, True, False, True, False, True, False, False,
+                                           False, False, False, False, False]
+    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
+    report_expected = generate_bruxism_report(tmp, 0.25, 3)
+    npt.assert_equal(report["labels"][0], classif_expected)
+    npt.assert_equal(report["reports"][0], report_expected)
+
+
+def test_reporting2():
+    np.random.seed(42)
+    n_epochs = 6
+    duration = 3
+    time_interval = 0.25
+    delim = 3
+    epochs = np.random.randn(n_epochs, 2, duration)
+    epochs[1:4:] += 100
+    valid_labels = [True] * n_epochs
+
+    classif_expected = [False, True, True, True, False, False]
+    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
+    report_expected = generate_bruxism_report(tmp, time_interval, delim)
+
+    THR_classif = [[0, 1.5], [0, 1.6]]
+    report = reporting(epochs, valid_labels, THR_classif,
+                       time_interval=time_interval, delim=delim, log={},
+                       generate_report=generate_bruxism_report)
+    npt.assert_equal(report["labels"][0], classif_expected)
+    npt.assert_equal(report["reports"][0], report_expected)
+
+
+def test_reporting_adaptive():
+    np.random.seed(42)
+    n_epochs = 6
+    duration = 3
+    time_interval = 0.25
+    n_adaptive = 2
+    delim = 3
+    epochs = np.random.randn(n_epochs, 2, duration)
+    epochs[1:4:] += 100
+    valid_labels = [True] * n_epochs
+
+    classif_expected = [False, True, True, False, False, False]  # loosing last because adaptive
+    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
+    report_expected = generate_bruxism_report(tmp, time_interval, delim)
+
+    THR_classif = [[0, 1.5], [0, 1.6]]
+    report = reporting(epochs, valid_labels, THR_classif,
+                       time_interval=time_interval, delim=delim, log={},
+                       generate_report=generate_bruxism_report,
+                       n_adaptive=n_adaptive)
+    npt.assert_equal(report["labels"][0], classif_expected)
+    npt.assert_equal(report["reports"][0], report_expected)
+
+
+def test_reporting_adaptive_forward_backward():
+    np.random.seed(42)
+    n_epochs = 6
+    duration = 3
+    time_interval = 0.25
+    n_adaptive = -2
+    delim = 3
+    epochs = np.random.randn(n_epochs, 2, duration)
+    epochs[1:4:] += 100
+    valid_labels = [True] * n_epochs
+
+    classif_expected = [False, True, True, True, False, False]  # not loosing any because fb adaptive
+    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
+    report_expected = generate_bruxism_report(tmp, time_interval, delim)
+
+    THR_classif = [[0, 1.5], [0, 1.6]]
+    report = reporting(epochs, valid_labels, THR_classif,
+                       time_interval=time_interval, delim=delim, log={},
+                       generate_report=generate_bruxism_report,
+                       n_adaptive=n_adaptive)
+    npt.assert_equal(report["labels"][0], classif_expected)
+    npt.assert_equal(report["reports"][0], report_expected)

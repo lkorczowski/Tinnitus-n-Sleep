@@ -62,7 +62,6 @@ def test_plotTimeSeries_superimpose2():
     data[10, 1] += 100; data[150, 0] += 25; data[170, 1] += -1e9;  # add artifacts
     plotTimeSeries(data, ax=ax, color="red", zorder=0, ch_names=["Fz", "Cz"])
     plt.legend(["clean", "_nolegend_", "with artefacts", "_nolegend_"])
-    plt.show()
 
 
 def test_plotTimeSeries_chnames_propagation():

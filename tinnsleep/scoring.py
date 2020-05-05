@@ -70,16 +70,16 @@ def rearrange_chronological(brux_list):
     return brux_list
 
 
-def burst_to_episode(burst_list, delim=3, min_burst_joining=2):
+def burst_to_episode(burst_list, delim=3, min_burst_joining=3):
     """ Transforms a chronological list of bursts into a 
     chronological list of episodes
     
     Parameters
     ----------
     burst_list : list of burst instances
-    delim: float (default 3),
+    delim: float, (default 3)
         maximal time interval considered eligible between two bursts within a episode
-    min_burst_joining: Optional, int, default 2
+    min_burst_joining: Optional, int, default 3
         Minimum of bursts to join to form an episode.
     Returns
     -------
@@ -210,21 +210,21 @@ def create_list_events(li_ep, time_interval, time_recording):
     return li_events
 
 
-def generate_clinical_report(classif, time_interval=0.25, delim=3):
+def generate_bruxism_report(classif, time_interval, delim):
     """ Generates an automatic clinical bruxism report from a list of events
 
-   Parameters
-   ----------
-   classif : list of booleans,
+    Parameters
+    ----------
+    classif : list of booleans,
         output of a classification algorithm that detect non aggregated bursts from a recording
-   interval: float,
+    time_interval: float,
         time interval in seconds between 2 elementary events
-   recording_duration : float,
-        duration of the recording in seconds
-   Returns
-   -------
-   report as a dictionary
-   """
+    delim: float,
+        maximal time interval considered eligible between two bursts within a episode
+    Returns
+    -------
+    report :  dict
+    """
     report = {}
     recording_duration = len(classif) * time_interval
     report["Clean data duration"] = recording_duration
@@ -269,3 +269,40 @@ def generate_clinical_report(classif, time_interval=0.25, delim=3):
     return report
 
 
+def generate_MEMA_report(classif, time_interval, delim):
+    """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
+
+    Parameters
+    ----------
+    classif : list of booleans,
+        output of a classification algorithm that detect non aggregated bursts from a recording
+    interval : float,
+        time interval in seconds between 2 elementary events
+    delim : float,
+        maximal time interval considered eligible between two bursts within a episode
+    Returns
+    -------
+    report : dict
+    """
+    report = {}
+    recording_duration = len(classif) * time_interval
+    report["Clean MEMA duration"] = recording_duration
+    report["Total MEMA burst duration"] = np.sum(classif) * time_interval
+    li_burst = classif_to_burst(classif, time_interval=time_interval)
+    nb_burst = len(li_burst)
+    report["Total number of MEMA burst"] = nb_burst
+    report["Number of MEMA bursts per hour"] = nb_burst * 3600 / recording_duration
+    li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
+    nb_episodes = len(li_episodes)
+    report["Total number of MEMA episodes"] = nb_episodes
+    if nb_episodes > 0:
+        report["Number of MEMA bursts per episode"] = nb_burst / nb_episodes
+    else:
+        report["Number of MEMA bursts per episode"] = 0
+    report["Number of MEMA episodes per hour"] = nb_episodes * 3600 / recording_duration
+
+    episodes_duration = [(epi.end - epi.beg) for epi in li_episodes]
+
+    report["Mean duration of MEMA episode"] = np.mean(episodes_duration)
+
+    return report

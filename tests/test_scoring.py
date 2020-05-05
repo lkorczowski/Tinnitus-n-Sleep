@@ -1,7 +1,7 @@
 import pytest
 import numpy.testing as npt
 from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological, \
-    generate_clinical_report,  generate_annotations
+    generate_bruxism_report,  generate_annotations, generate_MEMA_report
 from tinnsleep.burst import burst
 import numpy as np
 
@@ -37,6 +37,17 @@ def test_burst_to_episode():
     npt.assert_equal(li_ep[0].end, 6.5)
     npt.assert_equal(len(li_ep[0].burst_list), 2)
     npt.assert_equal(li_ep[0].is_tonic, True)
+
+
+def test_burst_to_episode_withparam():
+    bursty = [burst(3.1, 3.9), burst(5, 6),
+              burst(6.5, 7.5), burst(15, 20)]
+
+    npt.assert_equal(len(burst_to_episode(bursty,  delim=1, min_burst_joining=3)), 1)
+    npt.assert_equal(len(burst_to_episode(bursty, delim=3, min_burst_joining=3)), 2)
+    npt.assert_equal(len(burst_to_episode(bursty, delim=1, min_burst_joining=4)), 1)
+
+
 
 
 def test_rearrange_chronological():
@@ -75,26 +86,103 @@ def test_create_list_events():
     li_ev = create_list_events(li_ep, 0.25, 5)
     npt.assert_equal(li_ev, [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
 
-def test_generate_clinical_report():
+def test_generate_bruxism_report():
     classif = [False, False]
-    report = generate_clinical_report(classif, 1)
+    report = generate_bruxism_report(classif, delim=3, time_interval=1)
     npt.assert_equal( report["Number of bursts per episode"], 0)
 
     classif = [True, False, True, False, False, True, True, False, True, True, True,
           True, False, False, False, False, False, True, True, True, False, True]
-    report = generate_clinical_report(classif, 1)
+    report = generate_bruxism_report(classif, 1, 3)
     npt.assert_equal(len(report), 13)
-    npt.assert_equal(report["Mean duration of mixed episode"], 12.0)
-    npt.assert_equal(report["Mean duration of phasic episode"], np.nan)
+
+    npt.assert_equal(report["Clean data duration"], len(classif))
+    npt.assert_equal(report["Total burst duration"], 12)
+    npt.assert_equal(report["Total number of burst"], 6)
+    npt.assert_almost_equal(report["Number of bursts per hour"], 3600/len(classif)*6)
+    npt.assert_equal(report["Total number of episodes"], 2)
     npt.assert_equal(report["Number of bursts per episode"], 3.0)
+    npt.assert_almost_equal(report["Number of episodes per hour"], 3600/len(classif)*2)
+    npt.assert_almost_equal(report["Number of tonic episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of mixed episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of phasic episodes per hour"], 3600/len(classif)*0)
+    npt.assert_almost_equal(report["Mean duration of mixed episode"], 12.0)
+    npt.assert_almost_equal(report["Mean duration of phasic episode"], np.nan)
+    npt.assert_almost_equal(report["Mean duration of tonic episode"], 5)
 
 
     classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
-    report = generate_clinical_report(classif, 1)
+    report = generate_bruxism_report(classif, 1, 3)
     npt.assert_equal(len(report), 13)
-    npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
+    npt.assert_equal(report["Clean data duration"], len(classif))
     npt.assert_equal(report["Total burst duration"], 15)
+    npt.assert_equal(report["Total number of burst"], 9)
+    npt.assert_almost_equal(report["Number of bursts per hour"], 3600/len(classif)*9)
+    npt.assert_equal(report["Total number of episodes"], 3)
+    npt.assert_equal(report["Number of bursts per episode"], 3.0)
+    npt.assert_almost_equal(report["Number of episodes per hour"], 3600/len(classif)*3)
+    npt.assert_almost_equal(report["Number of tonic episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of mixed episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of phasic episodes per hour"], 3600/len(classif)*1)
+    npt.assert_equal(report["Mean duration of mixed episode"], 12)
+    npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
+    npt.assert_equal(report["Mean duration of tonic episode"], 5)
 
 
+def test_generate_MEMA_report():
+    classif = [False, False]
+    report = generate_MEMA_report(classif, 1, delim=3)
+    npt.assert_equal( report["Number of MEMA bursts per episode"], 0)
+
+    classif = [True, True, True, False, False, True, True, True]
+    report = generate_MEMA_report(classif, 1, delim=3)
+    npt.assert_equal(len(report), 8)
+    npt.assert_equal(report["Clean MEMA duration"], len(classif))
+    npt.assert_equal(report["Total MEMA burst duration"], 6)
+    npt.assert_equal(report["Number of MEMA bursts per hour"], 3600/len(classif)*2)
+    npt.assert_equal(report["Total number of MEMA episodes"], 1)
+    npt.assert_equal(report["Number of MEMA bursts per episode"], 2.0)
+    npt.assert_equal(report["Number of MEMA episodes per hour"], 3600/len(classif)*1)
+    npt.assert_equal(report["Total number of MEMA burst"], 2)
+    npt.assert_equal(report["Mean duration of MEMA episode"], len(classif))
 
 
+    classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
+    report = generate_MEMA_report(classif, 1, delim=3)
+    npt.assert_equal(len(report), 8)
+    npt.assert_equal(report["Clean MEMA duration"], len(classif))
+    npt.assert_equal(report["Total MEMA burst duration"], 9)
+    npt.assert_equal(report["Number of MEMA bursts per hour"], 3600/len(classif)*5)
+    npt.assert_equal(report["Total number of MEMA episodes"], 2)
+    npt.assert_equal(report["Number of MEMA bursts per episode"], 2.5)
+    npt.assert_equal(report["Number of MEMA episodes per hour"], 3600/len(classif)*2)
+    npt.assert_equal(report["Total number of MEMA burst"], 5)
+    npt.assert_equal(report["Mean duration of MEMA episode"], 7.5)
+
+
+def test_generate_bruxism_report2():
+    classif = [False, False, False, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3)
+    npt.assert_equal(len(report), 13)
+
+    npt.assert_equal(report["Clean data duration"], len(classif))
+    npt.assert_equal(report["Total burst duration"], 3)
+    npt.assert_equal(report["Total number of burst"], 1)
+    npt.assert_almost_equal(report["Number of bursts per hour"], 3600/len(classif)*1)
+    npt.assert_equal(report["Total number of episodes"], 1)
+    npt.assert_equal(report["Number of bursts per episode"], 1)
+    npt.assert_almost_equal(report["Number of episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of tonic episodes per hour"], 3600/len(classif)*1)
+    npt.assert_almost_equal(report["Number of mixed episodes per hour"], 3600/len(classif)*0)
+    npt.assert_almost_equal(report["Number of phasic episodes per hour"], 3600/len(classif)*0)
+    npt.assert_almost_equal(report["Mean duration of mixed episode"], np.nan)
+    npt.assert_almost_equal(report["Mean duration of phasic episode"], np.nan)
+    npt.assert_almost_equal(report["Mean duration of tonic episode"], 3)
+
+def test_generate_report_fails_noparams():
+    """check if the parameters are required or test fails"""
+    classif = [False, False]
+    with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
+        generate_bruxism_report(classif)
+    with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
+        generate_MEMA_report(classif)

@@ -6,7 +6,7 @@ from tinnsleep.classification import AmplitudeThresholding
 from tinnsleep.check_impedance import create_annotation_mne, Impedance_thresholding_sliding, check_RMS, \
     fuse_with_classif_result
 from tinnsleep.signal import rms
-from tinnsleep.scoring import generate_clinical_report
+from tinnsleep.scoring import generate_bruxism_report
 from tinnsleep.signal import is_good_epochs
 
 
@@ -82,39 +82,58 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         return epochs, valid_labels
 
 
-def reporting(epochs, valid_labels, THR_classif, n_adaptive=0, log={}):
+def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptive=0, log={}, generate_report=generate_bruxism_report):
     """creates clinical reports of bruxism out of a epoch array, for different thresholding values
-       Parameters
-       ----------
-       epochs : ndarray, shape (n_epochs, n_channels, duration)
-            Epoched view of `data`. Epochs are in the first dimension.
-       valid_labels : lsit of booleans
-            labels of the epochs as good (True) or bad (False) for future annotation and reporting
-       THR_classif : list of couple of floats
-           list of couples of absolute and relative thresholds values of the classifier to test
-        n_adaptative: OPTIONAL int, default 0
-            number of epochs for adaptative baseline calculation
-       log : OPTIONAL dictionary
-            logs of the preprocessing steps, including the number of epochs rejected at each step
+    Parameters
+    ----------
+    epochs : ndarray, shape (n_epochs, n_channels, duration)
+        Epoched view of `data`. Epochs are in the first dimension.
+    valid_labels : list of booleans
+        labels of the epochs as good (True) or bad (False) for future annotation and reporting
+    THR_classif : list of a list floats
+       list of couples of absolute and relative thresholds values of the classifier to test
+       example: THR_classif=[[0,2],[0,3]]
+    time_interval: float
+        time interval in seconds between 2 elementary events
+    delim: float, (default 3)
+        maximal time interval considered eligible between two bursts within a episode
+    n_adaptative : int (default: 0)
+        number of epochs for adaptive baseline calculation
+        if positive uses casual adaptive scheme
+        if negative uses acasual forward-backward adaptive scheme
+    log : dictionary (default: {})
+        logs of the preprocessing steps, including the number of epochs rejected at each step
+    generate_report: function (default: tinnsleep.scoring.generate_bruxism_report)
+        function to convert labels into a report
 
-       Returns
-       -------
 
-        dictionary
-           Dictionary containing fields:
-           - THR_classif: threshold(s) of classification tested
-           - labels : list of labels of bursts for the epochs of the recording for each THR_classif in the same order
-           - reports: list of clinical reports of the recording for each THR_classif tested in the same order
-           - log : log of the pre-processing operations
-       """
+    Returns
+    -------
+    dictionary
+       Dictionary containing fields:
+       - THR_classif: threshold(s) of classification tested
+       - labels : list of labels of bursts for the epochs of the recording for each THR_classif in the same order
+       - reports: list of clinical reports of the recording for each THR_classif tested in the same order
+       - log : log of the pre-processing operations
+    """
     labs = []
     reps = []
     # for each value of THR_classif, create a report and a list of labels
     for THR in THR_classif:
-        pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=n_adaptive)
         X = rms(epochs[valid_labels])  # take only valid labels
+        # -----------------Classification Forward ------------------------------------------------
+        pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=abs(n_adaptive))
         labels = pipeline.fit_predict(X)
-        report = generate_clinical_report(labels)
+        if n_adaptive < -1:
+            # -----------------Classification backward ---------------------------------------
+            # Reversing epochs array, computing backward and reversing labels
+            pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=abs(n_adaptive))
+            labels_b = pipeline.fit_predict(X[::-1])[::-1]
+            #-----------------foward-backward merge ---------------------------------------
+            # Logical OR -- merged backward and forward
+            labels = np.any(np.c_[labels, labels_b], axis=-1)
+
+        report = generate_report(labels, time_interval, delim)
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
         labs.append(labels)
