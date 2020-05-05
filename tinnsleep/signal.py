@@ -23,7 +23,50 @@ def rms(epochs, axis=-1):
         Root Mean Square Amplitude
     """
 
-    return np.sqrt(np.mean(epochs ** 2, axis=axis))
+    return np.sqrt(mean_power(epochs, axis=axis))
+
+
+def mean_power(epochs, axis=-1):
+    """Mean power for each epoch and each electrode
+    Parameters
+    ----------
+    epochs : ndarray, shape (n_trials, n_electrodes, n_samples)
+        the epochs for the estimation
+    axis : None or int or tuple of ints, optional (default: -1)
+        Axis or axes along which the means are computed.
+
+    Returns
+    -------
+    mean_power : ndarray, shape (n_trials, n_electrodes)
+        Mean Power
+    """
+    return np.mean(epochs ** 2, axis=axis)
+
+
+def power_ratio(epochs, labels, axis=-1):
+    """Mean power ratio for each electrode
+
+    Parameters
+    ----------
+    epochs : ndarray, shape (n_trials, n_electrodes, n_samples)
+        the epochs for the estimation
+    axis : None or int or tuple of ints, optional (default: -1)
+        Axis or axes along which the means are computed.
+    labels : ndarray | list, shape (n_trials,)
+        A list of boolean. True are for numerator, False for the denominator
+
+    Returns
+    -------
+    mean_power : ndarray, shape (n_trials, n_electrodes)
+        Mean Power
+    """
+    nb_num = np.count_nonzero(labels)
+    nb_epochs = len(labels)
+    if (nb_num == 0) or (nb_num == nb_epochs):
+        raise ValueError("labels should have at least one True and one False")
+
+    pow = mean_power(epochs, axis=axis)
+    return np.mean(pow[labels], axis=0)/np.mean(pow[np.invert(labels)], axis=0)
 
 
 def is_good_epochs(epochs, **kwargs):
