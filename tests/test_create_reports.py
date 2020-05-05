@@ -23,7 +23,6 @@ def test_preprocess():
     picks_imp = ['IMP_1', 'IMP_2']
     duration = 50
     interval = 50
-    print(raw.info["ch_names"])
     params = dict(ch_names=['1', '2'],
                   rejection_thresholds=dict(emg=1e-04),  # two order of magnitude higher q0.01
                   flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
@@ -36,8 +35,8 @@ def test_preprocess():
 
     epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
                                            get_log=True, filter=None)
-    print(log)
     npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3,
+                           "suppressed_OMA_THR": 0,
                            'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
@@ -53,8 +52,16 @@ def test_preprocess():
                                            get_log=True, filter=filtering)
 
     npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3,
+                           "suppressed_OMA_THR": 0,
                            'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
+
+
+def test_preprocess_optional():
+    #Test if the modularisation of preprocess works
+    # TO DO additionnal pytesting
+    assert False
+
 
 def test_reporting():
     np.random.seed(42)

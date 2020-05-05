@@ -8,9 +8,11 @@ from tinnsleep.check_impedance import create_annotation_mne, Impedance_threshold
 from tinnsleep.signal import rms
 from tinnsleep.scoring import generate_bruxism_report
 from tinnsleep.signal import is_good_epochs
+from tinnsleep.OMA_detection import OMA_thresholding_sliding
 
 
-def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default"):
+def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default",
+               impedance_thr=True, is_good=True, OMA_thr=False, OMA_params={}):
     """Preprocesses raw for reporting
     Parameters
     ----------
@@ -25,10 +27,23 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         Number of elements (i.e. samples) on the epoch.
     interval: int
         Number of elements (i.e. samples) to move for the next epoch.
-    THR_imp: float
+    THR_imp: float (default 6000)
         Threshold value for the impedance rejection algorithm
     get_log : OPTIONAL boolean default False
         if True, create a report of the preprocessing rejecting steps
+    filter str or filter instance or None, (default : "default")
+        Filter to be applied on the pick_chans channels
+    impedance_thr: boolean (default : True)
+        boolean to command whether or not do the impedance thresholding algorithm on the data, from the Imp_picks
+        channels
+    is_good : boolean (default : True)
+        boolean to command whether or not apply the is_good rejection algorithm on the pick_chans channels
+    OMA_thr: boolean (default : True)
+        boolean to command whether or not apply the movmt rejection algorithm from pick_mvmt_chans channels
+    OMA_params : dictionary (default : {})
+        dictionary corresponding to the parameters to set for OMA_thresholding for movmt analysis
+        example of dictionary : { "OMA_chans" : chans, "OMA_thr" : [abs_OMA_THR, rel_OMA_THR], "OMA_duration" : dur,
+        "OMA_interval": interv, "OMA_adap":n_adaptive}
     Returns
     -------
     epochs : ndarray, shape (n_epochs, n_channels, duration)
@@ -40,42 +55,59 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
 
     """
 
-
-    # Epoch rejection based on impedance
-    check_imp = Impedance_thresholding_sliding(raw[picks_imp][0], duration, interval, THR=THR_imp)
-    impedance_labels = np.any(check_imp, axis=-1)
-    suppressed_imp = np.sum(impedance_labels)
-
-    raw = CreateRaw(raw[picks_chan][0], picks_chan, ch_types='emg')  # pick channels and load
+    raw2 = CreateRaw(raw[picks_chan][0], picks_chan, ch_types='emg')  # pick channels and load
 
     # Filtering data
     if filter == "default":
-        raw = raw.filter(l_freq = 20., h_freq = 99., n_jobs=4,
+        raw2 = raw2.filter(l_freq = 20., h_freq = 99., n_jobs=4,
                          fir_design='firwin', filter_length='auto', phase='zero-double',
                          picks=picks_chan)
     elif isinstance(filter, dict):
-        raw = raw.filter(**filter)
+        raw2 = raw2.filter(**filter)
     elif filter is None:
         pass  # do nothing
     else:
         raise ValueError('`filter` should be default, a dict of parameters to pass to raw.filter, or None')
 
     # Creating epochs
-    epochs = RawToEpochs_sliding(raw, duration=duration, interval=interval)
+    epochs = RawToEpochs_sliding(raw2, duration=duration, interval=interval)
+
+    # Epoch rejection based on impedance
+    if impedance_thr:
+        check_imp = Impedance_thresholding_sliding(raw[picks_imp][0], duration, interval, THR=THR_imp)
+        impedance_labels = np.any(check_imp, axis=-1)
+        suppressed_imp = np.sum(impedance_labels)
+    else:
+        suppressed_imp = 0
+        impedance_labels = [False for i in range(len(epochs))]
+
 
     # Epoch rejection based on |min-max| thresholding
-    amplitude_labels, bad_lists = is_good_epochs(epochs, **params)
+    if is_good:
+        amplitude_labels, bad_lists = is_good_epochs(epochs, **params)
+        suppressed_amp = np.sum(np.invert(amplitude_labels))
+    else:
+        suppressed_amp = 0
+        amplitude_labels = [True for i in range(len(epochs))]
 
-    suppressed_amp = np.sum(np.invert(amplitude_labels))
+    if OMA_thr:
+        OMA_labels = OMA_thresholding_sliding(raw[OMA_params["OMA_chans"]][0], OMA_params["OMA_duration"],
+                                                    OMA_params["OMA_interval"], OMA_THR=OMA_params["OMA_thr"])
+        suppressed_OMA = np.sum(np.invert(OMA_labels))
+    else:
+        OMA_labels = [True for i in range(len(epochs))]
+        suppressed_OMA = 0
 
     # Reuniting the rejection algorithms
-    valid_labels = np.all(np.c_[np.invert(impedance_labels), amplitude_labels], axis=-1)
+    tmp_valid_labels = np.all(np.c_[np.invert(impedance_labels), amplitude_labels], axis=-1)
+    valid_labels = np.all(np.c_[tmp_valid_labels, amplitude_labels], axis=-1)
     suppressed_all = np.sum(np.invert(valid_labels))
 
     if get_log:
         # Creating log report
         log = {"suppressed_imp_THR": suppressed_imp, "suppressed_amp_THR": suppressed_amp,
-                                         "suppressed_overall": suppressed_all, "total_nb_epochs": len(valid_labels)}
+               "suppressed_OMA_THR": suppressed_OMA, "suppressed_overall": suppressed_all,
+               "total_nb_epochs": len(valid_labels)}
 
         return epochs, valid_labels, log
     else:
