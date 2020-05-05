@@ -8,11 +8,11 @@ from collections import OrderedDict
 @pytest.fixture
 def data():
     np.random.seed(42)
-    return np.random.randn(2, 400)
+    return np.random.randn(2, 500)
 
 @pytest.fixture()
 def dummyraw(data):
-    info = mne.create_info(["Fz", "Pz"], sfreq=200.)
+    info = mne.create_info(["Fz", "Pz"], sfreq=250.)
     return mne.io.RawArray(data, info, verbose=False)
 
 
@@ -30,20 +30,20 @@ def test_CreateRaw_invalidmontage(data):
 
 def test_RawToEpochs_sliding(data):
     ch_names = ['Fz', 'Pz']
-    duration = 200
+    duration = 250
     interval = 100
-    assert RawToEpochs_sliding(CreateRaw(data, ch_names), duration, interval, picks=None).shape == (3, 2, 200)
+    assert RawToEpochs_sliding(CreateRaw(data, ch_names), duration, interval, picks=None).shape == (3, 2, 250)
 
 
 def test_Annotation(dummyraw):
     raw = AnnotateRaw_sliding(dummyraw, labels=[False, True, False, False, False, 2, False, False])
-    expected1 = OrderedDict([('onset', .25),
-                 ('duration', .25),
+    expected1 = OrderedDict([('onset', .2),
+                 ('duration', .2),
                  ('description', 'bad EPOCH'),
                  ('orig_time', None)])
 
-    expected2 = OrderedDict([('onset', 1.25),
-                 ('duration', .25),
+    expected2 = OrderedDict([('onset', 1.),
+                 ('duration', .2),
                  ('description', '2'),
                  ('orig_time', None)])
 
@@ -54,13 +54,13 @@ def test_Annotation(dummyraw):
 def test_Annotation_withdict(dummyraw):
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     raw = AnnotateRaw_sliding(dummyraw, labels=[0, 1, 0, 0, 0, 2, 0, 0], dict_annotations=dict_annotations)
-    expected1 = OrderedDict([('onset', .25),
-                 ('duration', .25),
+    expected1 = OrderedDict([('onset', .2),
+                 ('duration', .2),
                  ('description', 'bad EPOCH'),
                  ('orig_time', None)])
 
-    expected2 = OrderedDict([('onset', 1.25),
-                 ('duration', .25),
+    expected2 = OrderedDict([('onset', 1.),
+                 ('duration', .2),
                  ('description', 'nice'),
                  ('orig_time', None)])
 
@@ -70,7 +70,7 @@ def test_Annotation_withdict(dummyraw):
 
 def test_Annotation_withinterval(dummyraw):
     interval = 50
-    duration = 200
+    duration = 250
     labels = [2, 1, 3]
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
@@ -79,11 +79,11 @@ def test_Annotation_withinterval(dummyraw):
                  ('duration', 1.0),
                  ('description', 'nice'),
                  ('orig_time', None)])
-    expected2 = OrderedDict([('onset', .25),
+    expected2 = OrderedDict([('onset', .2),
                  ('duration', 1.),
                  ('description', 'bad EPOCH'),
                  ('orig_time', None)])
-    expected3 = OrderedDict([('onset', .5),
+    expected3 = OrderedDict([('onset', .4),
                  ('duration', 1.),
                  ('description', '3'),
                  ('orig_time', None)])
@@ -95,7 +95,7 @@ def test_Annotation_withinterval(dummyraw):
 
 def test_Annotation_outoflength(dummyraw):
     interval = 300
-    duration = 200
+    duration = 250
     labels = [0, 1, 0]
     total_length = interval * (len(labels) - 1) + duration
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
@@ -125,7 +125,7 @@ def test_CleanAnnotations(dummyraw):
 
 def test_convert_Annotations(dummyraw):
     interval = 50
-    duration = 200
+    duration = 250
     labels = [2, 1, 3]
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
@@ -135,11 +135,11 @@ def test_convert_Annotations(dummyraw):
                                  ('duration', 1.0),
                                  ('description', 'nice'),
                                  ('orig_time', None)]),
-                    OrderedDict([('onset', .25),
+                    OrderedDict([('onset', .2),
                                  ('duration', 1.),
                                  ('description', 'bad EPOCH'),
                                  ('orig_time', None)]),
-                    OrderedDict([('onset', .5),
+                    OrderedDict([('onset', .4),
                                  ('duration', 1.),
                                  ('description', '3'),
                                  ('orig_time', None)])
