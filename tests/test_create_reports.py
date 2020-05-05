@@ -9,15 +9,16 @@ from tinnsleep.scoring import generate_bruxism_report, generate_MEMA_report
 
 def test_preprocess():
     np.random.seed(42)
-    data = np.random.randn(4, 400)
+    data = np.random.randn(5, 400)
 
     data[0] = 1e-6 * data[0]
     data[1] = 1e-6 * data[1]
-    data[1][110:120] = 1000 * data[1][110:120]
+    data[1][120:125] = 1000 * data[1][120:125]
     data[2][:100] += 100
     data[3][:100] += 100
+    data[4][300:350] += 50
 
-    ch_names = ['1', '2', 'IMP_1', 'IMP_2']
+    ch_names = ['1', '2', 'IMP_1', 'IMP_2', "Activity"]
     raw = CreateRaw(data, ch_names, ch_types="emg")
     picks_chan = ['1', '2']
     picks_imp = ['IMP_1', 'IMP_2']
@@ -40,6 +41,23 @@ def test_preprocess():
                            'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
+    #Test without impedance checking
+    epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
+                                           get_log=True, filter=None, impedance_thr=False)
+    npt.assert_equal(log, {'suppressed_imp_THR': 0, 'suppressed_amp_THR': 1, 'suppressed_overall': 1,
+                           "suppressed_OMA_THR": 0,
+                           'total_nb_epochs': 8})
+    npt.assert_equal(valid_labels, [True, True, False, True, True, True, True, True])
+
+    # Test without is_good
+    epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
+                                           get_log=True, filter=None, is_good=False)
+    npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 0, 'suppressed_overall': 2,
+                           "suppressed_OMA_THR": 0,
+                           'total_nb_epochs': 8})
+    npt.assert_equal(valid_labels, [False, False, True, True, True, True, True, True])
+
+
     with pytest.raises(ValueError, match=r'`filter` should be default, a dict of parameters to pass to raw.filter, '
                                          r'or None'):
         epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
@@ -57,10 +75,16 @@ def test_preprocess():
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
 
 
-def test_preprocess_optional():
-    #Test if the modularisation of preprocess works
-    # TO DO additionnal pytesting
-    assert False
+    #Test with OMA_detection
+    OMA_params =  { "OMA_chans" : ["Activity"], "OMA_thr" : [0, 5], "OMA_duration" : duration,
+        "OMA_interval": interval, "OMA_adap": 0}
+    epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
+                                           get_log=True, impedance_thr=False, is_good=False, OMA_detect=True,
+                                           OMA_params=OMA_params)
+    npt.assert_equal(log, {'suppressed_imp_THR': 0, 'suppressed_amp_THR': 0, 'suppressed_overall': 1,
+                           "suppressed_OMA_THR": 1,
+                           'total_nb_epochs': 8})
+    npt.assert_equal(valid_labels, [True, True,True, True, True, True, False, True])
 
 
 def test_reporting():

@@ -12,7 +12,7 @@ from tinnsleep.OMA_detection import OMA_thresholding_sliding
 
 
 def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default",
-               impedance_thr=True, is_good=True, OMA_thr=False, OMA_params={}):
+               impedance_thr=True, is_good=True, OMA_detect=False, OMA_params={}):
     """Preprocesses raw for reporting
     Parameters
     ----------
@@ -38,7 +38,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         channels
     is_good : boolean (default : True)
         boolean to command whether or not apply the is_good rejection algorithm on the pick_chans channels
-    OMA_thr: boolean (default : True)
+    OMA_detect: boolean (default : True)
         boolean to command whether or not apply the movmt rejection algorithm from pick_mvmt_chans channels
     OMA_params : dictionary (default : {})
         dictionary corresponding to the parameters to set for OMA_thresholding for movmt analysis
@@ -90,7 +90,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         suppressed_amp = 0
         amplitude_labels = [True for i in range(len(epochs))]
 
-    if OMA_thr:
+    if OMA_detect:
         OMA_labels = OMA_thresholding_sliding(raw[OMA_params["OMA_chans"]][0], OMA_params["OMA_duration"],
                                                     OMA_params["OMA_interval"], OMA_THR=OMA_params["OMA_thr"])
         suppressed_OMA = np.sum(np.invert(OMA_labels))
@@ -100,7 +100,7 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
 
     # Reuniting the rejection algorithms
     tmp_valid_labels = np.all(np.c_[np.invert(impedance_labels), amplitude_labels], axis=-1)
-    valid_labels = np.all(np.c_[tmp_valid_labels, amplitude_labels], axis=-1)
+    valid_labels = np.all(np.c_[tmp_valid_labels, OMA_labels], axis=-1)
     suppressed_all = np.sum(np.invert(valid_labels))
 
     if get_log:
