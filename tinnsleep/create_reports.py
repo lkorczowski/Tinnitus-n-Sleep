@@ -7,7 +7,7 @@ from tinnsleep.check_impedance import create_annotation_mne, Impedance_threshold
     fuse_with_classif_result
 from tinnsleep.signal import rms
 from tinnsleep.scoring import generate_bruxism_report
-from tinnsleep.signal import is_good_epochs
+from tinnsleep.signal import is_good_epochs, power_ratio
 
 
 def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default"):
@@ -82,7 +82,8 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         return epochs, valid_labels
 
 
-def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptive=0, log={}, generate_report=generate_bruxism_report):
+def reporting(epochs, valid_labels, THR_classif,
+              time_interval, delim, n_adaptive=0, log={}, generate_report=generate_bruxism_report):
     """creates clinical reports of bruxism out of a epoch array, for different thresholding values
     Parameters
     ----------
@@ -134,6 +135,8 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
         report = generate_report(labels, time_interval, delim)
+        report["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
+
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
         labs.append(labels)
