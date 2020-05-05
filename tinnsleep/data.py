@@ -32,7 +32,7 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     # if ch_types is None:
     #     ch_types = ['eeg']
     # ch_types = ch_types * len(ch_names)
-    sfreq = 200
+    sfreq = 250
     if montage is None:
         montage = 'standard_1020'
     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types, verbose=False)
