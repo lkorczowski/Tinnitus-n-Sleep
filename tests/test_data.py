@@ -18,21 +18,22 @@ def dummyraw(data):
 
 def test_CreateRaw(data):
     ch_names = ['Fz', 'Pz']
-    raw = CreateRaw(data, ch_names)
+    raw = CreateRaw(data, 1, ch_names)
     npt.assert_equal(raw.get_data(), data)
 
 
 def test_CreateRaw_invalidmontage(data):
     ch_names = ['Fz', 'Pz']
     with pytest.raises(ValueError):
-        raw = CreateRaw(data, ch_names, montage="nice")
+        raw = CreateRaw(data, 1, ch_names, montage="nice")
 
 
 def test_RawToEpochs_sliding(data):
     ch_names = ['Fz', 'Pz']
-    duration = 250
+    sfreq = 250
+    duration = 1 * sfreq
     interval = 100
-    assert RawToEpochs_sliding(CreateRaw(data, ch_names), duration, interval, picks=None).shape == (3, 2, 250)
+    assert RawToEpochs_sliding(CreateRaw(data, sfreq, ch_names), duration, interval, picks=None).shape == (3, 2, 250)
 
 
 def test_Annotation(dummyraw):

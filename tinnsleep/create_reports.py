@@ -37,16 +37,14 @@ def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6
         labels of the epochs as good (True) or bad (False) for future annotation and reporting
     log : dictionary
         logs of the preprocessing steps, including the number of epochs rejected at each step
-
     """
-
 
     # Epoch rejection based on impedance
     check_imp = Impedance_thresholding_sliding(raw[picks_imp][0], duration, interval, THR=THR_imp)
     impedance_labels = np.any(check_imp, axis=-1)
     suppressed_imp = np.sum(impedance_labels)
 
-    raw = CreateRaw(raw[picks_chan][0], picks_chan, ch_types='emg')  # pick channels and load
+    raw = CreateRaw(raw[picks_chan][0], raw.info["sfreq"], picks_chan, ch_types='emg')  # pick channels and load
 
     # Filtering data
     if filter == "default":
