@@ -3,13 +3,15 @@ from tinnsleep.utils import epoch
 import numpy as np
 
 
-def CreateRaw(data, ch_names, montage=None, ch_types=None):
+def CreateRaw(data, sfreq, ch_names, montage=None, ch_types=None):
     """Generate a mne raw structure based on hardcoded info for bruxisme data
 
     Parameters
     ----------
     data : array, shape (n_channels, n_times)
         The channels' time series. See notes for proper units of measure.
+     sfreq: float
+         sample rate (in Hz)
     ch_names : list of str | int
         Channel names. If an int, a list of channel names will be created
         from ``range(ch_names)``.
@@ -29,10 +31,7 @@ def CreateRaw(data, ch_names, montage=None, ch_types=None):
     raw: Instance of mne.Raw
         the signal
     """
-    # if ch_types is None:
-    #     ch_types = ['eeg']
-    # ch_types = ch_types * len(ch_names)
-    sfreq = 200
+
     if montage is None:
         montage = 'standard_1020'
     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=ch_types, verbose=False)
