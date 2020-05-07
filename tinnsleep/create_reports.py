@@ -143,51 +143,44 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log}
 
 
-def merge_preprocess_labels(list_valid_labels, n_epoch_final):
+def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
     """creates a unique list of valid_labels for classification that merges artifacts coming from different sources
-        ----------
-        list_valid_labels : list of list of booleans
-            lists obtained from different preprocessing loops.
-        n_epoch_final: int
-            length of the output ndarray desired
-        Returns
-        -------
-        ndarray : ndarray of shape (n, )
-            Merged valid_label list for classification
-        """
-    for i in range(len(list_valid_labels)):
-        leny = len(list_valid_labels[i])
-        if (float(leny/n_epoch_final)).is_integer() and (float(leny/n_epoch_final) != 1) :
-                downsamp_factor = int(leny / n_epoch_final)
-                arrival_li = [np.sum(list_valid_labels[i][j * downsamp_factor:(j + 1) * downsamp_factor])/
-                              downsamp_factor == 1 for j in range(n_epoch_final)]
-                arrival_li = np.asanyarray(arrival_li)
+    ----------
+    list_valid_labels : list of list of booleans
+        lists obtained from different preprocessing loops.
+    n_epoch_final : int
+        length of the output ndarray desired
+    merge_fun : function (default: numpy.all)
+        a function for merging rows of a boolean matrix. Called with parameters axis=-1`
 
-                if i == 0:
-                    # adding first element to bef_merge
-                    bef_merge = np.c_[arrival_li]  # f1(xnew) : projection of the data on the projection linear space
-                else:
-                    # Concatenating and transposing for future events
-                    bef_merge = np.c_[bef_merge, arrival_li]
+    Returns`
+    -------
+    ndarray : ndarray of shape (n, )
+        Merged valid_label list for classification
+    """
+    nb_list = len(list_valid_labels)
+    valid_labels = np.ones((n_epoch_final, nb_list)) * np.nan
+    for i in range(nb_list):
+
+        n_epoch_before = len(list_valid_labels[i])
+
+        resampling_factor = float(n_epoch_before / n_epoch_final)
+        if resampling_factor.is_integer() and (resampling_factor != 1):
+                resampling_factor = int(resampling_factor)
+                valid_labels[:, i] = [np.sum(list_valid_labels[i][j * resampling_factor:(j + 1) * resampling_factor])
+                                      /
+                                      resampling_factor == 1 for j in range(n_epoch_final)]
+
+
         else:
             # Start Linear space
-            x = np.linspace(0, leny, num=leny, endpoint=True)
+            x = np.linspace(0, n_epoch_before, num=n_epoch_before, endpoint=True)
             # Projection linear space
-            xnew = np.linspace(0, leny, num=n_epoch_final, endpoint=True)
+            xnew = np.linspace(0, n_epoch_before, num=n_epoch_final, endpoint=True)
             # Interpolation object definition
             f1 = interp1d(x, list_valid_labels[i], kind='nearest')
-
-            if i == 0:
-                # adding first element to bef_merge
-                bef_merge = np.c_[f1(xnew)]  # f1(xnew) : projection of the data on the projection linear space
-            else:
-                # Concatenating and transposing for future events
-                bef_merge = np.c_[bef_merge, f1(xnew)]
-
-
+            valid_labels[:, i] = f1(xnew)
 
     # logical AND: if any of the preprocessing steps says the epoch is bad, it should be rejected
-    print(bef_merge)
-    valid_labels = np.all(bef_merge, axis=-1)
-    print(valid_labels)
+    valid_labels = merge_fun(valid_labels, axis=-1)
     return valid_labels
