@@ -157,8 +157,8 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
 
     Returns`
     -------
-    ndarray : ndarray of shape (n, )
-        Merged valid_label list for classification
+    valid_labels : ndarray of shape (n_epoch_final, )
+        Merged list_valid_labels
     """
     nb_list = len(list_valid_labels)
     valid_labels = np.ones((n_epoch_final, nb_list)) * np.nan
@@ -183,6 +183,4 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
             f1 = interp1d(x, list_valid_labels[i], kind='nearest')
             valid_labels[:, i] = f1(xnew)
 
-    # logical AND: if any of the preprocessing steps says the epoch is bad, it should be rejected
-    valid_labels = merge_fun(valid_labels, axis=-1)
-    return valid_labels
+    return merge_fun(valid_labels, axis=-1)
