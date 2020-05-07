@@ -8,6 +8,7 @@ from tinnsleep.check_impedance import create_annotation_mne, Impedance_threshold
 from tinnsleep.signal import rms
 from tinnsleep.scoring import generate_bruxism_report
 from tinnsleep.signal import is_good_epochs
+from scipy.interpolate import interp1d
 
 
 def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default"):
@@ -142,3 +143,51 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log}
 
 
+def merge_preprocess_labels(list_valid_labels, n_epoch_final):
+    """creates a unique list of valid_labels for classification that merges artifacts coming from different sources
+        ----------
+        list_valid_labels : list of list of booleans
+            lists obtained from different preprocessing loops.
+        n_epoch_final: int
+            length of the output ndarray desired
+        Returns
+        -------
+        ndarray : ndarray of shape (n, )
+            Merged valid_label list for classification
+        """
+    for i in range(len(list_valid_labels)):
+        leny = len(list_valid_labels[i])
+        if (float(leny/n_epoch_final)).is_integer() and (float(leny/n_epoch_final) != 1) :
+                downsamp_factor = int(leny / n_epoch_final)
+                arrival_li = [np.sum(list_valid_labels[i][j * downsamp_factor:(j + 1) * downsamp_factor])/
+                              downsamp_factor == 1 for j in range(n_epoch_final)]
+                arrival_li = np.asanyarray(arrival_li)
+
+                if i == 0:
+                    # adding first element to bef_merge
+                    bef_merge = np.c_[arrival_li]  # f1(xnew) : projection of the data on the projection linear space
+                else:
+                    # Concatenating and transposing for future events
+                    bef_merge = np.c_[bef_merge, arrival_li]
+        else:
+            # Start Linear space
+            x = np.linspace(0, leny, num=leny, endpoint=True)
+            # Projection linear space
+            xnew = np.linspace(0, leny, num=n_epoch_final, endpoint=True)
+            # Interpolation object definition
+            f1 = interp1d(x, list_valid_labels[i], kind='nearest')
+
+            if i == 0:
+                # adding first element to bef_merge
+                bef_merge = np.c_[f1(xnew)]  # f1(xnew) : projection of the data on the projection linear space
+            else:
+                # Concatenating and transposing for future events
+                bef_merge = np.c_[bef_merge, f1(xnew)]
+
+
+
+    # logical AND: if any of the preprocessing steps says the epoch is bad, it should be rejected
+    print(bef_merge)
+    valid_labels = np.all(bef_merge, axis=-1)
+    print(valid_labels)
+    return valid_labels
