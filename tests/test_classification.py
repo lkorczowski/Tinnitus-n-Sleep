@@ -11,6 +11,12 @@ def test_AmplitudeThresholding_init():
     AmplitudeThresholding()
 
 
+def test_AmplitudeThresholding_init_wrong():
+    "test of AmplitudeThresholding initialization"
+    with pytest.raises(ValueError, match=f"`decision_function` should be callable"):
+        AmplitudeThresholding(decision_function="lol")
+
+
 def test_AmplitudeThresholding_values():
     "test of AmplitudeThresholding on test data"
     X = np.array([[1, 1, 1], [2, 2, 2], [3, 3, 3], [10, 10, 10]])
@@ -132,16 +138,16 @@ def test_regression_AmplitudeThresholding_and_Impendance():
     duration = 50
     interval = 50
     THR = 20.0
+    import time
     check_imp = Impedance_thresholding_sliding(data, duration, interval, THR)
     expected_list = [[True, True], [True, True],
                      [True, False], [True, False],
                      [False, False], [False, False],
                      [False, False], [False, False]]
     npt.assert_equal(check_imp, expected_list)
-
     epochs = epoch(data, duration, interval)
 
-    identity = lambda foofoo: foofoo>0  # build a function identity that doesn't merge the labels
-    classif = AmplitudeThresholding(abs_threshold=THR, rel_threshold=0, decision_function=identity)
+    threshold_simple = lambda foofoo: foofoo>0  # build a simple threshold that doesn't merge the labels
+    classif = AmplitudeThresholding(abs_threshold=THR, rel_threshold=0, decision_function=threshold_simple)
     check_thr = classif.fit_predict(rms(epochs, axis=-1))
     npt.assert_equal(check_thr, expected_list)

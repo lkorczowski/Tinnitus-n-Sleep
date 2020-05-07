@@ -52,6 +52,6 @@ def test_is_good_epoch_basic(data):
 
     is_good, is_bad = is_good_epochs(epochs, channel_type_idx=channel_type_idx,
                                      rejection_thresholds=rejection_thresholds,
-                                     flat_thresholds=flat_thresholds,)
+                                     flat_thresholds=flat_thresholds)
     npt.assert_equal(is_good, is_good_expected)
     npt.assert_equal(is_bad, report)

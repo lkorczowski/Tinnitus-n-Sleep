@@ -1,10 +1,12 @@
 import pytest
 import numpy as np
-from tinnsleep.data import CreateRaw
-from tinnsleep.create_reports import preprocess, reporting, merge_labels_list
 import numpy.testing as npt
 from tinnsleep.utils import epoch
 from tinnsleep.scoring import generate_bruxism_report, generate_MEMA_report
+from tinnsleep.data import CreateRaw
+from tinnsleep.create_reports import preprocess, reporting, merge_labels_list, preprocess2
+from tinnsleep.classification import AmplitudeThresholding
+from tinnsleep.signal import is_good_epochs
 
 
 def test_preprocess():
@@ -24,7 +26,6 @@ def test_preprocess():
     picks_imp = ['IMP_1', 'IMP_2']
     duration = 50
     interval = 50
-    print(raw.info["ch_names"])
     params = dict(ch_names=['1', '2'],
                   rejection_thresholds=dict(emg=1e-04),  # two order of magnitude higher q0.01
                   flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
@@ -56,6 +57,111 @@ def test_preprocess():
     npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3,
                            'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
+
+
+def test_preprocess2_unit():
+    n_chan = 2
+    np.random.seed(42)
+    data = np.random.randn(n_chan, 400)
+    duration = 50
+    interval = 25
+    raw = CreateRaw(data, 100, ['1', '2'])
+    epochs, valid_labels, log = preprocess2(raw, duration, interval)
+    epochs_expected = epoch(raw.get_data(), duration, interval)
+    npt.assert_equal(epochs, epochs_expected)
+    npt.assert_equal(valid_labels, [True]*epochs.shape[0])
+    npt.assert_equal(log, {'suppressed_is_good': 0, 'suppressed_amp_thr': 0, 'suppressed_overall': 0,
+                           'total_nb_epochs': epochs.shape[0]})
+
+    with pytest.raises(ValueError, match=f'`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None'):
+        preprocess2(raw, duration, interval, filter_kwargs='lol')
+
+def test_preprocess2_filter():
+    n_chan = 2
+    np.random.seed(42)
+    data = np.random.randn(n_chan, 400)
+    duration = 50
+    interval = 25
+    ch_names = ['1', '2']
+    filter_kwargs = dict(l_freq = 20., h_freq = 40., n_jobs=4,
+                         fir_design='firwin', filter_length='auto', phase='zero-double',
+                         picks=ch_names)
+    raw = CreateRaw(data, 100, ch_names, ch_types="misc")
+    epochs, valid_labels, log = preprocess2(raw, duration, interval, filter_kwargs=filter_kwargs)
+    epochs_expected = epoch(raw.filter(**filter_kwargs).get_data(), duration, interval)
+    npt.assert_equal(epochs, epochs_expected)
+    npt.assert_equal(valid_labels, [True]*epochs.shape[0])
+    npt.assert_equal(log, {'suppressed_is_good': 0, 'suppressed_amp_thr': 0, 'suppressed_overall': 0,
+                           'total_nb_epochs': epochs.shape[0]})
+
+    with pytest.raises(ValueError, match=f'`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None'):
+        preprocess2(raw, duration, interval, filter_kwargs='lol')
+
+def test_preprocess2_is_good():
+    n_chan = 4
+    np.random.seed(42)
+    data = np.random.randn(n_chan, 400)
+    data[2, 50] = 1000    # remove one epoch
+    data[3, 300:325] = 0  # remove one epoch
+    data[0, slice(0, 10, 400)] = 10000  # won't be selected
+    data[1, 350:400] = 0  # won't be selected
+    duration = 50
+    interval = 25
+    raw = CreateRaw(data, 1, ['1', '2', '3', '4'])
+    pick_chan = ['3', '4']
+    epochs_expected = epoch(raw[pick_chan][0], duration, interval)
+    #TODO: is_good params are ugly, need to refactor
+    is_good_params = dict(channel_type_idx=dict(emg=[0, 1]),
+                         rejection_thresholds=dict(emg=50),
+                         flat_thresholds=dict(emg=1e-1))
+    valid_labels_expected, _ = is_good_epochs(epochs_expected, **is_good_params)
+    epochs, valid_labels, log = preprocess2(raw, duration, interval,
+                                            picks_chan=pick_chan, is_good_kwargs=is_good_params)
+    npt.assert_equal(epochs, epochs_expected)
+    npt.assert_equal(valid_labels, valid_labels_expected)
+    npt.assert_equal(log, {'suppressed_is_good': np.sum(np.invert(valid_labels_expected)),
+                           'suppressed_amp_thr': 0,
+                           'suppressed_overall': np.sum(np.invert(valid_labels_expected)),
+                           'total_nb_epochs': epochs.shape[0]})
+
+
+def test_preprocess2_amp_threshold():
+    n_chan = 2
+    np.random.seed(42)
+    data = np.random.randn(n_chan, 400)
+    data[0, 50] = 1000   # remove one epoch
+    data[1, 300:325] = 0  # remove one epoch
+    duration = 50
+    interval = 25
+    raw = CreateRaw(data, 1, ['1', '2'])
+    epochs_expected = epoch(raw.get_data(), duration, interval)
+    is_good_params = dict(channel_type_idx=dict(emg=[0, 1]),
+                         rejection_thresholds=dict(emg=50),
+                         flat_thresholds=dict(emg=1e-1))
+    valid_labels_expected, _ = is_good_epochs(epochs_expected, **is_good_params)
+    epochs, valid_labels, log = preprocess2(raw, duration, interval, is_good_kwargs=is_good_params)
+    npt.assert_equal(epochs, epochs_expected)
+    npt.assert_equal(valid_labels, valid_labels_expected)
+    npt.assert_equal(log, {'suppressed_is_good': np.sum(np.invert(valid_labels_expected)),
+                           'suppressed_amp_thr': 0,
+                           'suppressed_overall': np.sum(np.invert(valid_labels_expected)),
+                           'total_nb_epochs': epochs.shape[0]})
+
+
+def test_preprocess2():
+    n_chan = 2
+    np.random.seed(42)
+    data = np.random.randn(n_chan, 400)
+    duration = 50
+    interval = 25
+    raw = CreateRaw(data, 1, ['1', '2'])
+    epochs_expected = epoch(raw.get_data(), duration, interval)
+    epochs, valid_labels, log = preprocess2(raw, duration, interval)
+    npt.assert_equal(epochs, epochs_expected)
+    npt.assert_equal(valid_labels, [True]*epochs.shape[0])
+    npt.assert_equal(log, {'suppressed_is_good': 0, 'suppressed_amp_thr': 0, 'suppressed_overall': 0,
+                           'total_nb_epochs': epochs.shape[0]})
+
 
 def test_reporting():
     np.random.seed(42)
@@ -152,6 +258,7 @@ def test_reporting_adaptive_forward_backward():
                        n_adaptive=n_adaptive)
     npt.assert_equal(report["labels"][0], classif_expected)
     npt.assert_equal(report["reports"][0], report_expected)
+
 
 def test_merge_labels_list():
 

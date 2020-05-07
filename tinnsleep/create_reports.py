@@ -131,11 +131,14 @@ def preprocess2(raw, duration, interval,
     """
 
     if isinstance(filter_kwargs, dict):
-        raw = raw.filter(**filter_kwargs, picks=picks_chan)
+        raw = raw.filter(**filter_kwargs)
     elif filter_kwargs is None:
         pass  # do nothing
     else:
         raise ValueError('`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None')
+
+    if episode_kwargs is not None:
+        raise ValueError(f"`episode_kwargs` algorithm not implemented yet")
 
     epochs = RawToEpochs_sliding(raw, duration, interval, picks=picks_chan)
 
@@ -145,7 +148,7 @@ def preprocess2(raw, duration, interval,
     else:
         amplitude_labels, bad_lists = [True]*epochs.shape[0], []
 
-    suppressed_amp = np.sum(np.invert(amplitude_labels))
+    suppressed_is_good = np.sum(np.invert(amplitude_labels))
 
     # Epoch rejection based on Root Mean Square Amplitude thresholding
     if Thresholding_kwargs is not None:
@@ -153,11 +156,12 @@ def preprocess2(raw, duration, interval,
         pipeline = AmplitudeThresholding(**Thresholding_kwargs)
         RMSlabels = pipeline.fit_predict(X)
         #RMSlabels = #TODO: add episode fun
-        suppressed_rms = np.sum(RMSlabels)
-
+    else:
+        RMSlabels = [False]*epochs.shape[0]
+    suppressed_amp_thr = np.sum(RMSlabels)
     valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels], axis=-1)
     suppressed_all = np.sum(np.invert(valid_labels))
-    log = {"suppressed_rms_THR": suppressed_rms, "suppressed_amp_THR": suppressed_amp,
+    log = {"suppressed_is_good": suppressed_is_good, "suppressed_amp_thr": suppressed_amp_thr,
                                      "suppressed_overall": suppressed_all, "total_nb_epochs": len(valid_labels)}
 
     return epochs, valid_labels, log
