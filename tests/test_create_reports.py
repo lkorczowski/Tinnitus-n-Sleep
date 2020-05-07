@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw
-from tinnsleep.create_reports import preprocess, reporting
+from tinnsleep.create_reports import preprocess, reporting, merge_labels_list
 import numpy.testing as npt
 from tinnsleep.utils import epoch
 from tinnsleep.scoring import generate_bruxism_report, generate_MEMA_report
@@ -152,3 +152,40 @@ def test_reporting_adaptive_forward_backward():
                        n_adaptive=n_adaptive)
     npt.assert_equal(report["labels"][0], classif_expected)
     npt.assert_equal(report["reports"][0], report_expected)
+
+def test_merge_labels_list():
+
+    # Unchanging a list to the same number of elements
+    v_lab = merge_labels_list([[True, False, True, False, True]], 5)
+    npt.assert_equal(v_lab, [True, False, True, False, True])
+
+    # Unchanging two identical list into one:
+    v_lab = merge_labels_list([[True, False, True, False, True], [True, False, True, False, True]], 5)
+    npt.assert_equal(v_lab, [True, False, True, False, True])
+
+    # dealing with 2 coherent arrays of len(l) and 2*len(l) and getting output in 2*len(l):
+    v_lab = merge_labels_list([[True, False], [True, True, False, False]], 4)
+    npt.assert_equal(v_lab, [True, True, False, False])
+
+    # dealing with classic situation:
+    v_lab = merge_labels_list([[True, False], [True, True, True, True]], 4)
+    npt.assert_equal(v_lab, [True, True, False, False])
+
+    # dealing with classic situation 2:
+    v_lab = merge_labels_list([[True, True], [True, True, False, True]], 4)
+    npt.assert_equal(v_lab, [True, True, False, True])
+
+    # dealing with 2 coherent arrays of len(l) and 2*len(l) and getting output in len(l):
+    v_lab = merge_labels_list([[True, False], [True, True, False, False]], 2)
+    npt.assert_equal(v_lab, [True, False])
+
+    # dealing with tricky case 1:
+    v_lab = merge_labels_list([[True, True], [True, True, True, False]], 2)
+    npt.assert_equal(v_lab, [True, False])
+
+    # dealing with tricky case 2:
+    v_lab = merge_labels_list([[True, True, False, True], [True, True]], 2)
+    npt.assert_equal(v_lab, [True, False])
+
+
+
