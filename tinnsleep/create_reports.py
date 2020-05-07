@@ -148,9 +148,10 @@ def preprocess2(raw, duration, interval,
 
     # Epoch rejection based on Root Mean Square Amplitude thresholding
     if Thresholding_kwargs is not None:
-        X = rms(epochs)  # take only valid labels
+        X = rms(epochs)
         pipeline = AmplitudeThresholding(**Thresholding_kwargs)
         RMSlabels = pipeline.fit_predict(X)
+        #RMSlabels = #TODO: add episode fun
         suppressed_rms = np.sum(RMSlabels)
 
     valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels], axis=-1)
