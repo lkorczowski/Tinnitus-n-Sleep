@@ -144,7 +144,9 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
 
 
 def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
-    """creates a unique list of valid_labels for classification that merges artifacts coming from different sources
+    """Merge a list of list of booleans labels into a unique array of booleans of size `n_epoch_final` by resampling
+    each list by interpolation. The resampled list of booleans are merged using the logical `merge_fun`.
+
     ----------
     list_valid_labels : list of list of booleans
         lists obtained from different preprocessing loops.
