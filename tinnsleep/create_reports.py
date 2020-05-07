@@ -8,6 +8,7 @@ from tinnsleep.check_impedance import create_annotation_mne, Impedance_threshold
 from tinnsleep.signal import rms
 from tinnsleep.scoring import generate_bruxism_report
 from tinnsleep.signal import is_good_epochs
+from scipy.interpolate import interp1d
 
 
 def preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=6000, get_log=False, filter="default"):
@@ -139,4 +140,42 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
 
     return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log}
 
+def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
+    """Merge a list of list of booleans labels into a unique array of booleans of size `n_epoch_final` by resampling
+    each list by interpolation. The resampled list of booleans are merged using the logical `merge_fun`.
+    ----------
+    list_valid_labels : list of list of booleans
+        lists obtained from different preprocessing loops.
+    n_epoch_final : int
+        length of the output ndarray desired
+    merge_fun : function (default: numpy.all)
+        a function for merging rows of a boolean matrix. Called with parameters axis=-1`
+    Returns`
+    -------
+    valid_labels : ndarray of shape (n_epoch_final, )
+        Merged list_valid_labels
+    """
+    nb_list = len(list_valid_labels)
+    valid_labels = np.ones((n_epoch_final, nb_list)) * np.nan
+    for i in range(nb_list):
 
+        n_epoch_before = len(list_valid_labels[i])
+
+        resampling_factor = float(n_epoch_before / n_epoch_final)
+        if resampling_factor.is_integer() and (resampling_factor != 1):
+                resampling_factor = int(resampling_factor)
+                valid_labels[:, i] = [np.sum(list_valid_labels[i][j * resampling_factor:(j + 1) * resampling_factor])
+                                      /
+                                      resampling_factor == 1 for j in range(n_epoch_final)]
+
+
+        else:
+            # Start Linear space
+            x = np.linspace(0, n_epoch_before, num=n_epoch_before, endpoint=True)
+            # Projection linear space
+            xnew = np.linspace(0, n_epoch_before, num=n_epoch_final, endpoint=True)
+            # Interpolation object definition
+            f1 = interp1d(x, list_valid_labels[i], kind='nearest')
+            valid_labels[:, i] = f1(xnew)
+
+    return merge_fun(valid_labels, axis=-1)

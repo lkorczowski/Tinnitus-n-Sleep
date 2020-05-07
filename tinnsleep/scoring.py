@@ -1,6 +1,8 @@
 from tinnsleep.burst import burst
 from tinnsleep.episode import episode
+from tinnsleep.create_reports import merge_labels_list
 import numpy as np
+
 
 
 def classif_to_burst(classif, time_interval=0.25):
@@ -163,7 +165,7 @@ def get_event_label(episode):
         return 3
 
 
-def create_list_events(li_ep, time_interval, time_recording):
+def create_list_events(li_ep, time_interval, time_recording, boolean_output=False):
     """ Creates the list of events, 0 = no event, 1 = tonic episode, 2 = phasic 
     episode, 3 = mixed episode
     
@@ -174,6 +176,8 @@ def create_list_events(li_ep, time_interval, time_recording):
         time interval in seconds between 2 elementary events
     time_recording : float,
         duration of the recording in seconds
+    boolean_output:
+        ouputs a list of False and True instead of differentiating episodes
     Returns
     -------
     list of integers,
@@ -191,7 +195,10 @@ def create_list_events(li_ep, time_interval, time_recording):
         li_events.extend(li_0)
 
     # Tagging the first event
-    label = get_event_label(li_ep[0])
+    if boolean_output:
+        label = 1
+    else:
+        label = get_event_label(li_ep[0])
     li_events.extend([label for i in range(int((li_ep[0].end - li_ep[0].beg) / time_interval))])
 
     # Loop of tagging
@@ -200,13 +207,20 @@ def create_list_events(li_ep, time_interval, time_recording):
             # Putting zeros between two episodes
             li_events.extend([0 for i in range(int((li_ep[i + 1].beg - li_ep[i].end) / time_interval))])
             # Tagging the next episode
-            label = get_event_label(li_ep[i + 1])
+            if boolean_output:
+                label = 1
+            else:
+                label = get_event_label(li_ep[i + 1])
             li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / time_interval))])
 
     # If necessary, adds 0s at the end of li_events until the end of the recording
     if (time_recording - li_ep[-1].end) / time_interval > 1.0:
         li_0 = [0 for i in range(int((time_recording - li_ep[-1].end) / time_interval))]
         li_events.extend(li_0)
+
+    if boolean_output:
+        li_events = [bool(li_events[i]) for i in range(len(li_events))]
+
     return li_events
 
 
@@ -306,3 +320,81 @@ def generate_MEMA_report(classif, time_interval, delim):
     report["Mean duration of MEMA episode"] = np.mean(episodes_duration)
 
     return report
+
+
+def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interval):
+    # ---------------Subclassifying MEMA and bruxism events----------------------
+    comb_ep = []
+    pure_ep = []
+    compt_arti = 0
+    # merge episodes and compare with condition and artefacts
+    for elm in ep_to_sub:
+        if np.sum(labels_artifacts[int(elm.beg / time_interval):int(elm.end / time_interval)]) == 0:
+            if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
+                comb_ep.append(elm)
+            else:
+                pure_ep.append(elm)
+        else:
+            compt_arti += 1
+    # ------------------
+    # Pure episodes creation
+    li_ep_p = create_list_events(pure_ep, time_interval, time_interval * len(labels_condition), boolean_output=True)
+    # Combined episode creation
+    li_ep_c = create_list_events(comb_ep, time_interval, time_interval * len(labels_condition), boolean_output=True)
+
+    return li_ep_c, li_ep_p, compt_arti
+
+def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=3):
+    # ------------grouping episodes and bursts together------------------------------------
+    bursts = classif_to_burst(labels, time_interval=time_interval)
+    li_ep = burst_to_episode(bursts, delim=delim_ep, min_burst_joining=min_burst_joining)
+    events = create_list_events(li_ep, time_interval, len(labels) * time_interval, boolean_output=True)
+    ep_and_bursts = np.any(np.c_[labels, events], axis=-1)  # rassembling bruxism bursts and episodes
+    return ep_and_bursts, li_ep
+
+
+
+
+def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
+                      labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
+                      min_burst_joining_brux=3, min_burst_joining_MEMA=0):
+    """
+    Hypothesis labels_artifacts_brux has the same length as labels_brux idem for MEMA
+
+    """
+    # Putting labels inputs on the same sampling and epoching
+    if len(labels_brux) != len(labels_MEMA):
+        if len(labels_brux) < len(labels_MEMA):
+            labels_brux = merge_labels_list ([labels_brux], len(labels_MEMA))
+            # adapts and fuses artifacts
+            labels_artifacts =  merge_labels_list ([labels_artifacts_brux,labels_artifacts_MEMA], len(labels_MEMA))
+            time_interval = time_interval_MEMA
+        else:
+            labels_MEMA = merge_labels_list([labels_MEMA], len(labels_brux))
+            # adapts and fuses artifacts
+            labels_artifacts = merge_labels_list([labels_artifacts_brux,labels_artifacts_MEMA], len(labels_brux))
+            time_interval = time_interval_brux
+    else: #inputs of same length
+        # fuses artifacts
+        labels_artifacts = merge_labels_list([labels_artifacts_brux, labels_artifacts_MEMA], len(labels_brux))
+        time_interval = time_interval_brux
+
+    # Creating lists of episode and bursts for bruxism and MEMA
+    brux_burst_ep, li_ep_brux = _labels_to_ep_and_bursts(labels_brux, time_interval, delim_ep_brux,
+                                                         min_burst_joining=min_burst_joining_brux)
+    MEMA_burst_ep, li_ep_MEMA = _labels_to_ep_and_bursts(labels_MEMA, time_interval, delim_ep_MEMA,
+                                                         min_burst_joining=min_burst_joining_MEMA)
+
+    # Conditionnal labelling of events
+    MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA= _cond_subclassif(li_ep_MEMA, labels_artifacts,
+                                                                 brux_burst_ep, time_interval)
+    brux_comb_ep, brux_pure_ep, compt_arti_brux = _cond_subclassif(li_ep_brux, labels_artifacts,
+                                                                   MEMA_burst_ep, time_interval)
+
+    return brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA
+
+
+
+
+
+
