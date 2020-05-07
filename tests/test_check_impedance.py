@@ -39,7 +39,6 @@ def test_fuse_with_classif_result():
     check_imp = [[False, False], [False, True], [True, True], [True, False], [True, True], [True, False]]
     classif=np.asanyarray([1, 2, 3, 4])
     classif = fuse_with_classif_result(check_imp, classif)
-    print(classif)
     npt.assert_equal(classif, [1, 2, False, 3, False, 4])
 
 
