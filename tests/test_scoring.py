@@ -48,8 +48,6 @@ def test_burst_to_episode_withparam():
     npt.assert_equal(len(burst_to_episode(bursty, delim=1, min_burst_joining=4)), 1)
 
 
-
-
 def test_rearrange_chronological():
     """Test if a given burst_list is in the chronological order"""
     bursty = [burst(0.1, 1), burst(0.1, 1), burst(3, 6), burst(1.5, 2.5)]
@@ -92,9 +90,15 @@ def test_create_list_events():
 
 def test_episodes_to_list_simple():
     time_interval = 1
-    bursts_ = [burst(1, 2), burst(2, 3), burst(3, 4)]
+    bursts_ = []
     n_labels = 10
-    episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1), time_interval, n_labels)
+    labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
+    npt.assert_equal(labels, [False]*10)
+
+    bursts_ = [burst(1, 2), burst(3, 4)]
+    labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
+    labels_expected = [False]*10; labels_expected[1] = True; labels_expected[3] = True
+    npt.assert_equal(labels>0, labels_expected)
 
 
 def test_generate_bruxism_report():

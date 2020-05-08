@@ -3,11 +3,6 @@ import numpy as np
 from tinnsleep.check_impedance import check_RMS, create_annotation_sliding, Impedance_thresholding_sliding, create_annotation_mne
 import numpy.testing as npt
 
-@pytest.fixture
-def data():
-    np.random.seed(42)
-    return np.random.randn(2, 400)
-
 
 def test_Impedance_thresholding_sliding():
     np.random.seed(42)
