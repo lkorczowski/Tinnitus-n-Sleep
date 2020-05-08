@@ -1,7 +1,7 @@
 import pytest
 import numpy.testing as npt
 from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological, \
-    generate_bruxism_report,  generate_annotations, generate_MEMA_report, combine_brux_MEMA
+    generate_bruxism_report,  generate_annotations, generate_MEMA_report
 from tinnsleep.burst import burst
 import numpy as np
 
@@ -187,29 +187,3 @@ def test_generate_report_fails_noparams():
     with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
         generate_MEMA_report(classif)
 
-def test_combine_brux_MEMA():
-    labels_brux = [True, True, True, True, False, False, False, False,
-                   True, True, True, True, False, False, False, False]
-    labels_artifacts_brux = [True, True, True, True, True, True, True, True,
-                             True, True, True, True, True, True, True, True]
-    time_interval_brux=0.25
-    delim_ep_brux= 1
-    labels_MEMA = [True, True, True, False,
-                   False, True, True, False]
-    labels_artifacts_MEMA = [True, True, True, True,
-                             True, True, True, True]
-    time_interval_MEMA =0.5
-    delim_ep_MEMA = 1
-
-    min_burst_joining_brux = 3
-    min_burst_joining_MEMA = 0
-
-    brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA = combine_brux_MEMA\
-        (labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
-                      labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
-                      min_burst_joining_brux=min_burst_joining_brux, min_burst_joining_MEMA= min_burst_joining_MEMA)
-
-    npt.assert_equal(brux_comb_ep, [True, True, True, True, False, False, False, False,
-                   True, True, True, True, False, False, False, False])
-    npt.assert_equal(MEMA_comb_ep, [True, True, True, True, True, True, False, False, False, False,
-                   True, True, False, False])

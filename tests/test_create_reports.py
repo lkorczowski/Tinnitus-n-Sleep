@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw
-from tinnsleep.create_reports import preprocess, reporting, merge_labels_list
+from tinnsleep.create_reports import preprocess, reporting, merge_labels_list, combine_brux_MEMA
 import numpy.testing as npt
 from tinnsleep.utils import epoch
 from tinnsleep.scoring import generate_bruxism_report, generate_MEMA_report
@@ -185,3 +185,32 @@ def test_merge_labels_list():
         # dealing with tricky case 2:
         v_lab = merge_labels_list([[True, True, False, True], [True, True]], 2)
         npt.assert_equal(v_lab, [True, False])
+
+
+def test_combine_brux_MEMA():
+    labels_brux = [True, True, True, True, False, False, False, False,
+                   True, True, True, True, False, False, False, False]
+    labels_artifacts_brux = [True, True, True, True, True, True, True, True,
+                             True, True, True, True, True, True, True, True]
+    time_interval_brux=0.25
+    delim_ep_brux= 1
+    labels_MEMA = [True, True, True, False,
+                   False, True, True, False]
+    labels_artifacts_MEMA = [True, True, True, True,
+                             True, True, True, True]
+    time_interval_MEMA =0.5
+    delim_ep_MEMA = 1
+
+    min_burst_joining_brux = 0
+    min_burst_joining_MEMA = 0
+
+    brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA = combine_brux_MEMA\
+        (labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
+                      labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
+                      min_burst_joining_brux=min_burst_joining_brux, min_burst_joining_MEMA= min_burst_joining_MEMA)
+
+
+    npt.assert_equal(brux_comb_ep, [True, True, True, True, False, False, False, False,
+                   True, True, True, True, False, False, False, False])
+    npt.assert_equal(MEMA_comb_ep, [True, True, True, True, True, True, False, False, False, False,
+                   True, True, True, True, False, False])
