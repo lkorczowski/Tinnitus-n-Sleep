@@ -5,7 +5,7 @@ from tinnsleep.data import CreateRaw, RawToEpochs_sliding
 from tinnsleep.classification import AmplitudeThresholding
 from tinnsleep.utils import fuse_with_classif_result
 from tinnsleep.signal import rms
-from tinnsleep.scoring import generate_bruxism_report, classif_to_burst, burst_to_episode, create_list_events
+from tinnsleep.scoring import generate_bruxism_report, classif_to_burst, burst_to_episode, episodes_to_list
 from tinnsleep.signal import is_good_epochs
 
 
@@ -88,11 +88,11 @@ def preprocess(raw, duration, interval,
         RMSlabels = pipeline.fit_predict(X)
         if isinstance(burst_to_episode_kwargs, dict) and np.any(RMSlabels):
             time_interval = interval/raw.info["sfreq"]
-            RMSlabels = create_list_events(
+            RMSlabels = 0 < episodes_to_list(
                 burst_to_episode(
                     classif_to_burst(RMSlabels, time_interval=time_interval),
                     **burst_to_episode_kwargs
-                ), time_interval=time_interval, time_recording=raw.times[-1]
+                ), time_interval=time_interval, n_labels=X.shape[0]
             )
     else:
         RMSlabels = [False]*epochs.shape[0]

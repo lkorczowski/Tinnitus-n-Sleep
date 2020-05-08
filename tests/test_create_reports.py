@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch
-from tinnsleep.scoring import generate_bruxism_report, burst_to_episode, classif_to_burst, create_list_events
+from tinnsleep.scoring import generate_bruxism_report, burst_to_episode, classif_to_burst, episodes_to_list
 from tinnsleep.data import CreateRaw
 from tinnsleep.create_reports import preprocess, reporting
 from tinnsleep.classification import AmplitudeThresholding
@@ -129,11 +129,11 @@ def test_preprocess_episode():
                                             burst_to_episode_kwargs=burst_to_episode_kwargs)
 
     time_interval = interval / raw.info["sfreq"]
-    valid_labels_expected = create_list_events(
+    valid_labels_expected = 0 < episodes_to_list(
                 burst_to_episode(
                     classif_to_burst(valid_labels_expected, time_interval=time_interval),
                     **burst_to_episode_kwargs
-                ), time_interval=time_interval, time_recording=raw.times[-1]
+                ), time_interval=time_interval, n_labels=valid_labels_expected.shape[0]
             )
     valid_labels_expected = np.invert(valid_labels_expected)
     npt.assert_equal(epochs, epochs_expected)
@@ -142,6 +142,7 @@ def test_preprocess_episode():
                            'suppressed_amp_thr': np.sum(np.invert(valid_labels_expected)),
                            'suppressed_overall': np.sum(np.invert(valid_labels_expected)),
                            'total_nb_epochs': epochs.shape[0]})
+
 
 def test_reporting():
     np.random.seed(42)
