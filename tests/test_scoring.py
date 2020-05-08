@@ -66,6 +66,9 @@ def test_create_list_events():
     # Test if empty
     npt.assert_equal(create_list_events([], 0.5, 0), [])
 
+    # Test if empty but with length
+    npt.assert_equal(create_list_events([], 0.5, 0), [])
+
     # Test all the episodes types
     bursty = [burst(0.1, 1), burst(0.1, 1), burst(3, 6), burst(1.5, 2.5), burst(1.25, 3.5), burst(0, 0.2),
               burst(5.5, 6.5), burst(7.5, 8.5), burst(15, 20), burst(25, 26), burst(26.5, 27), burst(28, 29)]

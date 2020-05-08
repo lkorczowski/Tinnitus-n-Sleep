@@ -14,8 +14,8 @@ def preprocess(raw, duration, interval,
                 is_good_kwargs=None,
                 filter_kwargs=None,
                 Thresholding_kwargs=None,
-                episode_kwargs=None,
-                merge_fun=np.all):
+                burst_to_episode_kwargs=None,
+                merge_fun=None):
     """Preprocesses raw and apply a list of operations for events detection. Each step can be muted by giving None.
 
 
@@ -43,10 +43,12 @@ def preprocess(raw, duration, interval,
         parameters for ``tinnsleep.signal.is_good_epochs()`` to apply to subset picks_chan
     Thresholding_kwargs : dict (default: None)
         parameters for ``tinnsleep.classification.AmplitudeThresholding`` to apply
-    episode_kwargs : dict (default: None)
-        parameters for ``tinnsleep.episode`` class to merge
-    merge_fun : function (default: numpy.all)
+    burst_to_episode_kwargs : dict (default: None)
+        parameters for ``tinnsleep.scoring.burst_to_episode`` class to merge Amplitude_Thresholding
+    merge_fun : function (default: numpy.all(labels, axis=-1))
         function to merge is_good and Amplitude_Thresholding (True: valid epoch, False: artifact detected)
+        by default, `numpy.all(labels, axis=-1)` is used: True only if all are valid_labels
+        >>> merge_fun = lambda valid_labels: np.all(valid_labels, axis=-1)  # default
 
     Returns
     -------
@@ -65,8 +67,9 @@ def preprocess(raw, duration, interval,
     else:
         raise ValueError('`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None')
 
-    if episode_kwargs is not None:
-        raise ValueError(f"`episode_kwargs` algorithm not implemented yet")
+    if merge_fun is None:
+        def merge_fun(foo):
+            return np.all(foo, axis=-1)
 
     epochs = RawToEpochs_sliding(raw, duration, interval, picks=picks_chan)
 
@@ -83,11 +86,18 @@ def preprocess(raw, duration, interval,
         X = rms(epochs)
         pipeline = AmplitudeThresholding(**Thresholding_kwargs)
         RMSlabels = pipeline.fit_predict(X)
-        #RMSlabels = # TODO: add episode fun
+        if isinstance(burst_to_episode_kwargs, dict) and np.any(RMSlabels):
+            time_interval = interval/raw.info["sfreq"]
+            RMSlabels = create_list_events(
+                burst_to_episode(
+                    classif_to_burst(RMSlabels, time_interval=time_interval),
+                    **burst_to_episode_kwargs
+                ), time_interval=time_interval, time_recording=raw.times[-1]
+            )
     else:
         RMSlabels = [False]*epochs.shape[0]
     suppressed_amp_thr = np.sum(RMSlabels)
-    valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels], axis=-1)
+    valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels])
     suppressed_all = np.sum(np.invert(valid_labels))
     log = {"suppressed_is_good": suppressed_is_good, "suppressed_amp_thr": suppressed_amp_thr,
                                      "suppressed_overall": suppressed_all, "total_nb_epochs": len(valid_labels)}
