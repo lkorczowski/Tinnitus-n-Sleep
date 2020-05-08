@@ -43,10 +43,14 @@ def test_burst_to_episode_withparam():
     bursty = [burst(3.1, 3.9), burst(5, 6),
               burst(6.5, 7.5), burst(15, 20)]
 
+    npt.assert_equal(len(burst_to_episode(bursty,  delim=0, min_burst_joining=1)), 4)
     npt.assert_equal(len(burst_to_episode(bursty,  delim=1, min_burst_joining=3)), 1)
     npt.assert_equal(len(burst_to_episode(bursty, delim=3, min_burst_joining=3)), 2)
     npt.assert_equal(len(burst_to_episode(bursty, delim=1, min_burst_joining=4)), 1)
 
+    bursty = [burst(1, 2), burst(3, 4)]
+    npt.assert_equal(len(burst_to_episode(bursty,  delim=0, min_burst_joining=1)), 2)
+    
 
 def test_rearrange_chronological():
     """Test if a given burst_list is in the chronological order"""

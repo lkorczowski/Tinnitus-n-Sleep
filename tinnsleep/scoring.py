@@ -116,7 +116,7 @@ def burst_to_episode(burst_list, delim=3, min_burst_joining=3):
         i += 1
 
     # Deals with the last burst
-    current_epi.assess_type()
+    current_epi.assess_type(min_burst_joining=min_burst_joining)
     if current_epi.is_valid():
         ep_list.append(current_epi)
 
