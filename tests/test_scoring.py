@@ -95,9 +95,16 @@ def test_episodes_to_list_simple():
     labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
     npt.assert_equal(labels, [False]*10)
 
-    bursts_ = [burst(1, 2), burst(3, 4)]
+    bursts_ = [burst(1, 2), burst(5, 6), burst(6, 7), burst(9, 10)]
     labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
-    labels_expected = [False]*10; labels_expected[1] = True; labels_expected[3] = True
+    labels_expected = np.zeros((n_labels,));
+    labels_expected[[1, 5, 6, 9]] = True
+    npt.assert_equal(labels>0, labels_expected)
+
+    bursts_ = [burst(0.5, 2), burst(4.5, 7.5),burst(8.1, 8.2), burst(9, 10.5)] # should convert only full epochs
+    labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
+    labels_expected = np.zeros((n_labels,));
+    labels_expected[[1, 5, 6, 9]] = True
     npt.assert_equal(labels>0, labels_expected)
 
 
