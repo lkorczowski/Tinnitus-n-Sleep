@@ -52,8 +52,6 @@ def test_burst_to_episode_withparam():
     npt.assert_equal(len(burst_to_episode(bursty,  delim=0, min_burst_joining=1)), 2)
 
 
-
-
 def test_rearrange_chronological():
     """Test if a given burst_list is in the chronological order"""
     bursty = [burst(0.1, 1), burst(0.1, 1), burst(3, 6), burst(1.5, 2.5)]
