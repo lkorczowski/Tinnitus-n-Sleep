@@ -189,7 +189,6 @@ def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interva
     for elm in ep_to_sub:
         if np.sum(labels_artifacts[int(elm.beg / time_interval):int(elm.end / time_interval)]) == \
                 (int(elm.end / time_interval) - int(elm.beg / time_interval)):
-            print("no artifacts detected")
             if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
                 comb_ep.append(elm)
             else:

@@ -24,7 +24,6 @@ def test_preprocess():
     picks_imp = ['IMP_1', 'IMP_2']
     duration = 50
     interval = 50
-    print(raw.info["ch_names"])
     params = dict(ch_names=['1', '2'],
                   rejection_thresholds=dict(emg=1e-04),  # two order of magnitude higher q0.01
                   flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
@@ -37,7 +36,6 @@ def test_preprocess():
 
     epochs, valid_labels, log = preprocess(raw, picks_chan, picks_imp, duration, interval, params, THR_imp=50,
                                            get_log=True, filter=None)
-    print(log)
     npt.assert_equal(log, {'suppressed_imp_THR': 2, 'suppressed_amp_THR': 1, 'suppressed_overall': 3,
                            'total_nb_epochs': 8})
     npt.assert_equal(valid_labels, [False, False, False, True, True, True, True, True])
@@ -214,3 +212,49 @@ def test_combine_brux_MEMA():
                    True, True, True, True, False, False, False, False])
     npt.assert_equal(MEMA_comb_ep, [True, True, True, True, True, True, False, False, False, False,
                    True, True, True, True, False, False])
+
+    #testing symetry of the function
+    brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA = combine_brux_MEMA \
+        (labels_MEMA, labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA, labels_brux, labels_artifacts_brux,
+         time_interval_brux, delim_ep_brux,
+         min_burst_joining_brux=min_burst_joining_MEMA, min_burst_joining_MEMA=min_burst_joining_brux)
+
+    npt.assert_equal(MEMA_comb_ep, [True, True, True, True, False, False, False, False,
+                                    True, True, True, True, False, False, False, False])
+    npt.assert_equal(brux_comb_ep, [True, True, True, True, True, True, False, False, False, False,
+                                    True, True, True, True, False, False])
+
+    labels_MEMA = [True, True, True, True, False, False, False, False,
+                   False, True, True, True, False, False, False, False]
+    labels_artifacts_MEMA = [True, True, True, True, True, True, True, True,
+                             False, True, True, True, True, True, True, True]
+    time_interval_MEMA = 0.25
+    delim_ep_MEMA = 1
+    brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA = combine_brux_MEMA \
+        (labels_MEMA, labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA, labels_brux, labels_artifacts_brux,
+         time_interval_brux, delim_ep_brux,
+         min_burst_joining_brux=min_burst_joining_MEMA, min_burst_joining_MEMA=min_burst_joining_brux)
+
+    npt.assert_equal(MEMA_comb_ep, [True, True, True, True, False, False, False, False,
+                                    False, False, False, False, False, False, False, False])
+    npt.assert_equal(brux_comb_ep, [True, True, True, True, False, False, False, False,
+                                    False, True, True, True, False, False, False, False])
+
+    labels_MEMA = [True, True, True, True, False, False, False, False,
+                   False, False, False, False, False, False, False, False]
+    labels_artifacts_MEMA = [True, True, True, True, True, True, True, True,
+                             True, True, True, True, True, True, True, True]
+    labels_brux = [False, False, False, False, False, False, False, False,
+                   True, True, True, True, False, False, False, False]
+    labels_artifacts_brux = [True, True, True, True, True, True, True, True,
+                             True, True, True, True, True, True, True, True]
+
+    brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA = combine_brux_MEMA \
+        (labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
+         labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
+         min_burst_joining_brux=min_burst_joining_brux, min_burst_joining_MEMA=min_burst_joining_MEMA)
+
+    npt.assert_equal(MEMA_pure_ep, [True, True, True, True, False, False, False, False,
+                                    False, False, False, False, False, False, False, False])
+    npt.assert_equal(brux_pure_ep, [False, False, False, False, False, False, False, False,
+                                    True, True, True, True, False, False, False, False])
