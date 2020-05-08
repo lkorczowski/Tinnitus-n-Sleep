@@ -210,6 +210,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
     npt.assert_equal(epi.is_valid(), False)
+    npt.assert_equal(epi.code, 1)
 
     # Test no type 2 burst
     epi.add_a_burst(bursty3)
