@@ -1,8 +1,6 @@
 import pytest
 import numpy as np
-from tinnsleep.data import CreateRaw, RawToEpochs_sliding
-from tinnsleep.check_impedance import check_RMS, create_annotation_sliding, Impedance_thresholding_sliding, \
-    fuse_with_classif_result, create_annotation_mne
+from tinnsleep.check_impedance import check_RMS, create_annotation_sliding, Impedance_thresholding_sliding, create_annotation_mne
 import numpy.testing as npt
 
 @pytest.fixture
@@ -34,12 +32,6 @@ def test_check_RMS():
     RMS = [[1, 1], [1, 12], [12, 12], [1, 1]]
     RMS = check_RMS(RMS, check_imp)
     npt.assert_equal(RMS, [[1, 1], [1, 1], [1, 1]])
-
-def test_fuse_with_classif_result():
-    check_imp = [[False, False], [False, True], [True, True], [True, False], [True, True], [True, False]]
-    classif=np.asanyarray([1, 2, 3, 4])
-    classif = fuse_with_classif_result(check_imp, classif)
-    npt.assert_equal(classif, [1, 2, False, 3, False, 4])
 
 
 def test_bad_epochs_annotations():

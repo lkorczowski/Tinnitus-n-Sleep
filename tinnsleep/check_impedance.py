@@ -72,25 +72,7 @@ def check_RMS(X, check_imp):
     return mod_X
 
 
-def fuse_with_classif_result(check_imp, labels):
-    """Adds at the good indexes the missing elements of labels because of the use of check_RMS
-    Parameters
-    ----------
-    check_imp : list of list , shape (nb_epochs, nb_electrodes)
-         0s and 1s 0s marking bad channels for the designated epoch
-    labels : ndarray, shape (n_trials - nb_bad_epochs,)
-        array of the classification prediction results
 
-    Returns
-    -------
-    mod_labels : ndarray, shape (n_trials,)
-        Modified labels to fit a length of n_trials
-    """
-    labels = labels.tolist()
-    for i in range(len(check_imp)):
-        if np.mean(check_imp[i]) == 1:
-            labels.insert(i, False)   # inserting False (neutral) values in the labels array where they were deleted
-    return labels
 
 
 def create_annotation_sliding(check_imp, duration, interval, orig_time=0.0):
