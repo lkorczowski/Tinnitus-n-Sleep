@@ -181,6 +181,25 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
     return merge_fun(valid_labels, axis=-1)
 
 def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interval):
+    """subclassification of list of events into pure and combined events according to the labels_condition criterion
+     ep_to_sub : list of episodes instances
+            list of episodes to subclassify
+    labels_artifacts: list of booleans
+         list of artifacts events found during preprocessing for ep_to_sub,
+    labels_condition : list of booleans
+        list of events coming from episode and bursts from a chosen biosignal
+    time_interval : float
+        time interval between two labels of labels_condition
+    Returns
+    -------
+    li_ep_c : list of booleans
+        list of combined events grouped as episodes
+    li_ep_p : list of booleans
+        list of pure events grouped as episodes
+    compt_arti : int
+        number of events rejected due to artifact crossing
+
+    """
     # ---------------Subclassifying MEMA and bruxism events----------------------
     comb_ep = []
     pure_ep = []
@@ -203,13 +222,29 @@ def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interva
 
     return li_ep_c, li_ep_p, compt_arti
 
-def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=3):
+def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=0):
+    """joining near bursts into episodes but keeping isolated bursts intact for future mutual conditioned analysis
+        ----------
+        labels: list of booleans
+            list of events directly afer classification
+        time_interval : float
+            time interval between two labels
+        delim_ep : float
+            maximal tolerated time interval between 2 bursts to form an episode
+        min_burst_joining_brux : int, (default : 0)
+            minimal number of burst admitted to form an episode
+        Returns`
+        -------
+        events : list of booleans
+            list of events coming from episode or bursts from labels
+        li_ep : list of episode instances
+            list of episodes created from labels
+        """
     # ------------grouping episodes and bursts together------------------------------------
     bursts = classif_to_burst(labels, time_interval=time_interval)
     li_ep = burst_to_episode(bursts, delim=delim_ep, min_burst_joining=min_burst_joining)
     events = create_list_events(li_ep, time_interval, len(labels) * time_interval, boolean_output=True)
-    ep_and_bursts = np.any(np.c_[labels, events], axis=-1)  # rassembling bruxism bursts and episodes
-    return ep_and_bursts, li_ep
+    return events, li_ep
 
 
 
@@ -217,10 +252,44 @@ def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=
 def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
                       labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
                       min_burst_joining_brux=3, min_burst_joining_MEMA=0):
-    """
-    Hypothesis labels_artifacts_brux has the same length as labels_brux idem for MEMA
-
-    """
+    """Combined analysis of bruxism and MEMA events to separate pure from combined events for both signals
+        ----------
+        labels_brux : list of booleans
+            list of bruxism events directly afer classification
+        labels_artifacts_brux : list of booleans
+            list of bruxism artifacts events found during bruxism preprocessing,
+            should be of the same length as labels_brux
+        time_interval_brux : float
+            time interval between two labels of labels_brux
+        delim_ep_brux : float
+            maximal tolerated time interval between 2 bruxism bursts to form an episode
+        labels_MEMA : list of booleans
+            list of MEMA events directly afer classification
+        labels_artifacts_MEMA : list of booleans
+            list of MEMA artifacts events found during MEMA preprocessing, should be of the same length as labels_MEMA
+        time_interval_MEMA : float
+            time interval between two labels of labels_MEMA
+        delim_ep_MEMA : float
+            maximal tolerated time interval between 2 MEMA bursts to form an episode
+        min_burst_joining_brux : int, (default : 3)
+            minimal number of burst admitted to form an episode for brux
+        min_burst_joining_MEMA : int, (default :0)
+            minimal number of burst admitted to form an episode for MEMA
+        Returns`
+        -------
+        brux_comb_ep : list of booleans
+            list of combined bruxism events grouped as episodes
+        brux_pure_ep : list of booleans
+            list of pure bruxism events grouped as episodes
+        compt_arti_brux : int
+            number of bruxism events rejected due to artifact crossing
+        MEMA_comb_ep : list of booleans
+            list of combined MEMA events grouped as episodes
+        MEMA_pure_ep : list of booleans
+            list of pure MEMA events grouped as episodes
+        compt_arti_MEMA : int
+            number of MEMA events rejected due to artifact crossing
+        """
     # Putting labels inputs on the same sampling and epoching
     if len(labels_brux) != len(labels_MEMA):
         if len(labels_brux) < len(labels_MEMA):

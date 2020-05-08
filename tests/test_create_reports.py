@@ -202,6 +202,7 @@ def test_combine_brux_MEMA():
     min_burst_joining_brux = 0
     min_burst_joining_MEMA = 0
 
+    #classic setup
     brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA = combine_brux_MEMA\
         (labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
                       labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
@@ -224,6 +225,7 @@ def test_combine_brux_MEMA():
     npt.assert_equal(brux_comb_ep, [True, True, True, True, True, True, False, False, False, False,
                                     True, True, True, True, False, False])
 
+    #Testing with inputs of same length and with one artifact affecting brux but not mema
     labels_MEMA = [True, True, True, True, False, False, False, False,
                    False, True, True, True, False, False, False, False]
     labels_artifacts_MEMA = [True, True, True, True, True, True, True, True,
@@ -240,6 +242,7 @@ def test_combine_brux_MEMA():
     npt.assert_equal(brux_comb_ep, [True, True, True, True, False, False, False, False,
                                     False, True, True, True, False, False, False, False])
 
+    #Testing for pure events
     labels_MEMA = [True, True, True, True, False, False, False, False,
                    False, False, False, False, False, False, False, False]
     labels_artifacts_MEMA = [True, True, True, True, True, True, True, True,
