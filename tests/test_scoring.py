@@ -48,6 +48,9 @@ def test_burst_to_episode_withparam():
     npt.assert_equal(len(burst_to_episode(bursty, delim=3, min_burst_joining=3)), 2)
     npt.assert_equal(len(burst_to_episode(bursty, delim=1, min_burst_joining=4)), 1)
 
+    bursty = [burst(1, 2), burst(3, 4)]
+    npt.assert_equal(len(burst_to_episode(bursty,  delim=0, min_burst_joining=1)), 2)
+
 
 
 
