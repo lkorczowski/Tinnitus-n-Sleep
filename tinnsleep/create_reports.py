@@ -131,7 +131,7 @@ def preprocess2(raw, duration, interval,
     """
 
     if isinstance(filter_kwargs, dict):
-        raw = raw.filter(**filter_kwargs)
+        raw = raw.copy().filter(**filter_kwargs)
     elif filter_kwargs is None:
         pass  # do nothing
     else:
