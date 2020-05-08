@@ -116,7 +116,7 @@ def burst_to_episode(burst_list, delim=3, min_burst_joining=3):
         i += 1
 
     # Deals with the last burst
-    current_epi.assess_type()
+    current_epi.assess_type(min_burst_joining=min_burst_joining)
     if current_epi.is_valid():
         ep_list.append(current_epi)
 
@@ -163,7 +163,7 @@ def get_event_label(episode):
         return 3
 
 
-def create_list_events(li_ep, time_interval, time_recording):
+def create_list_events(li_ep, time_interval, time_recording, boolean_output=False):
     """ Creates the list of events, 0 = no event, 1 = tonic episode, 2 = phasic 
     episode, 3 = mixed episode
     
@@ -174,6 +174,8 @@ def create_list_events(li_ep, time_interval, time_recording):
         time interval in seconds between 2 elementary events
     time_recording : float,
         duration of the recording in seconds
+    boolean_output: boolean, (default : False)
+        ouputs a list of False and True instead of differentiating episodes
     Returns
     -------
     list of integers,
@@ -182,7 +184,10 @@ def create_list_events(li_ep, time_interval, time_recording):
     # Deals the case the input is empty
     li_events = []
     if len(li_ep) == 0:
-        return []
+        if boolean_output:
+            return [False for i in range(int(time_recording / time_interval))]
+        else:
+            return [0 for i in range(int(time_recording / time_interval))]
 
     # Initialization
     # Case where the first burst does not begin at time=0
@@ -191,7 +196,10 @@ def create_list_events(li_ep, time_interval, time_recording):
         li_events.extend(li_0)
 
     # Tagging the first event
-    label = get_event_label(li_ep[0])
+    if boolean_output:
+        label = 1
+    else:
+        label = get_event_label(li_ep[0])
     li_events.extend([label for i in range(int((li_ep[0].end - li_ep[0].beg) / time_interval))])
 
     # Loop of tagging
@@ -200,13 +208,19 @@ def create_list_events(li_ep, time_interval, time_recording):
             # Putting zeros between two episodes
             li_events.extend([0 for i in range(int((li_ep[i + 1].beg - li_ep[i].end) / time_interval))])
             # Tagging the next episode
-            label = get_event_label(li_ep[i + 1])
+            if boolean_output:
+                label = 1
+            else:
+                label = get_event_label(li_ep[i + 1])
             li_events.extend([label for i in range(int((li_ep[i + 1].end - li_ep[i + 1].beg) / time_interval))])
 
     # If necessary, adds 0s at the end of li_events until the end of the recording
     if (time_recording - li_ep[-1].end) / time_interval > 1.0:
         li_0 = [0 for i in range(int((time_recording - li_ep[-1].end) / time_interval))]
         li_events.extend(li_0)
+    # Conversion to "True" and "False" values
+    if boolean_output:
+        li_events = [bool(li_events[i]) for i in range(len(li_events))]
     return li_events
 
 
