@@ -1,7 +1,7 @@
 import pytest
 import numpy.testing as npt
 from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological, \
-    generate_bruxism_report,  generate_annotations, generate_MEMA_report
+    generate_bruxism_report,  generate_annotations, generate_MEMA_report, episodes_to_list
 from tinnsleep.burst import burst
 import numpy as np
 
@@ -88,6 +88,14 @@ def test_create_list_events():
     li_ep = burst_to_episode(bursty)
     li_ev = create_list_events(li_ep, 0.25, 5)
     npt.assert_equal(li_ev, [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
+
+
+def test_episodes_to_list_simple():
+    time_interval = 1
+    bursts_ = [burst(1, 2), burst(2, 3), burst(3, 4)]
+    n_labels = 10
+    episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1), time_interval, n_labels)
+
 
 def test_generate_bruxism_report():
     classif = [False, False]

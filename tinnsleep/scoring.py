@@ -4,7 +4,7 @@ import numpy as np
 
 
 def classif_to_burst(classif, time_interval=0.25):
-    """ Transforms a classification boolean list of results into a 
+    """ Transforms a classification boolean list of results into a
     chronological list of bursts
     
     Parameters
@@ -208,6 +208,34 @@ def create_list_events(li_ep, time_interval, time_recording):
         li_0 = [0 for i in range(int((time_recording - li_ep[-1].end) / time_interval))]
         li_events.extend(li_0)
     return li_events
+
+
+def episodes_to_list(list_episodes, time_interval, n_labels):
+    """ Creates the list of events based on episode code
+
+    Parameters
+    ----------
+    li_ep : list of episode instances
+    time_interval: float,
+        time interval in seconds between 2 elementary events
+    n_labels : int
+        duration of the recording in seconds
+
+    Returns
+    -------
+    labels : ndarray, shape (n_labels, )
+        labels of the events
+    """
+    labels = np.zeros((n_labels,))      # initialized label list
+    time_stamps = np.arange(0, n_labels + 1) * time_interval
+    for episode_ in list_episodes:
+        # condition: complete overlap
+        is_episode = np.all(np.c_[episode_.beg <= time_stamps[:-1], time_stamps[1:] <= episode_.end], axis=-1)
+        if hasattr(episode_, 'code'):
+            labels[is_episode] = episode_.code  # should be an int code 1 : phasic, 2, tonic, etc.
+        else:
+            labels[is_episode] = 1
+    return labels
 
 
 def generate_bruxism_report(classif, time_interval, delim):
