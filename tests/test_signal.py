@@ -45,20 +45,13 @@ def test_is_good_epoch_basic(data):
     # test only one epoch
     npt.assert_equal(_is_good_epoch(epochs[0], channel_type_idx=channel_type_idx,
                                     rejection_thresholds=rejection_thresholds,
-                                    flat_thresholds=flat_thresholds, full_report=False), False)
+                                    flat_thresholds=flat_thresholds), False)
     npt.assert_equal(_is_good_epoch(epochs[1], channel_type_idx=channel_type_idx,
                                     rejection_thresholds=rejection_thresholds,
-                                    flat_thresholds=flat_thresholds, full_report=False), True)
+                                    flat_thresholds=flat_thresholds), True)
 
-    # all epochs without full_report
-    is_good = is_good_epochs(epochs, channel_type_idx=channel_type_idx,
-                             rejection_thresholds=rejection_thresholds,
-                             flat_thresholds=flat_thresholds)
-    npt.assert_equal(is_good, is_good_expected)
-
-    # all epochs with full report
     is_good, is_bad = is_good_epochs(epochs, channel_type_idx=channel_type_idx,
                                      rejection_thresholds=rejection_thresholds,
-                                     flat_thresholds=flat_thresholds, full_report=True)
+                                     flat_thresholds=flat_thresholds)
     npt.assert_equal(is_good, is_good_expected)
     npt.assert_equal(is_bad, report)

@@ -1,6 +1,5 @@
-import pytest
 import numpy.testing as npt
-from tinnsleep.burst import burst
+from tinnsleep.events.burst import burst
 
 
 def test_burst():

@@ -53,10 +53,7 @@ def is_good_epochs(epochs, **kwargs):
     -------
 
     """
-    if "full_report" in kwargs:
-        full_report = kwargs["full_report"]
-    else:
-        full_report = False
+
     kwargs["full_report"] = True
     labels = []
     bad_lists = []
@@ -65,11 +62,7 @@ def is_good_epochs(epochs, **kwargs):
         labels.append(label)
         bad_lists.append(bad_list)
 
-    if full_report:
-        return labels, bad_lists
-    else:
-        return labels
-
+    return labels, bad_lists
 
 def _is_good_epoch(data, ch_names=None,
                    channel_type_idx=None,
