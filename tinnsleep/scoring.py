@@ -245,10 +245,8 @@ def episodes_to_list(list_episodes, time_interval, n_labels):
     for episode_ in list_episodes:
         # condition: complete overlap
         is_episode = np.all(np.c_[episode_.beg <= time_stamps[:-1], time_stamps[1:] <= episode_.end], axis=-1)
-        if hasattr(episode_, 'code'):
-            labels[is_episode] = episode_.code  # should be an int code 1 : phasic, 2, tonic, etc.
-        else:
-            labels[is_episode] = 1
+        labels[is_episode] = episode_.code  # should be an int code 1 : phasic, 2, tonic, etc.
+
     return labels
 
 
