@@ -1,8 +1,7 @@
-import pytest
 import numpy.testing as npt
-from tinnsleep.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological,\
+from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological,\
     generate_annotations, episodes_to_list
-from tinnsleep.burst import burst
+from tinnsleep.events.burst import burst
 import numpy as np
 
 

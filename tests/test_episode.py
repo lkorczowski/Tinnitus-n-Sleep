@@ -1,7 +1,6 @@
-import pytest
 import numpy.testing as npt
-from tinnsleep.burst import burst
-from tinnsleep.episode import episode
+from tinnsleep.events.burst import burst
+from tinnsleep.events.episode import episode
 
 
 def test_episode():

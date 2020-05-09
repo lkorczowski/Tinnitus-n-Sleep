@@ -1,5 +1,5 @@
-from tinnsleep.burst import burst
-from tinnsleep.episode import episode
+from tinnsleep.events.burst import burst
+from tinnsleep.events.episode import episode
 import numpy as np
 
 
