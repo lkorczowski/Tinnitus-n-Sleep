@@ -2,9 +2,7 @@ import pytest
 import numpy.testing as npt
 from tinnsleep.classification import AmplitudeThresholding
 import numpy as np
-from tinnsleep.check_impedance import Impedance_thresholding_sliding
-from tinnsleep.utils import epoch
-from tinnsleep.signal import rms
+
 
 def test_AmplitudeThresholding_init():
     "test of AmplitudeThresholding initialization"
@@ -126,28 +124,3 @@ def test_AmplitudeThresholding_transform_adaptive2():
     classif.fit(X)
     classif.transform(X)
     npt.assert_equal(classif.center_, expected)
-
-
-def test_regression_AmplitudeThresholding_and_Impendance():
-    np.random.seed(42)
-    data = np.random.randn(2, 400)
-    for i in range(200):
-        data[0][i] += 100
-    for i in range(100):
-        data[1][i] += 100
-    duration = 50
-    interval = 50
-    THR = 20.0
-    import time
-    check_imp = Impedance_thresholding_sliding(data, duration, interval, THR)
-    expected_list = [[True, True], [True, True],
-                     [True, False], [True, False],
-                     [False, False], [False, False],
-                     [False, False], [False, False]]
-    npt.assert_equal(check_imp, expected_list)
-    epochs = epoch(data, duration, interval)
-
-    threshold_simple = lambda foofoo: foofoo>0  # build a simple threshold that doesn't merge the labels
-    classif = AmplitudeThresholding(abs_threshold=THR, rel_threshold=0, decision_function=threshold_simple)
-    check_thr = classif.fit_predict(rms(epochs, axis=-1))
-    npt.assert_equal(check_thr, expected_list)
