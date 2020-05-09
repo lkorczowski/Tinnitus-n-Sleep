@@ -4,7 +4,7 @@ import numpy.testing as npt
 from tinnsleep.utils import epoch
 from tinnsleep.events.scoring import burst_to_episode, classif_to_burst, episodes_to_list
 from tinnsleep.data import CreateRaw
-from tinnsleep.create_reports import preprocess, reporting, combine_brux_MEMA, generate_bruxism_report,\
+from tinnsleep.reports import preprocess, reporting, combine_brux_MEMA, generate_bruxism_report,\
     generate_MEMA_report
 from tinnsleep.classification import AmplitudeThresholding
 from tinnsleep.signal import is_good_epochs, rms
