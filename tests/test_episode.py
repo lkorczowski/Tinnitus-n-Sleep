@@ -202,6 +202,8 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi1.is_tonic, False)
     npt.assert_equal(epi1.is_phasic, False)
     npt.assert_equal(epi1.is_mixed, True)
+    npt.assert_equal(epi1.code, 111)
+
 
     # Test no type 1 burst
     epi = episode(bursty)
@@ -218,6 +220,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
+    npt.assert_equal(epi.code, 1)
 
     # Test phasic
     epi.add_a_burst(bursty4)
