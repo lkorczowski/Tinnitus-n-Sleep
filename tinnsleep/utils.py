@@ -2,7 +2,8 @@ import numpy as np
 from numpy.lib import stride_tricks
 from sklearn.utils.validation import check_array
 from scipy.interpolate import interp1d
-
+import logging
+logger = logging.getLogger(__name__)
 
 def epoch(data, duration, interval, axis=-1):
     """ Small proof of concept of an epoching function using NumPy strides
@@ -105,6 +106,7 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
                                       resampling_factor == 1 for j in range(n_epoch_final)]
 
         else:
+            logger.warning("Interpolating non proportional list, expecting to have non-uniform shift across recording")
             # Start Linear space
             x = np.linspace(0, n_epoch_before, num=n_epoch_before, endpoint=True)
             # Projection linear space
