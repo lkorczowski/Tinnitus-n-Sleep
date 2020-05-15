@@ -57,7 +57,7 @@ def power_ratio(epochs, labels, axis=-1):
 
     Returns
     -------
-    mean_power : ndarray, shape (n_trials, n_electrodes)
+    power_ratio : ndarray, shape (n_electrodes,)
         Mean Power
     """
     nb_num = np.count_nonzero(labels)
