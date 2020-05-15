@@ -91,7 +91,7 @@ def test_plotTimeSeries_subplots():
     assert_ax_equals_data(data, ax, sfreq=sfreq)
     assert_y_labels_correct(data, ch_names)
 
-    sfreq=200
+    sfreq = 250
     np.random.seed(42)
     data = np.random.randn(400, 4)
     ax = plt.subplot(2, 1, 1)

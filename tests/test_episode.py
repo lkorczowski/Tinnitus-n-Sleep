@@ -1,7 +1,6 @@
-import pytest
 import numpy.testing as npt
-from tinnsleep.burst import burst
-from tinnsleep.episode import episode
+from tinnsleep.events.burst import burst
+from tinnsleep.events.episode import episode
 
 
 def test_episode():
@@ -185,6 +184,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi1.is_phasic, False)
     npt.assert_equal(epi1.is_mixed, False)
     npt.assert_equal(epi1.is_valid(), True)
+    npt.assert_equal(epi1.code, 11)
 
     # Reassessment invariant
     epi1.assess_type()
@@ -192,6 +192,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi1.is_phasic, False)
     npt.assert_equal(epi1.is_mixed, False)
     npt.assert_equal(epi1.is_valid(), True)
+    npt.assert_equal(epi1.code, 11)
 
     # Test mixed
     epi1.add_a_burst(bursty3)
@@ -200,6 +201,8 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi1.is_tonic, False)
     npt.assert_equal(epi1.is_phasic, False)
     npt.assert_equal(epi1.is_mixed, True)
+    npt.assert_equal(epi1.code, 111)
+
 
     # Test no type 1 burst
     epi = episode(bursty)
@@ -208,6 +211,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
     npt.assert_equal(epi.is_valid(), False)
+    npt.assert_equal(epi.code, 1)
 
     # Test no type 2 burst
     epi.add_a_burst(bursty3)
@@ -215,6 +219,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, False)
     npt.assert_equal(epi.is_mixed, False)
+    npt.assert_equal(epi.code, 1)
 
     # Test phasic
     epi.add_a_burst(bursty4)
@@ -222,6 +227,7 @@ def test_assess_type_is_valid():
     npt.assert_equal(epi.is_tonic, False)
     npt.assert_equal(epi.is_phasic, True)
     npt.assert_equal(epi.is_mixed, False)
+    npt.assert_equal(epi.code, 101)
 
 
 def test_generate_annotation():

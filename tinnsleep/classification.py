@@ -22,6 +22,15 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         number of past observations used to update the centroid during transform by moving average.
         If 0, then no update is applied.
         .. math:: \bar{X}_k = \frac{n-1}{n}(\bar(X)_{k-1} + \frac{1}{n}X_{k-1}
+    decision_function: function (default: numpy.all(distances>0))
+        function used in predict to convert multidimensional distance features into label.
+        by default, `numpy.all(distances>0)` is used: True if all features distance are greater than 0, i.e.
+        >>> decision_function = lambda distances: np.all(distances>0, axis=-1)  # default
+        if `numpy.any` True if any features for a given trial is greater than the threshold
+        >>> decision_function = lambda distances: np.any(distances>0, axis=-1)  # valid decision function
+        any function take a ndarray of boolean and the `axis` parameters can be used
+        for example, the following function threshold the distances while keeping same dimension (no merge)
+        >>> decision_function = lambda distances: distances>0  # build a function identity that doesn't merge the labels
 
     Attributes
     ----------
@@ -32,10 +41,17 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
 
     """
 
-    def __init__(self, abs_threshold=0., rel_threshold=2., n_adaptive=0):
+    def __init__(self, abs_threshold=0., rel_threshold=2., n_adaptive=0, decision_function=None):
         self.abs_threshold = abs_threshold
         self.rel_threshold = rel_threshold
         self.n_adaptive = n_adaptive
+        if not callable(decision_function):
+            if decision_function is None:
+                decision_function = lambda foofoo: np.all(foofoo > 0, axis=-1)
+            else:
+                raise ValueError("`decision_function` should be callable")
+        self.decision_function = decision_function
+
 
     def fit(self, X, y=[], sample_weight=None):
         """Compute average amplitude
@@ -92,7 +108,7 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
     def _predict_distances(self, X):
         distances = np.nan * np.ones(X.shape)
         for k in range(X.shape[0]):
-            distances[k, :] = X[k, :] - (self.center_ * self.rel_threshold) + self.abs_threshold
+            distances[k, :] = X[k, :] - ((self.center_ * self.rel_threshold) + self.abs_threshold)
         return distances
 
     def predict(self, X):
@@ -101,7 +117,7 @@ class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
         X = check_array(X)
         distances = self.transform(X)
 
-        return np.all(distances > 0, axis=1)
+        return self.decision_function(distances)
 
     def transform(self, X):
         """get the distance to each centroid.
