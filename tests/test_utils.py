@@ -84,8 +84,7 @@ def test_epoch_fail_size():
         epochs = epoch(X.T, T, I, axis=0)
 
 
-def test_merge_labels_list():
-
+def test_merge_labels_list_ident():
     # Unchanging a list to the same number of elements
     v_lab = merge_labels_list([[True, False, True, False, True]], 5)
     npt.assert_equal(v_lab, [True, False, True, False, True])
@@ -94,6 +93,8 @@ def test_merge_labels_list():
     v_lab = merge_labels_list([[True, False, True, False, True], [True, False, True, False, True]], 5)
     npt.assert_equal(v_lab, [True, False, True, False, True])
 
+
+def test_merge_labels_list_proportional_upsampling():
     # dealing with 2 coherent arrays of len(l) and 2*len(l) and getting output in 2*len(l):
     v_lab = merge_labels_list([[True, False], [True, True, False, False]], 4)
     npt.assert_equal(v_lab, [True, True, False, False])
@@ -106,6 +107,8 @@ def test_merge_labels_list():
     v_lab = merge_labels_list([[True, True], [True, True, False, True]], 4)
     npt.assert_equal(v_lab, [True, True, False, True])
 
+
+def test_merge_labels_list_proportional_downsampling():
     # dealing with 2 coherent arrays of len(l) and 2*len(l) and getting output in len(l):
     v_lab = merge_labels_list([[True, False], [True, True, False, False]], 2)
     npt.assert_equal(v_lab, [True, False])
@@ -117,6 +120,16 @@ def test_merge_labels_list():
     # dealing with tricky case 2:
     v_lab = merge_labels_list([[True, True, False, True], [True, True]], 2)
     npt.assert_equal(v_lab, [True, False])
+
+
+def test_merge_labels_list_non_proportional():
+    # downsampling interpolation
+    v_lab = merge_labels_list([[True, True, False, False, False]], 2)
+    npt.assert_equal(v_lab, [True, False])
+
+    # upsampling interpolation
+    v_lab = merge_labels_list([[True, False]], 5)
+    npt.assert_equal(v_lab, [True, True, True, False, False])
 
 
 def test_fuse_with_classif_result():
