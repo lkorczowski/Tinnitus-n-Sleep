@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from tinnsleep.signal import rms, is_good_epochs, _is_good_epoch
+from tinnsleep.signal import rms, is_good_epochs, _is_good_epoch, power_ratio
 from tinnsleep.utils import epoch
 
 
@@ -24,6 +24,29 @@ def test_rms():
     npt.assert_almost_equal(rms_values,
                             np.array([[2.1602469, 2.1602469], [2.51661148, 6.32455532], [0.57735027, 0.57735027]]),
                             decimal=4)
+
+
+def test_power_ratio():
+    epochs = np.random.randn(2000, 2, 2000)
+    labels = [True]*1000 + [False]*1000
+    npt.assert_allclose(power_ratio(epochs, labels), [1, 1], rtol=1e-2)
+
+
+def test_power_ratio_missing():
+    epochs = np.random.randn(2000, 2, 2000)
+    labels = [True]*2000
+    with pytest.raises(ValueError, match=f"labels should have at least one True and one False"):
+        power_ratio(epochs, labels)
+    labels = [False]*2000
+    with pytest.raises(ValueError, match=f"labels should have at least one True and one False"):
+        power_ratio(epochs, labels)
+
+
+def test_power_ratio2():
+    epochs = np.random.randn(2000, 2, 2000)
+    epochs[:1000] = epochs[:1000] * 2
+    labels = [True]*1000 + [False]*1000
+    npt.assert_allclose(power_ratio(epochs, labels), [4, 4], rtol=1e-2)
 
 
 def test_is_good_epoch_basic(data):

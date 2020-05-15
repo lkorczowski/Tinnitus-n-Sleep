@@ -7,7 +7,7 @@ from tinnsleep.data import CreateRaw
 from tinnsleep.reports import preprocess, reporting, combine_brux_MEMA, generate_bruxism_report,\
     generate_MEMA_report
 from tinnsleep.classification import AmplitudeThresholding
-from tinnsleep.signal import is_good_epochs, rms
+from tinnsleep.signal import is_good_epochs, rms, power_ratio
 
 
 def test_preprocess_unit():
@@ -164,10 +164,10 @@ def test_reporting():
     THR_classif = [[0, 2], [0, 3]]
     valid_labels = [True, True, False, True, True, True, True, True, True, True, True, True, True, True, True, True]
     report = reporting(epochs, valid_labels, THR_classif, time_interval=0.25, delim=3, log={})
-    classif_expected = [False, False, False, False, True, False, True, False, True, False, False,
-                                           False, False, False, False, False]
-    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
-    report_expected = generate_bruxism_report(tmp, 0.25, 3)
+    classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
+                                           False, False, False, False, False])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3)
+    report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     npt.assert_equal(report["labels"][0], classif_expected)
     npt.assert_equal(report["reports"][0], report_expected)
 
@@ -182,15 +182,15 @@ def test_reporting2():
     epochs[1:4:] += 100
     valid_labels = [True] * n_epochs
 
-    classif_expected = [False, True, True, True, False, False]
-    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
-    report_expected = generate_bruxism_report(tmp, time_interval, delim)
+    classif_expected = np.array([False, True, True, True, False, False])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
 
     THR_classif = [[0, 1.5], [0, 1.6]]
     report = reporting(epochs, valid_labels, THR_classif,
                        time_interval=time_interval, delim=delim, log={},
                        generate_report=generate_bruxism_report)
     npt.assert_equal(report["labels"][0], classif_expected)
+    report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     npt.assert_equal(report["reports"][0], report_expected)
 
 
@@ -205,9 +205,8 @@ def test_reporting_adaptive():
     epochs[1:4:] += 100
     valid_labels = [True] * n_epochs
 
-    classif_expected = [False, True, True, False, False, False]  # loosing last because adaptive
-    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
-    report_expected = generate_bruxism_report(tmp, time_interval, delim)
+    classif_expected = np.array([False, True, True, False, False, False])  # loosing last because adaptive
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
 
     THR_classif = [[0, 1.5], [0, 1.6]]
     report = reporting(epochs, valid_labels, THR_classif,
@@ -215,6 +214,7 @@ def test_reporting_adaptive():
                        generate_report=generate_bruxism_report,
                        n_adaptive=n_adaptive)
     npt.assert_equal(report["labels"][0], classif_expected)
+    report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     npt.assert_equal(report["reports"][0], report_expected)
 
 
@@ -229,9 +229,8 @@ def test_reporting_adaptive_forward_backward():
     epochs[1:4:] += 100
     valid_labels = [True] * n_epochs
 
-    classif_expected = [False, True, True, True, False, False]  # not loosing any because fb adaptive
-    tmp = [i for k, i in enumerate(classif_expected) if valid_labels[k]]  # remove invalid
-    report_expected = generate_bruxism_report(tmp, time_interval, delim)
+    classif_expected = np.array([False, True, True, True, False, False])  # not loosing any because fb adaptive
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
 
     THR_classif = [[0, 1.5], [0, 1.6]]
     report = reporting(epochs, valid_labels, THR_classif,
@@ -239,6 +238,7 @@ def test_reporting_adaptive_forward_backward():
                        generate_report=generate_bruxism_report,
                        n_adaptive=n_adaptive)
     npt.assert_equal(report["labels"][0], classif_expected)
+    report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     npt.assert_equal(report["reports"][0], report_expected)
 
 

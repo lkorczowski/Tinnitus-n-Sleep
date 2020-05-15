@@ -4,7 +4,7 @@ from tinnsleep.classification import AmplitudeThresholding
 from tinnsleep.utils import fuse_with_classif_result, merge_labels_list
 from tinnsleep.signal import rms
 from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episodes_to_list, create_list_events
-from tinnsleep.signal import is_good_epochs
+from tinnsleep.signal import is_good_epochs, power_ratio
 
 
 def generate_bruxism_report(classif, time_interval, delim):
@@ -252,6 +252,8 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
         report = generate_report(labels, time_interval, delim)
+        report["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
+
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
         labs.append(labels)
