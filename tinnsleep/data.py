@@ -3,7 +3,7 @@ from tinnsleep.utils import epoch
 import numpy as np
 
 
-def CreateRaw(data, sfreq, ch_names, montage=None, ch_types=None):
+def CreateRaw(data, sfreq, ch_names, montage=None, ch_types='misc'):
     """Generate a mne raw structure based on hardcoded info for bruxisme data
 
     Parameters
@@ -65,7 +65,7 @@ def RawToEpochs_sliding(raw, duration, interval, picks=None):
         Epoched view of `raw`. Epochs are in the first dimension.
     """
 
-    raw = raw.pick(picks=picks)
+    raw = raw.copy().pick(picks=picks)
     return epoch(raw.get_data(), duration, interval, axis=1)
 
 
