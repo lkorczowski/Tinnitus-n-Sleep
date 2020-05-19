@@ -97,14 +97,26 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
 
         n_epoch_before = len(list_valid_labels[i])
 
-        resampling_factor = float(n_epoch_before / n_epoch_final)
-        if resampling_factor.is_integer() and (resampling_factor != 1):
-                resampling_factor = int(resampling_factor)
-                valid_labels[:, i] = [np.sum(list_valid_labels[i][j * resampling_factor:(j + 1) * resampling_factor])
-                                      /
-                                      resampling_factor == 1 for j in range(n_epoch_final)]
+        resampling_factor = float(n_epoch_final / n_epoch_before)
 
+        # downsampling
+        if (1/resampling_factor).is_integer() and (resampling_factor != 1):
+            resampling_factor = int(1/resampling_factor)
+            valid_labels[:, i] = [np.sum(list_valid_labels[i][j * resampling_factor:(j + 1) * resampling_factor])
+                                  /
+                                  resampling_factor == 1 for j in range(n_epoch_final)]
+        # upsampling
+        elif (resampling_factor).is_integer() and (resampling_factor != 1):
+            resampling_factor = int(resampling_factor)
+            for j in range(n_epoch_before):
+                valid_labels[j * resampling_factor:(j + 1) * resampling_factor, i] = list_valid_labels[i][j]
+        # nothing
+        elif (resampling_factor == 1):
+            valid_labels[:, i] = list_valid_labels[i]
+
+        # interpolation
         else:
+            logger.warning("Interpolating non proportional list, expecting to have non-uniform shift across recording")
             # Start Linear space
             x = np.linspace(0, n_epoch_before, num=n_epoch_before, endpoint=True)
             # Projection linear space
