@@ -150,3 +150,19 @@ def fuse_with_classif_result(check_imp, labels):
             labels.insert(i, False)   # inserting False (neutral) values in the labels array where they were deleted
     return labels
 
+
+def crop_to_proportional_length(epochs, valid_labels):
+    """align number of epochs and a list of valid_labels to be proportional"""
+    # compute all resampling factors
+    resampling_factors = [int(len(epochs) / len(i)) for i in valid_labels]
+
+    # find the common denominator
+    min_labels = min([len(i) * j for (i, j) in zip(valid_labels, resampling_factors)])
+    assert (len(epochs) - min_labels) < max(
+        resampling_factors), f"shift of {len(epochs) - min_labels} epochs, please check that all duration are proportional"
+    epochs = epochs[:min_labels]  # crop last epochs
+    valid_labels_crop = [i[:int(min_labels / j)] for (i, j) in
+                         zip(valid_labels, resampling_factors)]  # crop valid_labels
+    assert len(epochs) == min_labels, f"something went wrong when cropping"
+    valid_labels_crop = merge_labels_list(valid_labels_crop, len(epochs))
+    return epochs, valid_labels_crop
