@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list, fuse_with_classif_result
+from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list,\
+    fuse_with_classif_result, crop_to_proportional_length
 
 
 def test_compute_nb_epochs():
@@ -137,3 +138,24 @@ def test_fuse_with_classif_result():
     classif=np.asanyarray([1, 2, 3, 4])
     classif = fuse_with_classif_result(check_imp, classif)
     npt.assert_equal(classif, [1, 2, False, 3, False, 4])
+
+
+def test_crop_to_proportional_length():
+    epochs = np.ones((5, 2, 2))
+    valid_labels = [[True]*5, [True, False]]
+    epochs, valid_labels = crop_to_proportional_length(epochs, valid_labels)
+    npt.assert_equal(epochs.shape, (4, 2, 2))
+    npt.assert_equal(valid_labels, [True, True, False, False])
+
+    epochs = np.ones((8, 2, 2))
+    valid_labels = [[True]*8, [True, True, False]]
+    epochs, valid_labels = crop_to_proportional_length(epochs, valid_labels)
+    npt.assert_equal(epochs.shape, (6, 2, 2))
+    npt.assert_equal(valid_labels, [True, True, True, True, False, False])
+
+def test_crop_to_proportional_length_fails():
+    """ non proportional epochs with number of valid_labels"""
+    with pytest.raises(AssertionError):
+        epochs = np.ones((3, 2, 2))
+        valid_labels = [[True] * 5, [True, False]]
+        crop_to_proportional_length(epochs, valid_labels)

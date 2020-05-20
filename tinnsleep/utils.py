@@ -158,8 +158,7 @@ def crop_to_proportional_length(epochs, valid_labels):
 
     # find the common denominator
     min_labels = min([len(i) * j for (i, j) in zip(valid_labels, resampling_factors)])
-    assert (len(epochs) - min_labels) < max(
-        resampling_factors), f"shift of {len(epochs) - min_labels} epochs, please check that all duration are proportional"
+    assert (len(epochs) - min_labels) <= max(resampling_factors), f"shift of {len(epochs) - min_labels} epochs max ({max(resampling_factors)}), please check that all duration are proportional"
     epochs = epochs[:min_labels]  # crop last epochs
     valid_labels_crop = [i[:int(min_labels / j)] for (i, j) in
                          zip(valid_labels, resampling_factors)]  # crop valid_labels
