@@ -22,7 +22,7 @@ def test_preprocess_unit():
     npt.assert_equal(epochs, epochs_expected)
     npt.assert_equal(valid_labels, [True]*epochs.shape[0])
     npt.assert_equal(log, {'suppressed_is_good': 0, 'suppressed_amp_thr': 0, 'suppressed_overall': 0,
-                           'total_nb_epochs': epochs.shape[0]})
+                           'total_nb_epochs': epochs.shape[0], 'suppressed_ratio': 0})
 
     with pytest.raises(ValueError, match=f'`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None'):
         preprocess(raw, duration, interval, filter_kwargs='lol')
@@ -44,7 +44,7 @@ def test_preprocess_filter():
     npt.assert_equal(epochs, epochs_expected)
     npt.assert_equal(valid_labels, [True]*epochs.shape[0])
     npt.assert_equal(log, {'suppressed_is_good': 0, 'suppressed_amp_thr': 0, 'suppressed_overall': 0,
-                           'total_nb_epochs': epochs.shape[0]})
+                           'total_nb_epochs': epochs.shape[0], 'suppressed_ratio': 0})
 
     with pytest.raises(ValueError, match=f'`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None'):
         preprocess(raw, duration, interval, filter_kwargs='lol')
@@ -75,7 +75,8 @@ def test_preprocess_is_good():
     npt.assert_equal(log, {'suppressed_is_good': np.sum(np.invert(valid_labels_expected)),
                            'suppressed_amp_thr': 0,
                            'suppressed_overall': np.sum(np.invert(valid_labels_expected)),
-                           'total_nb_epochs': epochs.shape[0]})
+                           'total_nb_epochs': epochs.shape[0],
+                           'suppressed_ratio': np.sum(np.invert(valid_labels_expected))/epochs.shape[0]})
 
 
 def test_preprocess_amp_threshold():
@@ -103,7 +104,8 @@ def test_preprocess_amp_threshold():
     npt.assert_equal(log, {'suppressed_is_good': 0,
                            'suppressed_amp_thr': 3,
                            'suppressed_overall': 3,
-                           'total_nb_epochs': epochs.shape[0]})
+                           'total_nb_epochs': epochs.shape[0],
+                           'suppressed_ratio': np.sum(np.invert(valid_labels_expected))/epochs.shape[0]})
 
 
 def test_preprocess_episode():
@@ -142,7 +144,8 @@ def test_preprocess_episode():
     npt.assert_equal(log, {'suppressed_is_good': 0,
                            'suppressed_amp_thr': np.sum(np.invert(valid_labels_expected)),
                            'suppressed_overall': np.sum(np.invert(valid_labels_expected)),
-                           'total_nb_epochs': epochs.shape[0]})
+                           'total_nb_epochs': epochs.shape[0],
+                           'suppressed_ratio': np.sum(np.invert(valid_labels_expected))/epochs.shape[0]})
 
 
 def test_reporting():

@@ -195,8 +195,12 @@ def preprocess(raw, duration, interval,
     suppressed_amp_thr = np.sum(RMSlabels)
     valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels])
     suppressed_all = np.sum(np.invert(valid_labels))
-    log = {"suppressed_is_good": suppressed_is_good, "suppressed_amp_thr": suppressed_amp_thr,
-                                     "suppressed_overall": suppressed_all, "total_nb_epochs": len(valid_labels)}
+    log = {"suppressed_is_good": suppressed_is_good,
+           "suppressed_amp_thr": suppressed_amp_thr,
+           "suppressed_overall": suppressed_all,
+           "total_nb_epochs": len(valid_labels),
+           "suppressed_ratio": suppressed_all/len(valid_labels)}
+
     return epochs, valid_labels, log
 
 
@@ -259,7 +263,14 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
         labs.append(labels)
         reps.append(report)
 
-    return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log}
+    parameters = dict()
+    parameters['valid_labels'] = valid_labels
+    parameters['THR_classif'] = THR_classif
+    parameters['time_interval'] = time_interval
+    parameters['delim'] = delim
+    parameters['n_adaptive'] = n_adaptive
+
+    return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log, "parameters": parameters}
 
 
 def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interval):
