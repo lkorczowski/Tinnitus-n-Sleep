@@ -27,7 +27,7 @@ def main(argv):
 
 
 
-print("config loaded")
+print("config loaded.")
 
 if __name__ == "__main__":
     import os
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
         print(f"Reports created, process finished in {(time() - start) / 60:.1f} min")
         if bruxism:
-            pd.DataFrame.from_dict(results_bruxism).to_pickle(results_file_bruxism)
+            pd.DataFrame.from_dict(results_bruxism).to_pickle(results_file_bruxism, protocol=3)
         if mema:
-            pd.DataFrame.from_dict(results_MEMA).to_pickle(results_file_MEMA)
+            pd.DataFrame.from_dict(results_MEMA).to_pickle(results_file_MEMA, protocol=3)
         print(f"Results saved")
