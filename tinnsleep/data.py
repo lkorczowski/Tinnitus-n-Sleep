@@ -137,15 +137,20 @@ def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration
 
                 if k == (len(labels)-1):
                     end_epoch = k
+                    raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
+                                           [(end_epoch - start_epoch + 1) * duration / raw.info["sfreq"]],
+                                           dict_annotations[label])
                 elif label != labels[k+1]:
                     end_epoch = k
+                    raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
+                                           [(end_epoch - start_epoch + 1) * duration / raw.info["sfreq"]],
+                                           dict_annotations[label])
             else:
                 start_epoch = k
                 end_epoch = k
-
-            raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
-                                   [(end_epoch - start_epoch+1) * duration / raw.info["sfreq"]],
-                                   dict_annotations[label])
+                raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
+                                       [(end_epoch - start_epoch+1) * duration / raw.info["sfreq"]],
+                                       dict_annotations[label])
 
     return raw
 

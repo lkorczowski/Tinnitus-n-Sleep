@@ -155,7 +155,8 @@ def preprocess(raw, duration, interval,
     log : dictionary
         logs of the preprocessing steps, including the number of epochs rejected at each step
     """
-    raw = raw.copy()
+    raw = raw.copy().pick(picks=picks_chan).load_data()
+
     if isinstance(filter_kwargs, dict):
         raw = raw.filter(**filter_kwargs)
     elif filter_kwargs is None:
