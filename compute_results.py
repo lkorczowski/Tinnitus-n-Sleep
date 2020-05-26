@@ -2,9 +2,9 @@ import sys, getopt
 
 
 def main(argv):
-    bruxism = True
-    mema = True
-    overwrite = True
+    bruxism = False
+    mema = False
+    overwrite = False
     try:
         opts, args = getopt.getopt(argv, "hb:m:o:", ["bruxism=", "mema=", "overwrite="])
     except getopt.GetoptError:
