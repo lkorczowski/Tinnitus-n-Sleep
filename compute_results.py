@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # Importing personnalized parameters for dataset
     mema_files = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
-    dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")
+    dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  #TODO: check if valid for all subjects
 
     # Processing of the dataset and report generation
 
