@@ -309,8 +309,10 @@ def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interva
     # ------------------
     # Pure episodes creation
     li_ep_p = episodes_to_list(pure_ep, time_interval, len(labels_condition))
+    li_ep_p = np.where(li_ep_p != 0, True, False)
     # Combined episode creation
     li_ep_c = episodes_to_list(comb_ep, time_interval, len(labels_condition))
+    li_ep_c = np.where(li_ep_c != 0, True, False)
 
     return li_ep_c, li_ep_p, compt_arti
 
@@ -336,6 +338,7 @@ def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=
     bursts = classif_to_burst(labels, time_interval=time_interval)
     li_ep = burst_to_episode(bursts, delim=delim_ep, min_burst_joining=min_burst_joining)
     events = episodes_to_list(li_ep, time_interval, len(labels))
+    events = np.where(events != 0, True, False)
     return events, li_ep
 
 
@@ -398,8 +401,6 @@ def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, de
         # fuses artifacts
         labels_artifacts = merge_labels_list([labels_artifacts_brux, labels_artifacts_MEMA], len(labels_brux))
         time_interval = time_interval_brux
-    print("hera")
-    print(len(labels_artifacts))
     # Creating lists of episode and bursts for bruxism and MEMA
     brux_burst_ep, li_ep_brux = _labels_to_ep_and_bursts(labels_brux, time_interval, delim_ep_brux,
                                                          min_burst_joining=min_burst_joining_brux)
@@ -407,9 +408,6 @@ def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, de
                                                          min_burst_joining=min_burst_joining_MEMA)
 
     # Conditionnal labelling of events
-    print("hera2")
-    print(len(labels_artifacts))
-    print(len(brux_burst_ep))
     MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA= _cond_subclassif(li_ep_MEMA, labels_artifacts,
                                                                  brux_burst_ep, time_interval)
     brux_comb_ep, brux_pure_ep, compt_arti_brux = _cond_subclassif(li_ep_brux, labels_artifacts,
