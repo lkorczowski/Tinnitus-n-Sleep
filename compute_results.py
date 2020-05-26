@@ -1,11 +1,12 @@
 import sys, getopt
 
+
 def main(argv):
-    bruxism = False
-    mema = False
-    overwrite=False
+    bruxism = True
+    mema = True
+    overwrite = True
     try:
-        opts, args = getopt.getopt(argv,"hb:m:o:",["bruxism=","mema=", "overwrite="])
+        opts, args = getopt.getopt(argv, "hb:m:o:", ["bruxism=", "mema=", "overwrite="])
     except getopt.GetoptError:
         print(f'compute_results.py --bruxism <boolean> --mema <boolean> --overwrite <boolean>')
         sys.exit(2)
@@ -18,13 +19,12 @@ def main(argv):
         elif opt in ("-m", "--mema"):
             mema = arg == 'True'
         elif opt in ("-o", "--overwrite"):
-            overwrite = arg == 'True' # re-compute the results even if files exits
+            overwrite = arg == 'True'  # re-compute the results even if files exits
     print(f'Performs Bruxism: <{bruxism}>')
     print(f'Performs MEMA: <{mema}>')
     print(f'Will overwrite existing results: <{overwrite}>')
 
     return bruxism, mema, overwrite
-
 
 
 print("config loaded.")
@@ -55,9 +55,8 @@ if __name__ == "__main__":
     n_adaptive_bruxism = -120  # number of seconds for adaptive (negative for forward-backward adaptive scheme)
     n_adaptive_MEMA = -60  # number of seconds for adaptive (negative for forward-backward adaptive scheme)
     delim = 3  # maximal time interval between bursts to merge episode in seconds
-    results_file_MEMA =  "data/reports_and_datas_MEMA.pk"
+    results_file_MEMA = "data/reports_and_datas_MEMA.pk"
     results_file_bruxism = "data/reports_and_datas_bruxism.pk"
-
 
     # Dictionnary of known names of the Airflow
     mapping = {"Airflow": "MEMA"}
@@ -65,7 +64,7 @@ if __name__ == "__main__":
 
     # Importing personnalized parameters for dataset
     mema_files = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
-    dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  #TODO: check if valid for all subjects
+    dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  # TODO: check if valid for all subjects
 
     # Processing of the dataset and report generation
 
@@ -128,10 +127,14 @@ if __name__ == "__main__":
                                           flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
                                           channel_type_idx=dict(emg=[i for i in range(len(picks_chan_bruxism))])
                                           )
+                    filter_kwargs = dict(l_freq=20., h_freq=99., n_jobs=4,
+                                         fir_design='firwin', filter_length='auto', phase='zero-double',
+                                         picks=picks_chan_bruxism)
                     epochs_bruxism, valid_labels, log["bruxism"] = preprocess(raw, duration_bruxism,
-                                                                                      duration_bruxism,
-                                                                                      picks_chan=picks_chan_bruxism,
-                                                                                      is_good_kwargs=is_good_kwargs)
+                                                                              duration_bruxism,
+                                                                              picks_chan=picks_chan_bruxism,
+                                                                              is_good_kwargs=is_good_kwargs,
+                                                                              filter_kwargs=filter_kwargs)
                     valid_labels_bruxism.append(valid_labels)
                     print(f"done)", end=" ")
                 else:
@@ -139,8 +142,12 @@ if __name__ == "__main__":
 
                 print(f"MEMA(", end="")
                 if DO_MEMA:
+                    filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
+                                         fir_design='firwin', filter_length='auto', phase='zero-double',
+                                         picks=['Airflow'])
                     epochs_MEMA, valid_labels, log["MEMA"] = preprocess(raw, duration_MEMA, duration_MEMA,
-                                                                             picks_chan=['Airflow'])
+                                                                        picks_chan=['Airflow'],
+                                                                        filter_kwargs=filter_kwargs)
                     valid_labels_MEMA.append(valid_labels)
                     print(f"done)", end=" ")
                 else:
@@ -149,8 +156,12 @@ if __name__ == "__main__":
                 # ----------------- Finding artifacts in other channels (can be stacked) --------------
                 # 1. OMA
                 if DO_BRUXISM or DO_MEMA:
+                    filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
+                                         fir_design='firwin', filter_length='auto', phase='zero-double',
+                                         picks=['Activity'])
                     _, valid_labels_OMA, log["OMA"] = preprocess(raw, duration_OMA, duration_OMA,
                                                                  picks_chan=["Activity"],
+                                                                 filter_kwargs=filter_kwargs,
                                                                  Thresholding_kwargs=dict(abs_threshold=0,
                                                                                           rel_threshold=3,
                                                                                           decision_function=lambda
@@ -164,8 +175,12 @@ if __name__ == "__main__":
 
                 # 2. Impedance Check
                 if DO_BRUXISM:
+                    filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
+                                         fir_design='firwin', filter_length='auto', phase='zero-double',
+                                         picks=picks_imp)
                     _, valid_labels_IMP, log["IMP"] = preprocess(raw, duration_Impedance, duration_Impedance,
                                                                  picks_chan=picks_imp,
+                                                                 filter_kwargs=filter_kwargs,
                                                                  Thresholding_kwargs=dict(abs_threshold=THR_imp,
                                                                                           rel_threshold=0,
                                                                                           decision_function=lambda
@@ -178,9 +193,9 @@ if __name__ == "__main__":
 
                 # ----------------- Merging artifacts labels ------------------------------------------
 
-
                 if DO_BRUXISM:
-                    epochs_bruxism, valid_labels_bruxism = crop_to_proportional_length(epochs_bruxism, valid_labels_bruxism)
+                    epochs_bruxism, valid_labels_bruxism = crop_to_proportional_length(epochs_bruxism,
+                                                                                       valid_labels_bruxism)
                 if DO_MEMA:
                     epochs_MEMA, valid_labels_MEMA = crop_to_proportional_length(epochs_MEMA, valid_labels_MEMA)
                 print(f"DONE ({time() - tmp:.2f}s)", end=" ")
@@ -200,11 +215,12 @@ if __name__ == "__main__":
 
                 print("MEMA(", end="")
                 if DO_MEMA:
-                    print("report...", end="");tmp = time()
+                    print("report...", end="");
+                    tmp = time()
                     results_MEMA[file] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
-                                                  time_interval=window_length_MEMA, delim=delim,
-                                                  n_adaptive=n_adaptive_MEMA,
-                                                  generate_report=generate_MEMA_report)
+                                                   time_interval=window_length_MEMA, delim=delim,
+                                                   n_adaptive=n_adaptive_MEMA,
+                                                   generate_report=generate_MEMA_report)
                     print(f"done)", end=" ")
                 else:
                     print(f"skipped)", end=" ")
