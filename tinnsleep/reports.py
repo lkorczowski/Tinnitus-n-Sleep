@@ -308,9 +308,9 @@ def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interva
             compt_arti += 1
     # ------------------
     # Pure episodes creation
-    li_ep_p = create_list_events(pure_ep, time_interval, time_interval * len(labels_condition), boolean_output=True)
+    li_ep_p = episodes_to_list(pure_ep, time_interval, len(labels_condition))
     # Combined episode creation
-    li_ep_c = create_list_events(comb_ep, time_interval, time_interval * len(labels_condition), boolean_output=True)
+    li_ep_c = episodes_to_list(comb_ep, time_interval, len(labels_condition))
 
     return li_ep_c, li_ep_p, compt_arti
 
@@ -335,7 +335,7 @@ def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=
     # ------------grouping episodes and bursts together------------------------------------
     bursts = classif_to_burst(labels, time_interval=time_interval)
     li_ep = burst_to_episode(bursts, delim=delim_ep, min_burst_joining=min_burst_joining)
-    events = create_list_events(li_ep, time_interval, len(labels) * time_interval, boolean_output=True)
+    events = episodes_to_list(li_ep, time_interval, len(labels))
     return events, li_ep
 
 
@@ -398,7 +398,8 @@ def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, de
         # fuses artifacts
         labels_artifacts = merge_labels_list([labels_artifacts_brux, labels_artifacts_MEMA], len(labels_brux))
         time_interval = time_interval_brux
-
+    print("hera")
+    print(len(labels_artifacts))
     # Creating lists of episode and bursts for bruxism and MEMA
     brux_burst_ep, li_ep_brux = _labels_to_ep_and_bursts(labels_brux, time_interval, delim_ep_brux,
                                                          min_burst_joining=min_burst_joining_brux)
@@ -406,6 +407,9 @@ def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, de
                                                          min_burst_joining=min_burst_joining_MEMA)
 
     # Conditionnal labelling of events
+    print("hera2")
+    print(len(labels_artifacts))
+    print(len(brux_burst_ep))
     MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA= _cond_subclassif(li_ep_MEMA, labels_artifacts,
                                                                  brux_burst_ep, time_interval)
     brux_comb_ep, brux_pure_ep, compt_arti_brux = _cond_subclassif(li_ep_brux, labels_artifacts,
