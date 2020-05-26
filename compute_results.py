@@ -48,7 +48,7 @@ if __name__ == "__main__":
     THR_classif_bruxism = [[0, 2], [0, 3], [0, 4], [0, 5]]
     THR_classif_MEMA = [[0, 3], [0, 3.5], [0, 4]]
 
-    window_length_bruxism = 0.25  # in seconds (all epoch duration will be computed from here, might not be exactly this value because of rounding)
+    window_length_common = 0.25  # in seconds (all epoch duration will be computed from here, might not be exactly this value because of rounding)
     duration_factor_Impedance = 1  # how many time window_length
     duration_factor_MEMA = 4  # how many time window_length
     duration_factor_OMA = 4  # how many time window_length
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 THR_imp = dico_chans[file][2]
 
                 # ----------------- Prepare parameters -----------------------------------------------
-                duration_bruxism = int(window_length_bruxism * raw.info['sfreq'])  # in sample
+                duration_bruxism = int(window_length_common * raw.info['sfreq'])  # in sample
                 window_length_bruxism = duration_bruxism / raw.info['sfreq']  # recompute exact window_length
                 duration_MEMA = duration_factor_MEMA * duration_bruxism
                 window_length_MEMA = duration_MEMA / raw.info['sfreq']  # recompute exact window_length
