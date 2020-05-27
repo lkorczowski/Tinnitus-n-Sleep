@@ -123,8 +123,8 @@ if __name__ == "__main__":
                 tmp = time()
                 if DO_BRUXISM:
                     is_good_kwargs = dict(ch_names=picks_chan_bruxism,
-                                          rejection_thresholds=dict(emg=1e-04),  # two order of magnitude higher q0.01
-                                          flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
+                                          rejection_thresholds=dict(emg=7e-04),  # two order of magnitude higher q0.01
+                                          flat_thresholds=dict(emg=3e-09),  # one order of magnitude lower median
                                           channel_type_idx=dict(emg=[i for i in range(len(picks_chan_bruxism))])
                                           )
                     filter_kwargs = dict(l_freq=20., h_freq=99., n_jobs=4,
