@@ -123,7 +123,7 @@ if __name__ == "__main__":
                 tmp = time()
                 if DO_BRUXISM:
                     is_good_kwargs = dict(ch_names=picks_chan_bruxism,
-                                          rejection_thresholds=dict(emg=5e-05),  # two order of magnitude higher q0.01
+                                          rejection_thresholds=dict(emg=1e-04),  # two order of magnitude higher q0.01
                                           flat_thresholds=dict(emg=1e-09),  # one order of magnitude lower median
                                           channel_type_idx=dict(emg=[i for i in range(len(picks_chan_bruxism))])
                                           )
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
                 # 2. Impedance Check
                 if DO_BRUXISM:
-                    filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
+                    filter_kwargs = dict(l_freq=0.1, h_freq=16., n_jobs=4,
                                          fir_design='firwin', filter_length='auto', phase='zero-double',
                                          picks=picks_imp)
                     _, valid_labels_IMP, log["IMP"] = preprocess(raw, duration_Impedance, duration_Impedance,
