@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 if __name__ == "__main__":
-
+    threshold_index = 2
     mema_files = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
 
     results_MEMA = pd.read_pickle("data/reports_and_datas_MEMA.pk").to_dict()
@@ -28,11 +28,11 @@ if __name__ == "__main__":
         window_length_MEMA = results_MEMA[file]["parameters"]["time_interval"]
         delim_MEMA = results_MEMA[file]["parameters"]["delim"]
         params_combine = dict(
-            labels_brux=results_brux[file]["labels"][0],
+            labels_brux=results_brux[file]["labels"][threshold_index],
             labels_artifacts_brux=results_brux[file]["parameters"]["valid_labels"],
             time_interval_brux=results_brux[file]["parameters"]["time_interval"],
             delim_ep_brux=results_brux[file]["parameters"]["delim"],
-            labels_MEMA=results_MEMA[file]["labels"][0],
+            labels_MEMA=results_MEMA[file]["labels"][threshold_index],
             labels_artifacts_MEMA=results_MEMA[file]["parameters"]["valid_labels"],
             time_interval_MEMA=results_MEMA[file]["parameters"]["time_interval"],
             delim_ep_MEMA=results_brux[file]["parameters"]["delim"],
@@ -45,8 +45,8 @@ if __name__ == "__main__":
         imp_channels = np.array(raw.info["ch_names"])[dico_chans[1]].tolist()
 
         raw.pick_channels(ch_names=brux_channels + imp_channels + ["Airflow", "Activity"]).load_data()
-        labels_brux = results_brux[file]["labels"][0]
-        labels_MEMA = results_MEMA[file]["labels"][0]
+        labels_brux = results_brux[file]["labels"][threshold_index]
+        labels_MEMA = results_MEMA[file]["labels"][threshold_index]
 
         raw = CleanAnnotations(raw)
         duration_brux = window_length_brux * raw.info['sfreq']
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         raw.set_channel_types({'Airflow': 'misc', 'Activity': 'misc'})
         [raw.set_channel_types({ch: 'emg'}) for ch in brux_channels]
         [raw.set_channel_types({ch: 'bio'}) for ch in imp_channels]
-
+        print(pd.DataFrame(results_brux[file]["log"]))
         scalings = {'emg': 5e-5, 'misc': 0.2, 'bio':1e3}
         plt.close("all")
         raw.plot(scalings=scalings)
