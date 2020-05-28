@@ -233,7 +233,7 @@ def episodes_to_list(list_episodes, time_interval, n_labels):
     time_interval: float,
         time interval in seconds between 2 elementary events
     n_labels : int
-        duration of the recording in seconds
+        length of the list dof labels associated with the recording
 
     Returns
     -------
