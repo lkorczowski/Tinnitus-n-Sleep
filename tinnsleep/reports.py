@@ -299,14 +299,14 @@ def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interva
     compt_arti = 0
     # merge episodes and compare with condition and artefacts
     for elm in ep_to_sub:
-        if np.sum(labels_artifacts[int(elm.beg / time_interval):int(elm.end / time_interval)]) == \
-                (int(elm.end / time_interval) - int(elm.beg / time_interval)):
+        #if np.sum(labels_artifacts[int(elm.beg / time_interval):int(elm.end / time_interval)]) == \
+        #        (int(elm.end / time_interval) - int(elm.beg / time_interval)):
             if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
                 comb_ep.append(elm)
             else:
                 pure_ep.append(elm)
-        else:
-            compt_arti += 1
+        #else:
+        #    compt_arti += 1
     # ------------------
     # Pure episodes creation
     li_ep_p = episodes_to_list(pure_ep, time_interval, len(labels_condition))
