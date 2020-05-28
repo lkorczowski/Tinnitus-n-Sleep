@@ -7,7 +7,7 @@ from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episode
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 
-def generate_bruxism_report(classif, time_interval, delim):
+def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -18,6 +18,8 @@ def generate_bruxism_report(classif, time_interval, delim):
         time interval in seconds between 2 elementary events
     delim: float,
         maximal time interval considered eligible between two bursts within a episode
+    min_burst_joining : int
+        minimal number of events to join to form an episode
     Returns
     -------
     report :  dict
@@ -30,7 +32,7 @@ def generate_bruxism_report(classif, time_interval, delim):
     nb_burst = len(li_burst)
     report["Total number of burst"] = nb_burst
     report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
-    li_episodes = burst_to_episode(li_burst, delim)
+    li_episodes = burst_to_episode(li_burst, delim, min_burst_joining=min_burst_joining)
     nb_episodes = len(li_episodes)
     report["Total number of episodes"] = nb_episodes
     if nb_episodes > 0:
