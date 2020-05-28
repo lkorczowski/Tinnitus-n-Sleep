@@ -87,7 +87,7 @@ def CleanAnnotations(raw):
     return raw
 
 
-def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interval=50):
+def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration=50, interval=50, merge=False):
     """Annotate mne.Raw data based on an labels with a sliding window strategy
 
     Parameters
@@ -103,6 +103,8 @@ def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration
         Number of elements (i.e. samples) for all annotations.
     interval: int
         Number of elements (i.e. samples) to move for the next annotations (if interval>=duration, no overlap).
+    merge: bool (default: False)
+        if True, will merge successive labels with same key together.
 
 
     Returns
@@ -127,9 +129,28 @@ def AnnotateRaw_sliding(raw, labels, dict_annotations={1: "bad EPOCH"}, duration
 
     for k, label in enumerate(labels):
         if label in dict_annotations:
-            raw.annotations.append([interval * k / raw.info["sfreq"]],
-                                   [duration / raw.info["sfreq"]],
-                                   dict_annotations[label])
+            if merge:
+                if k == 0:
+                    start_epoch = k
+                elif label != labels[k-1]:
+                    start_epoch = k
+
+                if k == (len(labels)-1):
+                    end_epoch = k
+                    raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
+                                           [(end_epoch - start_epoch + 1) * duration / raw.info["sfreq"]],
+                                           dict_annotations[label])
+                elif label != labels[k+1]:
+                    end_epoch = k
+                    raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
+                                           [(end_epoch - start_epoch + 1) * duration / raw.info["sfreq"]],
+                                           dict_annotations[label])
+            else:
+                start_epoch = k
+                end_epoch = k
+                raw.annotations.append([interval * start_epoch / raw.info["sfreq"]],
+                                       [(end_epoch - start_epoch+1) * duration / raw.info["sfreq"]],
+                                       dict_annotations[label])
 
     return raw
 

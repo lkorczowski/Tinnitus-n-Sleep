@@ -63,7 +63,8 @@ def power_ratio(epochs, labels, axis=-1):
     nb_num = np.count_nonzero(labels)
     nb_epochs = len(labels)
     if (nb_num == 0) or (nb_num == nb_epochs):
-        raise ValueError("labels should have at least one True and one False")
+        return np.array([np.nan]*len(epochs[0]))
+        #raise ValueError("labels should have at least one True and one False")
 
     pow = mean_power(epochs, axis=axis)
     return np.mean(pow[labels], axis=0)/np.mean(pow[np.invert(labels)], axis=0)

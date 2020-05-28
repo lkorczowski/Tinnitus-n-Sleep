@@ -94,6 +94,37 @@ def test_Annotation_withinterval(dummyraw):
     assert raw.annotations[2] == expected3
 
 
+def test_Annotation_withinterval_merge(dummyraw):
+    interval = 50
+    duration = 50
+    labels = [1, 1, 0, 0, 1, 2, 0, 3, 3]
+    dict_annotations = {1: "bad EPOCH", 2: "nice"}
+    raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
+                   interval=interval, duration=duration, merge=True)
+    expected0 = OrderedDict([('onset', .0),
+                 ('duration', .4),
+                 ('description', 'bad EPOCH'),
+                 ('orig_time', None)])
+    expected1 = OrderedDict([('onset', .8),
+                 ('duration', .2),
+                 ('description', 'bad EPOCH'),
+                 ('orig_time', None)])
+    expected2 = OrderedDict([('onset', 1.0),
+                 ('duration', .2),
+                 ('description', 'nice'),
+                 ('orig_time', None)])
+    expected3 = OrderedDict([('onset', 1.40),
+                 ('duration', .4),
+                 ('description', '3'),
+                 ('orig_time', None)])
+
+    assert raw.annotations[0] == expected0
+    assert raw.annotations[1] == expected1
+    assert raw.annotations[2] == expected2
+    assert raw.annotations[3] == expected3
+
+
+
 def test_Annotation_outoflength(dummyraw):
     interval = 300
     duration = 250

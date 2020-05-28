@@ -7,7 +7,7 @@ from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episode
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 
-def generate_bruxism_report(classif, time_interval, delim):
+def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -18,6 +18,8 @@ def generate_bruxism_report(classif, time_interval, delim):
         time interval in seconds between 2 elementary events
     delim: float,
         maximal time interval considered eligible between two bursts within a episode
+    min_burst_joining : int
+        minimal number of events to join to form an episode
     Returns
     -------
     report :  dict
@@ -30,7 +32,7 @@ def generate_bruxism_report(classif, time_interval, delim):
     nb_burst = len(li_burst)
     report["Total number of burst"] = nb_burst
     report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
-    li_episodes = burst_to_episode(li_burst, delim)
+    li_episodes = burst_to_episode(li_burst, delim, min_burst_joining=min_burst_joining)
     nb_episodes = len(li_episodes)
     report["Total number of episodes"] = nb_episodes
     if nb_episodes > 0:
@@ -155,7 +157,8 @@ def preprocess(raw, duration, interval,
     log : dictionary
         logs of the preprocessing steps, including the number of epochs rejected at each step
     """
-    raw = raw.copy()
+    raw = raw.copy().pick(picks=picks_chan).load_data()
+
     if isinstance(filter_kwargs, dict):
         raw = raw.filter(**filter_kwargs)
     elif filter_kwargs is None:
@@ -195,8 +198,12 @@ def preprocess(raw, duration, interval,
     suppressed_amp_thr = np.sum(RMSlabels)
     valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels])
     suppressed_all = np.sum(np.invert(valid_labels))
-    log = {"suppressed_is_good": suppressed_is_good, "suppressed_amp_thr": suppressed_amp_thr,
-                                     "suppressed_overall": suppressed_all, "total_nb_epochs": len(valid_labels)}
+    log = {"suppressed_is_good": suppressed_is_good,
+           "suppressed_amp_thr": suppressed_amp_thr,
+           "suppressed_overall": suppressed_all,
+           "total_nb_epochs": len(valid_labels),
+           "suppressed_ratio": suppressed_all/len(valid_labels)}
+
     return epochs, valid_labels, log
 
 
@@ -259,15 +266,20 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
         labs.append(labels)
         reps.append(report)
 
-    return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log}
+    parameters = dict()
+    parameters['valid_labels'] = valid_labels
+    parameters['THR_classif'] = THR_classif
+    parameters['time_interval'] = time_interval
+    parameters['delim'] = delim
+    parameters['n_adaptive'] = n_adaptive
+
+    return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log, "parameters": parameters}
 
 
-def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interval):
+def _cond_subclassif(ep_to_sub, labels_condition, time_interval):
     """subclassification of list of events into pure and combined events according to the labels_condition criterion
      ep_to_sub : list of episodes instances
             list of episodes to subclassify
-    labels_artifacts: list of booleans
-         list of artifacts events found during preprocessing for ep_to_sub,
     labels_condition : list of booleans
         list of events coming from episode and bursts from a chosen biosignal
     time_interval : float
@@ -278,30 +290,26 @@ def _cond_subclassif(ep_to_sub, labels_artifacts, labels_condition, time_interva
         list of combined events grouped as episodes
     li_ep_p : list of booleans
         list of pure events grouped as episodes
-    compt_arti : int
-        number of events rejected due to artifact crossing
     """
     # ---------------Subclassifying MEMA and bruxism events----------------------
     comb_ep = []
     pure_ep = []
-    compt_arti = 0
     # merge episodes and compare with condition and artefacts
     for elm in ep_to_sub:
-        if np.sum(labels_artifacts[int(elm.beg / time_interval):int(elm.end / time_interval)]) == \
-                (int(elm.end / time_interval) - int(elm.beg / time_interval)):
             if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
                 comb_ep.append(elm)
             else:
                 pure_ep.append(elm)
-        else:
-            compt_arti += 1
+
     # ------------------
     # Pure episodes creation
-    li_ep_p = create_list_events(pure_ep, time_interval, time_interval * len(labels_condition), boolean_output=True)
+    li_ep_p = episodes_to_list(pure_ep, time_interval, len(labels_condition))
+    li_ep_p = np.where(li_ep_p != 0, True, False)
     # Combined episode creation
-    li_ep_c = create_list_events(comb_ep, time_interval, time_interval * len(labels_condition), boolean_output=True)
+    li_ep_c = episodes_to_list(comb_ep, time_interval, len(labels_condition))
+    li_ep_c = np.where(li_ep_c != 0, True, False)
 
-    return li_ep_c, li_ep_p, compt_arti
+    return li_ep_c, li_ep_p
 
 def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=0):
     """joining near bursts into episodes but keeping isolated bursts intact for future mutual conditioned analysis
@@ -324,30 +332,26 @@ def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=
     # ------------grouping episodes and bursts together------------------------------------
     bursts = classif_to_burst(labels, time_interval=time_interval)
     li_ep = burst_to_episode(bursts, delim=delim_ep, min_burst_joining=min_burst_joining)
-    events = create_list_events(li_ep, time_interval, len(labels) * time_interval, boolean_output=True)
+    events = episodes_to_list(li_ep, time_interval, len(labels))
+    events = np.where(events != 0, True, False)
     return events, li_ep
 
 
 
 
-def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
-                      labels_artifacts_MEMA, time_interval_MEMA, delim_ep_MEMA,
+def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
+                     time_interval_MEMA, delim_ep_MEMA,
                       min_burst_joining_brux=3, min_burst_joining_MEMA=0):
     """Combined analysis of bruxism and MEMA events to separate pure from combined events for both signals
         ----------
         labels_brux : list of booleans
             list of bruxism events directly afer classification
-        labels_artifacts_brux : list of booleans
-            list of bruxism artifacts events found during bruxism preprocessing,
-            should be of the same length as labels_brux
         time_interval_brux : float
             time interval between two labels of labels_brux
         delim_ep_brux : float
             maximal tolerated time interval between 2 bruxism bursts to form an episode
         labels_MEMA : list of booleans
             list of MEMA events directly afer classification
-        labels_artifacts_MEMA : list of booleans
-            list of MEMA artifacts events found during MEMA preprocessing, should be of the same length as labels_MEMA
         time_interval_MEMA : float
             time interval between two labels of labels_MEMA
         delim_ep_MEMA : float
@@ -362,32 +366,21 @@ def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, de
             list of combined bruxism events grouped as episodes
         brux_pure_ep : list of booleans
             list of pure bruxism events grouped as episodes
-        compt_arti_brux : int
-            number of bruxism events rejected due to artifact crossing
         MEMA_comb_ep : list of booleans
             list of combined MEMA events grouped as episodes
         MEMA_pure_ep : list of booleans
             list of pure MEMA events grouped as episodes
-        compt_arti_MEMA : int
-            number of MEMA events rejected due to artifact crossing
         """
     # Putting labels inputs on the same sampling and epoching
     if len(labels_brux) != len(labels_MEMA):
         if len(labels_brux) < len(labels_MEMA):
             labels_brux = merge_labels_list ([labels_brux], len(labels_MEMA))
-            # adapts and fuses artifacts
-            labels_artifacts =  merge_labels_list ([labels_artifacts_brux,labels_artifacts_MEMA], len(labels_MEMA))
             time_interval = time_interval_MEMA
         else:
             labels_MEMA = merge_labels_list([labels_MEMA], len(labels_brux))
-            # adapts and fuses artifacts
-            labels_artifacts = merge_labels_list([labels_artifacts_brux,labels_artifacts_MEMA], len(labels_brux))
             time_interval = time_interval_brux
     else: #inputs of same length
-        # fuses artifacts
-        labels_artifacts = merge_labels_list([labels_artifacts_brux, labels_artifacts_MEMA], len(labels_brux))
         time_interval = time_interval_brux
-
     # Creating lists of episode and bursts for bruxism and MEMA
     brux_burst_ep, li_ep_brux = _labels_to_ep_and_bursts(labels_brux, time_interval, delim_ep_brux,
                                                          min_burst_joining=min_burst_joining_brux)
@@ -395,9 +388,9 @@ def combine_brux_MEMA(labels_brux, labels_artifacts_brux, time_interval_brux, de
                                                          min_burst_joining=min_burst_joining_MEMA)
 
     # Conditionnal labelling of events
-    MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA= _cond_subclassif(li_ep_MEMA, labels_artifacts,
+    MEMA_comb_ep, MEMA_pure_ep= _cond_subclassif(li_ep_MEMA,
                                                                  brux_burst_ep, time_interval)
-    brux_comb_ep, brux_pure_ep, compt_arti_brux = _cond_subclassif(li_ep_brux, labels_artifacts,
+    brux_comb_ep, brux_pure_ep = _cond_subclassif(li_ep_brux,
                                                                    MEMA_burst_ep, time_interval)
 
-    return brux_comb_ep, brux_pure_ep, compt_arti_brux, MEMA_comb_ep, MEMA_pure_ep, compt_arti_MEMA
+    return brux_comb_ep, brux_pure_ep, MEMA_comb_ep, MEMA_pure_ep
