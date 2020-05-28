@@ -35,11 +35,10 @@ def test_power_ratio():
 def test_power_ratio_missing():
     epochs = np.random.randn(2000, 2, 2000)
     labels = [True]*2000
-    with pytest.raises(ValueError, match=f"labels should have at least one True and one False"):
-        power_ratio(epochs, labels)
+    npt.assert_equal( power_ratio(epochs, labels), [np.nan, np.nan])
+
     labels = [False]*2000
-    with pytest.raises(ValueError, match=f"labels should have at least one True and one False"):
-        power_ratio(epochs, labels)
+    npt.assert_equal(power_ratio(epochs, labels), [np.nan, np.nan])
 
 
 def test_power_ratio2():
