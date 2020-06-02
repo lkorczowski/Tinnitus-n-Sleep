@@ -1,6 +1,5 @@
 import pandas as pd
 from tinnsleep.config import Config
-import os
 import mne
 from tinnsleep.data import AnnotateRaw_sliding, CleanAnnotations
 import matplotlib
@@ -8,14 +7,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 if __name__ == "__main__":
-    threshold_index = 2
+    threshold_index_bruxism = 3
+    threshold_index_MEMA = 2
     mema_files = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
 
     results_MEMA = pd.read_pickle("data/reports_and_datas_MEMA.pk").to_dict()
     results_brux = pd.read_pickle("data/reports_and_datas_bruxism.pk").to_dict()
     min_burst_joining_brux = 3
     min_burst_joining_MEMA = 0
-    file = 'HZB_nuit_2.edf'
+    file = '1GB19_nuit_hab.edf' #
     filename = [filename for filename in Config.bruxisme_files if filename.endswith(file)][0]
     # Loop on all the patient files
     print(file, end=" ")
@@ -28,11 +28,11 @@ if __name__ == "__main__":
         window_length_MEMA = results_MEMA[file]["parameters"]["time_interval"]
         delim_MEMA = results_MEMA[file]["parameters"]["delim"]
         params_combine = dict(
-            labels_brux=results_brux[file]["labels"][threshold_index],
+            labels_brux=results_brux[file]["labels"][threshold_index_bruxism],
             labels_artifacts_brux=results_brux[file]["parameters"]["valid_labels"],
             time_interval_brux=results_brux[file]["parameters"]["time_interval"],
             delim_ep_brux=results_brux[file]["parameters"]["delim"],
-            labels_MEMA=results_MEMA[file]["labels"][threshold_index],
+            labels_MEMA=results_MEMA[file]["labels"][threshold_index_MEMA],
             labels_artifacts_MEMA=results_MEMA[file]["parameters"]["valid_labels"],
             time_interval_MEMA=results_MEMA[file]["parameters"]["time_interval"],
             delim_ep_MEMA=results_brux[file]["parameters"]["delim"],
@@ -45,8 +45,8 @@ if __name__ == "__main__":
         imp_channels = np.array(raw.info["ch_names"])[dico_chans[1]].tolist()
 
         raw.pick_channels(ch_names=brux_channels + imp_channels + ["Airflow", "Activity"]).load_data()
-        labels_brux = results_brux[file]["labels"][threshold_index]
-        labels_MEMA = results_MEMA[file]["labels"][threshold_index]
+        labels_brux = results_brux[file]["labels"][threshold_index_bruxism]
+        labels_MEMA = results_MEMA[file]["labels"][threshold_index_MEMA]
 
         raw = CleanAnnotations(raw)
         duration_brux = window_length_brux * raw.info['sfreq']
