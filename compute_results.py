@@ -84,6 +84,11 @@ if __name__ == "__main__":
                 # opens the raw file
                 raw = mne.io.read_raw_edf(filename, preload=False, verbose=False)  # prepare loading
                 file = filename.split(os.path.sep)[-1]
+                if file == "1PI07_nuit_hab.edf":
+                    print("c'est 1PI07 hab :) ! ")
+                    croptimes = dict(tmin=raw.times[0] + 10750, tmax=raw.times[-1] - 3330)
+                    raw.crop(**croptimes)
+
 
                 print(file, end=" ")
                 # Get channels indexes
@@ -175,12 +180,10 @@ if __name__ == "__main__":
 
                 # 2. Impedance Check
                 if DO_BRUXISM:
-                    filter_kwargs = dict(l_freq=0.1, h_freq=16., n_jobs=4,
-                                         fir_design='firwin', filter_length='auto', phase='zero-double',
-                                         picks=picks_imp)
+
                     _, valid_labels_IMP, log["IMP"] = preprocess(raw, duration_Impedance, duration_Impedance,
                                                                  picks_chan=picks_imp,
-                                                                 filter_kwargs=filter_kwargs,
+
                                                                  Thresholding_kwargs=dict(abs_threshold=THR_imp,
                                                                                           rel_threshold=0,
                                                                                           decision_function=lambda
