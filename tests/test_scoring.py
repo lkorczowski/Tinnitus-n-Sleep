@@ -63,38 +63,6 @@ def test_rearrange_chronological():
     npt.assert_equal(flag, True)
 
 
-def test_create_list_events():
-    # Test if empty
-    npt.assert_equal(create_list_events([], 0.5, 0), [])
-
-    # Test if empty but with length
-    npt.assert_equal(create_list_events([], 0.5, 0.5), [0])
-    npt.assert_equal(create_list_events([], 0.5, 0.5, boolean_output=True), [False])
-
-    # Test all the episodes types
-    bursty = [burst(0.1, 1), burst(0.1, 1), burst(3, 6), burst(1.5, 2.5), burst(1.25, 3.5), burst(0, 0.2),
-              burst(5.5, 6.5), burst(7.5, 8.5), burst(15, 20), burst(25, 26), burst(26.5, 27), burst(28, 29)]
-
-    li_ep = burst_to_episode(bursty)
-    anno = generate_annotations(li_ep)
-    npt.assert_equal(len(anno), 3)
-    li_ev = create_list_events(li_ep, 0.25, 29)
-    expected_events = np.array([3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-                             3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2])
-    exp_events_bool = expected_events > 0
-    npt.assert_equal(li_ev, expected_events)
-    li_ev_bool = create_list_events(li_ep, 0.25, 29, boolean_output=True)
-    npt.assert_equal(li_ev_bool, exp_events_bool)
-
-    # Test with empty initial inputs and ending
-    bursty = [burst(1, 4)]
-    li_ep = burst_to_episode(bursty)
-    li_ev = create_list_events(li_ep, 0.25, 5)
-    npt.assert_equal(li_ev, [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0])
-
-
 def test_episodes_to_list_simple():
     time_interval = 1
     bursts_ = []
