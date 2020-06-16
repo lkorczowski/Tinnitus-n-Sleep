@@ -59,7 +59,6 @@ if __name__ == "__main__":
     results_file_bruxism = "data/reports_and_datas_bruxism.pk"
 
     # Dictionnary of known names of the Airflow
-    mapping = {"Airflow": "MEMA"}
     print("parameters set")
 
     # Importing personnalized parameters for dataset
