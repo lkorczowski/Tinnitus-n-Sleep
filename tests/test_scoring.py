@@ -1,6 +1,5 @@
 import numpy.testing as npt
-from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, create_list_events, rearrange_chronological,\
-    generate_annotations, episodes_to_list
+from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, rearrange_chronological
 from tinnsleep.events.burst import burst
 import numpy as np
 
@@ -61,23 +60,3 @@ def test_rearrange_chronological():
             flag = False
             break
     npt.assert_equal(flag, True)
-
-
-def test_episodes_to_list_simple():
-    time_interval = 1
-    bursts_ = []
-    n_labels = 10
-    labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
-    npt.assert_equal(labels, [False]*10)
-
-    bursts_ = [burst(1, 2), burst(5, 6), burst(6, 7), burst(9, 10)]
-    labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
-    labels_expected = np.zeros((n_labels,));
-    labels_expected[[1, 5, 6, 9]] = True
-    npt.assert_equal(labels>0, labels_expected)
-
-    bursts_ = [burst(0.5, 2), burst(4.5, 7.5),burst(8.1, 8.2), burst(9, 10.5)] # should convert only full epochs
-    labels = episodes_to_list(burst_to_episode(bursts_, min_burst_joining=1, delim=0), time_interval, n_labels)
-    labels_expected = np.zeros((n_labels,));
-    labels_expected[[1, 5, 6, 9]] = True
-    npt.assert_equal(labels>0, labels_expected)
