@@ -27,26 +27,26 @@ filename;subject;session;condition;emg;mema;comments;included;control
 1SA14_nuit_son.edf;1SA14;2;stimulation;1;0;No MEMA sensor;1;0
 1ZN04_nuit_hab.edf;1ZN04;1;habituation;1;0;No MEMA sensor;1;0
 1ZN04_nuit_son.edf;1ZN04;2;stimulation;1;0;No MEMA sensor;1;0
-1HB20_nuit_1;1HB20;1;habituation;1;1;;1;0
-1HB20_nuit_2;1HB20;2;stimulation;1;1;;1;0
-1HB20_nuit_3;1HB20;3;stimulation;0;0;Partial recording: missing 1h30;0;0
-1SL21_nuit_4;1SL21;4;stimulation;1;1;;1;0
-1SL21_nuit_6;1SL21;6;stimulation;1;1;;1;0
-1SL21_nuit_7;1SL21;7;stimulation;1;1;;1;0
-1SL21_nuit_8;1SL21;8;stimulation;1;1;;1;0
-1SL21_nuit_1;1SL21;1;habituation;0;0;Partial recording: missing 5h;0;0
-1SL21_nuit_2;1SL21;2;stimulation;1;1;;1;0
-1SL21_nuit_3;1SL21;3;stimulation;1;1;;1;0
-1SL21_nuit_5;1SL21;5;stimulation;0;1;Bad EMG channels;1;0
-1UC22_nuit_2;1UC22;2;stimulation;1;1;;1;0
-1UC22_nuit_1;1UC22;1;habituation;1;1;;1;0
-1UC22_nuit_3;1UC22;3;stimulation;1;0;No MEMA sensor, has real airflow instead?;1;0
-2GA06_nuit_1;2GA06;1;control;1;1;;1;1
-2SJ03_nuit_1;2SJ03;1;control;1;1;;1;1
-2MJ02_nuit_1;2MJ02;1;control;0;0;MEMA sensor compromised after 3 hours recording;0;1
-2GR01_nuit_3;2GR01;3;control;1;1;Weird MEMA sensor behaviour;1;1
-2GR01_nuit_4;2GR01;4;control;1;1;Weird MEMA sensor behaviour;1;1
-2GR01_nuit_1;2GR01;1;control;1;0;No MEMA sensor;1;1
-2GR01_nuit_2;2GR01;2;control;1;0;No MEMA sensor;1;1
-2LS05_nuit_1;2LS05;1;control;1;1;;1;1
-2CT04_nuit_1;2CT04;1;control;1;1;;1;1
+1HB20_nuit_1.edf;1HB20;1;habituation;1;1;;1;0
+1HB20_nuit_2.edf;1HB20;2;stimulation;1;1;;1;0
+1HB20_nuit_3.edf;1HB20;3;stimulation;0;0;Partial recording: missing 1h30;0;0
+1SL21_nuit_4.edf;1SL21;4;stimulation;1;1;;1;0
+1SL21_nuit_6.edf;1SL21;6;stimulation;1;1;;1;0
+1SL21_nuit_7.edf;1SL21;7;stimulation;1;1;;1;0
+1SL21_nuit_8.edf;1SL21;8;stimulation;1;1;;1;0
+1SL21_nuit_1.edf;1SL21;1;habituation;0;0;Partial recording: missing 5h;0;0
+1SL21_nuit_2.edf;1SL21;2;stimulation;1;1;;1;0
+1SL21_nuit_3.edf;1SL21;3;stimulation;1;1;;1;0
+1SL21_nuit_5.edf;1SL21;5;stimulation;0;1;Bad EMG channels;1;0
+1UC22_nuit_2.edf;1UC22;2;stimulation;1;1;;1;0
+1UC22_nuit_1.edf;1UC22;1;habituation;1;1;;1;0
+1UC22_nuit_3.edf;1UC22;3;stimulation;1;0;No MEMA sensor, has real airflow instead?;1;0
+2GA06_nuit_1.edf;2GA06;1;control;1;1;;1;1
+2SJ03_nuit_1.edf;2SJ03;1;control;1;1;;1;1
+2MJ02_nuit_1.edf;2MJ02;1;control;0;0;MEMA sensor compromised after 3 hours recording;0;1
+2GR01_nuit_3.edf;2GR01;3;control;1;1;Weird MEMA sensor behaviour;1;1
+2GR01_nuit_4.edf;2GR01;4;control;1;1;Weird MEMA sensor behaviour;1;1
+2GR01_nuit_1.edf;2GR01;1;control;1;0;No MEMA sensor;1;1
+2GR01_nuit_2.edf;2GR01;2;control;1;0;No MEMA sensor;1;1
+2LS05_nuit_1.edf;2LS05;1;control;1;1;;1;1
+2CT04_nuit_1.edf;2CT04;1;control;1;1;;1;1
