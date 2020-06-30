@@ -50,9 +50,9 @@ filename;subject;session;condition;emg;mema;comments;included;control;Evol_masqu
 2GR01_nuit_2.edf;2GR01;2;control;1;0;No MEMA sensor;1;1;;;;;;;[0, 6];[1, 7];8000
 2LS05_nuit_1.edf;2LS05;1;control;1;1;;1;1;;;;;;;[4];[5];8000
 2CT04_nuit_1.edf;2CT04;1;control;1;1;;1;1;;;;;;;[4];[5];4000
-1HB20_nuit_1_resmed.edf;1HB20;1b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-16;-0.225352112676056;0;0;0;0;[];[];
-1HB20_nuit_2_resmed.edf;1HB20;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-24;-0.363636363636364;-2;-0.285714285714286;-2;-0.285714285714286;[];[];
-1SL21_nuit_2_resmed.edf;1SL21;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5;[];[];
-1SL21_nuit_3_resmed.edf;1SL21;3b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;;;4.5;9;4.5;9;[];[];
-1UC22_nuit_1_resmed.edf;1UC22;1b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;5;0.106382978723404;2;1;1;0.5;[];[];
-1UC22_nuit_2_resmed.edf;1UC22;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;10;0.18;4.5;3;4.5;3;[];[];
+1HB20_nuit_1_resmed.edf;1HB20;1b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-16;-0.225352112676056;0;0;0;0;[0, 4];[1,5];8000
+1HB20_nuit_2_resmed.edf;1HB20;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-24;-0.363636363636364;-2;-0.285714285714286;-2;-0.285714285714286;[0];[1];8000
+1SL21_nuit_2_resmed.edf;1SL21;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5;[0,4];[1,5];8000
+1SL21_nuit_3_resmed.edf;1SL21;3b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;;;4.5;9;4.5;9;[0,4];[1,5];8000
+1UC22_nuit_1_resmed.edf;1UC22;1b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;5;0.106382978723404;2;1;1;0.5;[0,4];[1,5];8000
+1UC22_nuit_2_resmed.edf;1UC22;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;10;0.18;4.5;3;4.5;3;[4];[5];8000
