@@ -40,6 +40,7 @@ if __name__ == "__main__":
     from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess
     from tinnsleep.utils import crop_to_proportional_length
     from tinnsleep.config import Config
+    from ast import literal_eval
 
     bruxism, mema, OVERWRITE_RESULTS = main(sys.argv[1:])
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "notebooks/"))
@@ -62,11 +63,14 @@ if __name__ == "__main__":
     print("parameters set")
 
     # Importing personnalized parameters for dataset
-    mema_files = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
-    dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  # TODO: check if valid for all subjects
+    # = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
+    columns_with_list = {"Valid_chans": eval, "Valid_imps": eval}  # require to convert string to list in DataFrame
+    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=";", converters=columns_with_list)
+    mema_files = data_info.query("mema == 1")["filename"].values
+    #dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  # TODO: check if valid for all subjects
+    dico_chans = data_info.query("emg == 1").set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
 
     # Processing of the dataset and report generation
-
     if (not OVERWRITE_RESULTS) and os.path.isfile(results_file_MEMA) and os.path.isfile(results_file_bruxism):
         print(f"result files exist: Reports creation skipped.")
     else:
@@ -91,10 +95,11 @@ if __name__ == "__main__":
 
                 print(file, end=" ")
                 # Get channels indexes
-                ind_picks_chan = dico_chans[file][0]
-                ind_picks_imp = dico_chans[file][1]
+                ind_picks_chan = dico_chans.loc[file]['Valid_chans']
+                # Get impedance channels
+                ind_picks_imp = dico_chans.loc[file]['Valid_imps']
                 # Get THR_imp value for filename
-                THR_imp = dico_chans[file][2]
+                THR_imp = dico_chans.loc[file]['THR_IMP']
 
                 # ----------------- Prepare parameters -----------------------------------------------
                 duration_bruxism = int(window_length_common * raw.info['sfreq'])  # in sample
