@@ -1,55 +1,55 @@
 filename;subject;session;condition;emg;mema;comments;included;control;Evol_masquage;pourc_Evol_masquage;Evol_EVA_I;pourc_Evol_EVA_I;Evol_EVA_G;pourc_Evol_EVA_G;Valid_chans;Valid_imps;THR_IMP
-1BA07_nuit_hab.edf;1BA07;1;habituation;1;0;No MEMA sensor;1;0;12.34;1.42494226327945;0;0;0;0; [0, 4]; [1, 5];8000
-1BA07_nuit_son.edf;1BA07;2;stimulation;1;0;No MEMA sensor;1;0;-12.6733333333333;-0.731153846153846;-4;-0.8;-3;-1; [0, 4]; [1, 5];8000
-1CC05_nuit_hab.edf;1CC05;1;habituation;1;0;No MEMA sensor;1;0;0.33;0.0825;0;0;0;0; [0, 4]; [1, 5];8000
-1CC05_nuit_son.edf;1CC05;2;stimulation;1;0;No MEMA sensor;1;0;-0.66;-0.141630901287554;-2;-0.4;-3;-0.6; [0, 6]; [1, 7];8000
-1DA15_nuit_hab.edf;1DA15;1;habituation;1;1;No MEMA sensor;1;0;-0.666666666666668;-0.0222222222222223;0;0;0;0; [0]; [1];8000
-1DA15_nuit_son.edf;1DA15;2;stimulation;1;0;No MEMA sensor;1;0;-2;-0.0731707317073171;-1;-0.2;0;0; [0, 4]; [1, 5];8000
-1DL12_nuit_hab.edf;1DL12;1;habituation;1;0;No MEMA sensor;1;0;-2.33333333333334;-0.0507246376811595;-1;-0.166666666666667;-1;-0.166666666666667; [0, 6]; [1, 7];8000
-1DL12_nuit_son.edf;1DL12;2;stimulation;1;0;No MEMA sensor;1;0;-15.3333333333333;-0.377049180327869;-3;-0.6;-3;-0.6; [0, 4]; [1, 5];8000
-1GB18_nuit_son.edf;1GB18;1;habituation;1;0;No MEMA sensor;1;0;3.33333333333333;0.25;0;0;-1;-0.2; [0, 4]; [1, 5];8000
-1GB18_nuit_hab.edf;1GB18;2;stimulation;1;1;No MEMA sensor;1;0;0.333333333333336;0.0204081632653063;0;0;1;0.25; [0, 4]; [1, 5];8000
-1GF14_nuit_hab.edf;1GF14;1;habituation;0;0;Bad EMG channels, no MEMA sensor;0;0;2.34;0.0379500486539086;0;0;-1;-0.166666666666667; []; [];8000
-1GF14_nuit_son.edf;1GF14;2;stimulation;1;0;No MEMA sensor;1;0;-10.6666666666667;-0.164948453608247;0;0;3;0.6; [0, 4]; [1, 5];8000
-1MA16_nuit_hab.edf;1MA16;1;habituation;0;0;Patient has not slept over the night;0;0;0;0;0;0;0;0; [0, 4]; [1, 5];8000
-1MA16_nuit_son.edf;1MA16;2;stimulation;1;0;No MEMA sensor;1;0;-1;-0.25;0;0;0;0; [0, 4]; [1, 5];8000
-1MF19_nuit_hab.edf;1MF19;1;habituation;1;0;MEMA sensor compromised after 4 hours recording;1;0;9;0.333333333333333;-1;-0.142857142857143;-1;-0.142857142857143; [0, 4]; [1, 5];8000
-1MF19_nuit_son.edf;1MF19;2;stimulation;1;0;No MEMA sensor;1;0;-2.66666666666666;-0.097560975609756;-2;-0.333333333333333;-2;-0.333333333333333; [0, 6]; [1, 7];8000
-1MN09_nuit_hab.edf;1MN09;1;habituation;1;0;No MEMA sensor;1;0;0.329999999999998;0.00575614861329144;-3;-0.375;-3;-0.375; [0, 4]; [1, 5];8000
-1MN09_nuit_son.edf;1MN09;2;stimulation;1;0;No MEMA sensor;1;0;7.67;0.126442466205078;1;0.2;1;0.2; [0, 4]; [1, 5];8000
-1PI07_nuit_hab.edf;1PI07;1;habituation;1;0;No MEMA sensor;1;0;1;0.0600240096038415;-4;-0.571428571428571;-4;-0.5; [0, 4]; [1, 5];8000
-1PI07_nuit_son.edf;1PI07;2;stimulation;1;0;No MEMA sensor;1;0;9;0.529411764705882;2;0.666666666666667;1;0.25; [0, 4]; [1, 5];8000
-1PT06_nuit_hab.edf;1PT06;1;habituation;1;0;No MEMA sensor;1;0;0;0;-2;-0.25;-2;-0.25; [0, 6]; [1, 7];8000
-1PT06_nuit_son.edf;1PT06;2;stimulation;1;0;No MEMA sensor;1;0;-1.66;-0.057920446615492;0;0;0;0; [0, 6]; [1, 7];8000
-1RA17_nuit_hab.edf;1RA17;1;habituation;0;1;Bad EMG channels;1;0;1.34;0.366120218579235;0;0;0;0; []; [];8000
-1RA17_nuit_son.edf;1RA17;2;stimulation;1;0;No MEMA sensor;1;0;-0.33;-0.0901639344262295;0;0;0;0; [0, 4]; [1, 5];8000
-1SA14_nuit_hab.edf;1SA14;1;habituation;1;0;No MEMA sensor;1;0;1;0.157894736842105;1;0.25;0;0; [0, 4]; [1, 5];8000
-1SA14_nuit_son.edf;1SA14;2;stimulation;1;0;No MEMA sensor;1;0;0;0;-1;-0.2;0;0; [0, 4]; [1, 5];8000
-1ZN04_nuit_hab.edf;1ZN04;1;habituation;1;0;No MEMA sensor;1;0;0.67;0.143776824034335;0;0;0;0; [0, 6]; [1, 7];8000
-1ZN04_nuit_son.edf;1ZN04;2;stimulation;1;0;No MEMA sensor;1;0;-0.67;-0.125703564727955;0;0;0;0; [0, 6]; [1, 7];8000
-1HB20_nuit_1.edf;1HB20;1;habituation;1;1;;1;0;-16;-0.225352112676056;0;0;0;0; [4]; [5];8000
-1HB20_nuit_2.edf;1HB20;2;habituation;1;1;;1;0;-24;-0.363636363636364;-2;-0.285714285714286;-2;-0.285714285714286; [0, 6]; [1, 7];8000
-1HB20_nuit_3.edf;1HB20;3;habituation;0;0;Partial recording: missing 1h30;0;0;30;0.9375;6;6;6;6; [0, 4]; [1, 5];8000
-1SL21_nuit_4.edf;1SL21;4;habituation;1;1;;1;0;;;0;0;0;0; []; [];8000
-1SL21_nuit_6.edf;1SL21;6;habituation;1;1;;1;0;;;-2;-0.5;-2;-0.5; [0]; [1];8000
-1SL21_nuit_7.edf;1SL21;7;habituation;1;1;;1;0;;;0;0;0;0; [0]; [1];8000
-1SL21_nuit_8.edf;1SL21;8;habituation;1;1;;1;0;;;1;1;1;1; [0]; [1];8000
-1SL21_nuit_1.edf;1SL21;1;habituation;0;0;Partial recording: missing 5h;0;0;-4;-0.0888888888888889;-2;-0.5;-2;-0.5; [0, 4]; [1, 5];8000
-1SL21_nuit_2.edf;1SL21;2;habituation;1;1;;1;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5; [0, 4]; [1, 5];8000
-1SL21_nuit_3.edf;1SL21;3;habituation;1;1;;1;0;;;4.5;9;4.5;9; [0, 4]; [1, 5];8000
-1SL21_nuit_5.edf;1SL21;5;habituation;0;1;Bad EMG channels;1;0;;;1;0.33;1;0.33; [0, 6]; [1, 7];8000
-1UC22_nuit_2.edf;1UC22;2;habituation;1;1;;1;0;10;0.18;4.5;3;4.5;3; [0, 4]; [1, 5];8000
-1UC22_nuit_1.edf;1UC22;1;habituation;1;1;;1;0;5;0.106382978723404;2;1;1;0.5; [0, 6]; [1, 7];8000
+1BA07_nuit_hab.edf;1BA07;1;habituation;1;0;No MEMA sensor;1;0;12.34;1.42494226327945;0;0;0;0;[0, 4];[1, 5];8000
+1BA07_nuit_son.edf;1BA07;2;stimulation;1;0;No MEMA sensor;1;0;-12.6733333333333;-0.731153846153846;-4;-0.8;-3;-1;[0, 4];[1, 5];8000
+1CC05_nuit_hab.edf;1CC05;1;habituation;1;0;No MEMA sensor;1;0;0.33;0.0825;0;0;0;0;[0, 4];[1, 5];8000
+1CC05_nuit_son.edf;1CC05;2;stimulation;1;0;No MEMA sensor;1;0;-0.66;-0.141630901287554;-2;-0.4;-3;-0.6;[0, 6];[1, 7];8000
+1DA15_nuit_hab.edf;1DA15;1;habituation;1;1;No MEMA sensor;1;0;-0.666666666666668;-0.0222222222222223;0;0;0;0;[0];[1];8000
+1DA15_nuit_son.edf;1DA15;2;stimulation;1;0;No MEMA sensor;1;0;-2;-0.0731707317073171;-1;-0.2;0;0;[0, 4];[1, 5];8000
+1DL12_nuit_hab.edf;1DL12;1;habituation;1;0;No MEMA sensor;1;0;-2.33333333333334;-0.0507246376811595;-1;-0.166666666666667;-1;-0.166666666666667;[0, 6];[1, 7];8000
+1DL12_nuit_son.edf;1DL12;2;stimulation;1;0;No MEMA sensor;1;0;-15.3333333333333;-0.377049180327869;-3;-0.6;-3;-0.6;[0, 4];[1, 5];8000
+1GB18_nuit_son.edf;1GB18;1;habituation;1;0;No MEMA sensor;1;0;3.33333333333333;0.25;0;0;-1;-0.2;[0, 4];[1, 5];8000
+1GB18_nuit_hab.edf;1GB18;2;stimulation;1;1;No MEMA sensor;1;0;0.333333333333336;0.0204081632653063;0;0;1;0.25;[0, 4];[1, 5];8000
+1GF14_nuit_hab.edf;1GF14;1;habituation;0;0;Bad EMG channels, no MEMA sensor;0;0;2.34;0.0379500486539086;0;0;-1;-0.166666666666667;[];[];8000
+1GF14_nuit_son.edf;1GF14;2;stimulation;1;0;No MEMA sensor;1;0;-10.6666666666667;-0.164948453608247;0;0;3;0.6;[0, 4];[1, 5];8000
+1MA16_nuit_hab.edf;1MA16;1;habituation;0;0;Patient has not slept over the night;0;0;0;0;0;0;0;0;[0, 4];[1, 5];8000
+1MA16_nuit_son.edf;1MA16;2;stimulation;1;0;No MEMA sensor;1;0;-1;-0.25;0;0;0;0;[0, 4];[1, 5];8000
+1MF19_nuit_hab.edf;1MF19;1;habituation;1;0;MEMA sensor compromised after 4 hours recording;1;0;9;0.333333333333333;-1;-0.142857142857143;-1;-0.142857142857143;[0, 4];[1, 5];8000
+1MF19_nuit_son.edf;1MF19;2;stimulation;1;0;No MEMA sensor;1;0;-2.66666666666666;-0.097560975609756;-2;-0.333333333333333;-2;-0.333333333333333;[0, 6];[1, 7];8000
+1MN09_nuit_hab.edf;1MN09;1;habituation;1;0;No MEMA sensor;1;0;0.329999999999998;0.00575614861329144;-3;-0.375;-3;-0.375;[0, 4];[1, 5];8000
+1MN09_nuit_son.edf;1MN09;2;stimulation;1;0;No MEMA sensor;1;0;7.67;0.126442466205078;1;0.2;1;0.2;[0, 4];[1, 5];8000
+1PI07_nuit_hab.edf;1PI07;1;habituation;1;0;No MEMA sensor;1;0;1;0.0600240096038415;-4;-0.571428571428571;-4;-0.5;[0, 4];[1, 5];8000
+1PI07_nuit_son.edf;1PI07;2;stimulation;1;0;No MEMA sensor;1;0;9;0.529411764705882;2;0.666666666666667;1;0.25;[0, 4];[1, 5];8000
+1PT06_nuit_hab.edf;1PT06;1;habituation;1;0;No MEMA sensor;1;0;0;0;-2;-0.25;-2;-0.25;[0, 6];[1, 7];8000
+1PT06_nuit_son.edf;1PT06;2;stimulation;1;0;No MEMA sensor;1;0;-1.66;-0.057920446615492;0;0;0;0;[0, 6];[1, 7];8000
+1RA17_nuit_hab.edf;1RA17;1;habituation;0;1;Bad EMG channels;1;0;1.34;0.366120218579235;0;0;0;0;[];[];8000
+1RA17_nuit_son.edf;1RA17;2;stimulation;1;0;No MEMA sensor;1;0;-0.33;-0.0901639344262295;0;0;0;0;[0, 4];[1, 5];8000
+1SA14_nuit_hab.edf;1SA14;1;habituation;1;0;No MEMA sensor;1;0;1;0.157894736842105;1;0.25;0;0;[0, 4];[1, 5];8000
+1SA14_nuit_son.edf;1SA14;2;stimulation;1;0;No MEMA sensor;1;0;0;0;-1;-0.2;0;0;[0, 4];[1, 5];8000
+1ZN04_nuit_hab.edf;1ZN04;1;habituation;1;0;No MEMA sensor;1;0;0.67;0.143776824034335;0;0;0;0;[0, 6];[1, 7];8000
+1ZN04_nuit_son.edf;1ZN04;2;stimulation;1;0;No MEMA sensor;1;0;-0.67;-0.125703564727955;0;0;0;0;[0, 6];[1, 7];8000
+1HB20_nuit_1.edf;1HB20;1;habituation;1;1;;1;0;-16;-0.225352112676056;0;0;0;0;[4];[5];8000
+1HB20_nuit_2.edf;1HB20;2;habituation;1;1;;1;0;-24;-0.363636363636364;-2;-0.285714285714286;-2;-0.285714285714286;[0, 6];[1, 7];8000
+1HB20_nuit_3.edf;1HB20;3;habituation;0;0;Partial recording: missing 1h30;0;0;30;0.9375;6;6;6;6;[0, 4];[1, 5];8000
+1SL21_nuit_4.edf;1SL21;4;habituation;1;1;;1;0;;;0;0;0;0;[];[];8000
+1SL21_nuit_6.edf;1SL21;6;habituation;1;1;;1;0;;;-2;-0.5;-2;-0.5;[0];[1];8000
+1SL21_nuit_7.edf;1SL21;7;habituation;1;1;;1;0;;;0;0;0;0;[0];[1];8000
+1SL21_nuit_8.edf;1SL21;8;habituation;1;1;;1;0;;;1;1;1;1;[0];[1];8000
+1SL21_nuit_1.edf;1SL21;1;habituation;0;0;Partial recording: missing 5h;0;0;-4;-0.0888888888888889;-2;-0.5;-2;-0.5;[0, 4];[1, 5];8000
+1SL21_nuit_2.edf;1SL21;2;habituation;1;1;;1;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5;[0, 4];[1, 5];8000
+1SL21_nuit_3.edf;1SL21;3;habituation;1;1;;1;0;;;4.5;9;4.5;9;[0, 4];[1, 5];8000
+1SL21_nuit_5.edf;1SL21;5;habituation;0;1;Bad EMG channels;1;0;;;1;0.33;1;0.33;[0, 6];[1, 7];8000
+1UC22_nuit_2.edf;1UC22;2;habituation;1;1;;1;0;10;0.18;4.5;3;4.5;3;[0, 4];[1, 5];8000
+1UC22_nuit_1.edf;1UC22;1;habituation;1;1;;1;0;5;0.106382978723404;2;1;1;0.5;[0, 6];[1, 7];8000
 1UC22_nuit_3.edf;1UC22;3;habituation;1;0;No MEMA sensor, has real airflow instead?;1;0;9;0.15;2.25;0.9;3.5;3.5;;;
 2GA06_nuit_1.edf;2GA06;1;control;1;1;;1;1;;;;;;;;;
-2SJ03_nuit_1.edf;2SJ03;1;control;1;1;;1;1;;;;;;; [0, 6]; [1, 7];20000
-2MJ02_nuit_1.edf;2MJ02;1;control;0;0;MEMA sensor compromised after 3 hours recording;0;1;;;;;;; [4]; [5];8000
-2GR01_nuit_3.edf;2GR01;3;control;1;1;Weird MEMA sensor behaviour;1;1;;;;;;; [0, 6]; [1, 7];8000
-2GR01_nuit_4.edf;2GR01;4;control;1;1;Weird MEMA sensor behaviour;1;1;;;;;;; [0, 6]; [1, 7];8000
-2GR01_nuit_1.edf;2GR01;1;control;1;0;No MEMA sensor;1;1;;;;;;; [0, 6]; [1, 7];8000
-2GR01_nuit_2.edf;2GR01;2;control;1;0;No MEMA sensor;1;1;;;;;;; [0, 6]; [1, 7];8000
-2LS05_nuit_1.edf;2LS05;1;control;1;1;;1;1;;;;;;; [4]; [5];8000
-2CT04_nuit_1.edf;2CT04;1;control;1;1;;1;1;;;;;;; [4]; [5];4000
+2SJ03_nuit_1.edf;2SJ03;1;control;1;1;;1;1;;;;;;;[0, 6];[1, 7];20000
+2MJ02_nuit_1.edf;2MJ02;1;control;0;0;MEMA sensor compromised after 3 hours recording;0;1;;;;;;;[4];[5];8000
+2GR01_nuit_3.edf;2GR01;3;control;1;1;Weird MEMA sensor behaviour;1;1;;;;;;;[0, 6];[1, 7];8000
+2GR01_nuit_4.edf;2GR01;4;control;1;1;Weird MEMA sensor behaviour;1;1;;;;;;;[0, 6];[1, 7];8000
+2GR01_nuit_1.edf;2GR01;1;control;1;0;No MEMA sensor;1;1;;;;;;;[0, 6];[1, 7];8000
+2GR01_nuit_2.edf;2GR01;2;control;1;0;No MEMA sensor;1;1;;;;;;;[0, 6];[1, 7];8000
+2LS05_nuit_1.edf;2LS05;1;control;1;1;;1;1;;;;;;;[4];[5];8000
+2CT04_nuit_1.edf;2CT04;1;control;1;1;;1;1;;;;;;;[4];[5];4000
 1HB20_nuit_1_resmed.edf;1HB20;1b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-16;-0.225352112676056;0;0;0;0;;;
 1HB20_nuit_2_resmed.edf;1HB20;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-24;-0.363636363636364;-2;-0.285714285714286;-2;-0.285714285714286;;;
 1SL21_nuit_2_resmed.edf;1SL21;2b;habituation;1;1;Simultaneous recording, Bruxism not checked;0;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5;;;
