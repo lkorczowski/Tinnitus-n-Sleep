@@ -64,8 +64,9 @@ if __name__ == "__main__":
 
     # Importing personnalized parameters for dataset
     # = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
-    columns_with_list = {"Valid_chans": eval, "Valid_imps": eval}  # require to convert string to list in DataFrame
-    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=";", converters=columns_with_list)
+    data_info = pd.read_csv("notebooks/data/data_info.csv", engine='python', sep=";")
+    data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
+    data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
     mema_files = data_info.query("mema == 1")["filename"].values
     #dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  # TODO: check if valid for all subjects
     dico_chans = data_info.query("emg == 1").set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
