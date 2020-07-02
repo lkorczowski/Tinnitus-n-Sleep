@@ -1,4 +1,4 @@
-filename;subject;session;condition;emg;mema;comments;included;control;Evol_masquage;pourc_Evol_masquage;Evol_EVA_I;pourc_Evol_EVA_I;Evol_EVA_G;pourc_Evol_EVA_G;Valid_chans;Valid_imps;THR_IMP
+filename;subject;session;condition;emg;mema;comments;included;control;mask_delta;mask_per;VAS_L_delta;VAS_L_per;VAS_I_delta;VAS_I_per;Valid_chans;Valid_imps;THR_IMP
 1BA07_nuit_hab.edf;1BA07;1;habituation;1;0;No MEMA sensor;1;0;12.34;1.42494226327945;0;0;0;0;[0, 4];[1, 5];8000
 1BA07_nuit_son.edf;1BA07;2;stimulation;1;0;No MEMA sensor;1;0;-12.6733333333333;-0.731153846153846;-4;-0.8;-3;-1;[0, 4];[1, 5];8000
 1CC05_nuit_hab.edf;1CC05;1;habituation;1;0;No MEMA sensor;1;0;0.33;0.0825;0;0;0;0;[0, 4];[1, 5];8000
@@ -30,13 +30,13 @@ filename;subject;session;condition;emg;mema;comments;included;control;Evol_masqu
 1HB20_nuit_1.edf;1HB20;1;habituation;1;1;;1;0;-16;-0.225352112676056;0;0;0;0;[4];[5];8000
 1HB20_nuit_2.edf;1HB20;2;habituation;1;1;;1;0;-24;-0.363636363636364;-2;-0.285714285714286;-2;-0.285714285714286;[0, 6];[1, 7];8000
 1HB20_nuit_3.edf;1HB20;3;habituation;0;0;Partial recording: missing 1h30;0;0;30;0.9375;6;6;6;6;[0, 4];[1, 5];8000
-1SL21_nuit_4.edf;1SL21;4;habituation;1;1;;1;0;;;0;0;0;0;[];[];8000
-1SL21_nuit_6.edf;1SL21;6;habituation;1;1;;1;0;;;-2;-0.5;-2;-0.5;[0];[1];8000
-1SL21_nuit_7.edf;1SL21;7;habituation;1;1;;1;0;;;0;0;0;0;[0];[1];8000
-1SL21_nuit_8.edf;1SL21;8;habituation;1;1;;1;0;;;1;1;1;1;[0];[1];8000
-1SL21_nuit_1.edf;1SL21;1;habituation;0;0;Partial recording: missing 5h;0;0;-4;-0.0888888888888889;-2;-0.5;-2;-0.5;[0, 4];[1, 5];8000
-1SL21_nuit_2.edf;1SL21;2;habituation;1;1;;1;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5;[0, 4];[1, 5];8000
-1SL21_nuit_3.edf;1SL21;3;habituation;1;1;;1;0;;;4.5;9;4.5;9;[0, 4];[1, 5];8000
+1SL21_nuit_4.edf;1SL21;3;habituation;1;1;;1;0;;;0;0;0;0;[];[];8000
+1SL21_nuit_6.edf;1SL21;5;habituation;1;1;;1;0;;;-2;-0.5;-2;-0.5;[0];[1];8000
+1SL21_nuit_7.edf;1SL21;6;habituation;1;1;;1;0;;;0;0;0;0;[0];[1];8000
+1SL21_nuit_8.edf;1SL21;7;habituation;1;1;;1;0;;;1;1;1;1;[0];[1];8000
+1SL21_nuit_1.edf;1SL21;0;habituation;0;0;Partial recording: missing 5h;0;0;-4;-0.0888888888888889;-2;-0.5;-2;-0.5;[0, 4];[1, 5];8000
+1SL21_nuit_2.edf;1SL21;1;habituation;1;1;;1;0;-2;-0.0487804878048781;-1;-0.5;-1;-0.5;[0, 4];[1, 5];8000
+1SL21_nuit_3.edf;1SL21;2;habituation;1;1;;1;0;;;4.5;9;4.5;9;[0, 4];[1, 5];8000
 1SL21_nuit_5.edf;1SL21;5;habituation;0;1;Bad EMG channels;1;0;;;1;0.33;1;0.33;[0, 6];[1, 7];8000
 1UC22_nuit_2.edf;1UC22;2;habituation;1;1;;1;0;10;0.18;4.5;3;4.5;3;[0, 4];[1, 5];8000
 1UC22_nuit_1.edf;1UC22;1;habituation;1;1;;1;0;5;0.106382978723404;2;1;1;0.5;[0, 6];[1, 7];8000
