@@ -10,7 +10,6 @@ def test_compute_nb_epochs():
     assert compute_nb_epochs(10, 5, 5) == 2
 
 
-
 def test_compute_nb_epochs_invalid():
     with pytest.raises(ValueError, match="Invalid range for parameters"):
         compute_nb_epochs(10, 0, 5)
@@ -129,10 +128,16 @@ def test_merge_labels_list_non_proportional():
     # downsampling interpolation
     v_lab = merge_labels_list([[True, True, False, False, False]], 2)
     npt.assert_equal(v_lab, [True, False])
-
     # upsampling interpolation
     v_lab = merge_labels_list([[True, False]], 5)
     npt.assert_equal(v_lab, [True, True, True, False, False])
+
+    # downsampling interpolation
+    v_lab = merge_labels_list([[True, True, True, True, True, False, False, False, False]], 2, kind='nearest')
+    npt.assert_equal(v_lab, [True, False])
+    # upsampling interpolation
+    v_lab = merge_labels_list([[True, False]], 9)
+    npt.assert_equal(v_lab, [True, True, True, True, True, False, False, False, False])
 
 
 def test_resample_labels():
@@ -146,19 +151,21 @@ def test_resample_labels():
     y_idx = f(xnew)
     labels_new = [labels[int(i)] for i in y_idx]
 
+    # ad-hoc regression tests
     npt.assert_equal(resample_labels(labels, xnew), labels_new)
     npt.assert_equal(resample_labels(labels, n_epoch_new), labels_new)
     npt.assert_equal(resample_labels(labels, xnew, x), labels_new)
 
+    # simple regression tests
     npt.assert_equal(resample_labels(labels, 2), ["A", "E"])
-
     npt.assert_equal(resample_labels(labels, [-10, 1.5]), ["A", "B"])
     npt.assert_equal(resample_labels(labels, [-10, 1000]), ["A", "E"])
 
-    # test weird non-monotonical arrangement
+    # test non-monotonical arrangement
     npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000]), ["B", "A", "C"])
     npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000], kind='nearest'), ["B", "B", "D"])
 
+    # error with wrong parameter
     with pytest.raises(ValueError, match="Number of labels is 5, number of associated timestamps is 4"):
         resample_labels(labels, 2, [0, 1, 2, 3])
 
@@ -182,6 +189,7 @@ def test_crop_to_proportional_length():
     epochs, valid_labels = crop_to_proportional_length(epochs, valid_labels)
     npt.assert_equal(epochs.shape, (6, 2, 2))
     npt.assert_equal(valid_labels, [True, True, True, True, False, False])
+
 
 def test_crop_to_proportional_length_fails():
     """ non proportional epochs with number of valid_labels"""

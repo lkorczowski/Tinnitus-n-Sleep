@@ -75,7 +75,7 @@ def compute_nb_epochs(N, T, I):
     return int(np.ceil((N-T+1) / I))
 
 
-def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
+def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all, kind='nearest'):
     """Merge a list of list of booleans labels into a unique array of booleans of size `n_epoch_final` by resampling
     each list by interpolation. The resampled list of booleans are merged using the logical `merge_fun`.
 
@@ -86,6 +86,10 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
         length of the output ndarray desired
     merge_fun : function (default: numpy.all)
         a function for merging rows of a boolean matrix. Called with parameters axis=-1`
+    kind : string (default: 'nearest')
+        Only used when labels in the list are non-proportionnal
+        Specifies the kind of interpolation as a string (see ``scipy.interpolate.interp1d`` documentation.)
+        'previous' or 'nearest' should be best.
 
     Returns`
     -------
@@ -123,8 +127,7 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
             # Projection linear space
             xnew = np.linspace(0, n_epoch_before, num=n_epoch_final, endpoint=True)
             # Interpolation object definition
-            f1 = interp1d(x, list_valid_labels[i], kind='nearest', fill_value=-1, bounds_error=False)
-            valid_labels[:, i] = f1(xnew)
+            valid_labels[:, i] = resample_labels(list_valid_labels[i], xnew, x=x, kind=kind)
 
     return merge_fun(valid_labels, axis=-1)
 
@@ -166,6 +169,7 @@ def crop_to_proportional_length(epochs, valid_labels):
     valid_labels_crop = merge_labels_list(valid_labels_crop, len(epochs))
     return epochs, valid_labels_crop
 
+
 def resample_labels(labels, xnew, x=None, kind='previous'):
     """Resample a list of labels using linear interpolation.
     To do so, ``labels`` are assigned to ``x`` timestamps and interpolated to new ``xnew`` timestamps.
@@ -196,10 +200,7 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
         labels = np.array(labels)
     n_labels = len(labels)
     if isinstance(xnew, int):
-        n_labels_new = xnew
-        xnew = np.linspace(0, n_labels, n_labels_new, endpoint=True)
-    else:
-        n_labels_new = len(xnew)
+        xnew = np.linspace(0, n_labels, xnew, endpoint=True)
 
     if x is None:
         x = range(len(labels))
