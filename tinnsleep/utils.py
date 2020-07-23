@@ -123,7 +123,7 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all):
             # Projection linear space
             xnew = np.linspace(0, n_epoch_before, num=n_epoch_final, endpoint=True)
             # Interpolation object definition
-            f1 = interp1d(x, list_valid_labels[i], kind='nearest')
+            f1 = interp1d(x, list_valid_labels[i], kind='nearest', fill_value=-1, bounds_error=False)
             valid_labels[:, i] = f1(xnew)
 
     return merge_fun(valid_labels, axis=-1)
@@ -165,3 +165,47 @@ def crop_to_proportional_length(epochs, valid_labels):
     assert len(epochs) == min_labels, f"something went wrong when cropping"
     valid_labels_crop = merge_labels_list(valid_labels_crop, len(epochs))
     return epochs, valid_labels_crop
+
+def resample_labels(labels, xnew, x=None, kind='previous'):
+    """Resample a list of labels using linear interpolation.
+    To do so, ``labels`` are assigned to ``x`` timestamps and interpolated to new ``xnew`` timestamps.
+    By default, user just need to give ``labels`` and a int as ``xnew`` for the length of the output labels.
+    ``x`` and ``xnew`` can also be given as a old and new timestamp for interpolating complex value.
+    By default, the labels are associated with the previous
+
+    Parameters
+    ----------
+    labels : ndarray-like, shape (nb_labels, )
+        list of labels (containing any type or mixed type)
+    xnew : int | ndarray-like, shape (nb_labels,)
+        If int : Number of elements in the new list of labels
+        If ndarray-like : the timestamp of the new labels
+    x : ndarray-like (default: range(len(labels)) )
+        The timestamp of the old labels
+    kind : string (default: 'previous')
+        Specifies the kind of interpolation as a string (see ``scipy.interpolate.interp1d`` documentation.)
+        'previous' or 'nearest' should be best.
+
+    Returns
+    -------
+    labels_new : ndarray, shape (len(xnew),)
+        Modified labels that fit to the new timestamps xnew
+
+    """
+    if isinstance(labels, list):
+        labels = np.array(labels)
+    n_labels = len(labels)
+    if isinstance(xnew, int):
+        n_labels_new = xnew
+        xnew = np.linspace(0, n_labels, n_labels_new, endpoint=True)
+    else:
+        n_labels_new = len(xnew)
+
+    if x is None:
+        x = range(len(labels))
+    elif len(x) != len(labels):
+        raise ValueError(f"Number of labels is {len(labels)}, number of associated timestamps is {len(x)}")
+
+    f = interp1d(x, range(len(labels)), kind=kind, fill_value=(0, len(x)-1), bounds_error=False)
+
+    return labels[f(xnew).astype(int)]

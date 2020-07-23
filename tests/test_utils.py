@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list,\
-    fuse_with_classif_result, crop_to_proportional_length
+    fuse_with_classif_result, crop_to_proportional_length, resample_labels
+from scipy.interpolate import interp1d
 
 
 def test_compute_nb_epochs():
@@ -123,6 +124,7 @@ def test_merge_labels_list_proportional_downsampling():
     npt.assert_equal(v_lab, [True, False])
 
 
+
 def test_merge_labels_list_non_proportional():
     # downsampling interpolation
     v_lab = merge_labels_list([[True, True, False, False, False]], 2)
@@ -131,6 +133,34 @@ def test_merge_labels_list_non_proportional():
     # upsampling interpolation
     v_lab = merge_labels_list([[True, False]], 5)
     npt.assert_equal(v_lab, [True, True, True, False, False])
+
+
+def test_resample_labels():
+    # downsampling interpolation
+    labels = ["A", "B", "C", "D", "E"]
+    n_epochs = len(labels)
+    n_epoch_new = 8
+    x = [-1, 1, 2, 3, 4]
+    xnew = np.linspace(0, n_epochs, n_epoch_new, endpoint=True)
+    f = interp1d(x, range(len(labels)), kind='previous', fill_value=(0, len(x)-1), bounds_error=False)
+    y_idx = f(xnew)
+    labels_new = [labels[int(i)] for i in y_idx]
+
+    npt.assert_equal(resample_labels(labels, xnew), labels_new)
+    npt.assert_equal(resample_labels(labels, n_epoch_new), labels_new)
+    npt.assert_equal(resample_labels(labels, xnew, x), labels_new)
+
+    npt.assert_equal(resample_labels(labels, 2), ["A", "E"])
+
+    npt.assert_equal(resample_labels(labels, [-10, 1.5]), ["A", "B"])
+    npt.assert_equal(resample_labels(labels, [-10, 1000]), ["A", "E"])
+
+    # test weird non-monotonical arrangement
+    npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000]), ["B", "A", "C"])
+    npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000], kind='nearest'), ["B", "B", "D"])
+
+    with pytest.raises(ValueError, match="Number of labels is 5, number of associated timestamps is 4"):
+        resample_labels(labels, 2, [0, 1, 2, 3])
 
 
 def test_fuse_with_classif_result():
