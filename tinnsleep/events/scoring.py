@@ -168,7 +168,7 @@ def episodes_to_list(list_episodes, time_interval, n_labels):
 
     Parameters
     ----------
-    li_ep : list of episode instances
+    list_episodes : list of episode instances
     time_interval: float,
         time interval in seconds between 2 elementary events
     n_labels : int
