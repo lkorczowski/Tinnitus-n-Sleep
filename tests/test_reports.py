@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from tinnsleep.utils import epoch
+from tinnsleep.utils import epoch, label_report
 from tinnsleep.events.scoring import burst_to_episode, classif_to_burst, episodes_to_list
 from tinnsleep.data import CreateRaw
 from tinnsleep.reports import preprocess, reporting, combine_brux_MEMA, generate_bruxism_report,\
@@ -197,6 +197,50 @@ def test_reporting2():
     npt.assert_equal(report["reports"][0], report_expected)
 
 
+def test_reporting_sleep1():
+    np.random.seed(42)
+    n_epochs = 6
+    duration = 3
+    time_interval = 0.25
+    delim = 3
+    epochs = np.random.randn(n_epochs, 2, duration)
+    epochs[1:4:] += 100
+    valid_labels = [True] * n_epochs
+    sleep_labels = np.array(["N1", "awake", "invalid", "N2", "N3", "REM"])
+    valid_labels = valid_labels & np.isin(sleep_labels, ["N1", "N2", "N3", "REM"])
+    classif_expected = np.array([False, False, False, True, False, False])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
+
+    THR_classif = [[0, 1.5], [0, 1.6]]
+    report = reporting(epochs, valid_labels, THR_classif,
+                       time_interval=time_interval, delim=delim, log={},
+                       generate_report=generate_bruxism_report,
+                       sleep_labels=sleep_labels)
+    npt.assert_equal(report["labels"][0], classif_expected)
+    report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
+    report_expected.update(label_report(sleep_labels))
+    npt.assert_equal(report["reports"][0], report_expected)
+
+
+def test_reporting_sleep_all_invalid():
+    np.random.seed(42)
+    n_epochs = 6
+    duration = 3
+    time_interval = 0.25
+    delim = 3
+    epochs = np.random.randn(n_epochs, 2, duration)
+    epochs[1:4:] += 100
+    valid_labels = [True] * n_epochs
+    sleep_labels = np.array([False, True])
+
+    THR_classif = [[0, 1.5], [0, 1.6]]
+    with pytest.raises(ValueError):
+        report = reporting(epochs, valid_labels, THR_classif,
+                           time_interval=time_interval, delim=delim, log={},
+                           generate_report=generate_bruxism_report,
+                            sleep_labels=sleep_labels)
+
+
 def test_reporting_adaptive():
     np.random.seed(42)
     n_epochs = 6
@@ -377,6 +421,8 @@ def test_generate_MEMA_report():
     npt.assert_equal(report["Mean duration of MEMA episode"], 7.5)
 
 
+
+
 def test_generate_bruxism_report2():
     classif = [False, False, False, True, True, True]
     report = generate_bruxism_report(classif, 1, 3)
@@ -397,6 +443,22 @@ def test_generate_bruxism_report2():
     npt.assert_almost_equal(report["Mean duration of tonic episode"], 3)
 
 
+def test_generate_MEMA_report_with_sleep():
+    classif = [False, False, False, True, True, True]
+    sleep_labels = ["awake", "REM", "awake", "awake", "REM", "REM"]
+    report = generate_MEMA_report(classif, 1, delim=3, sleep_labels=sleep_labels)
+    npt.assert_equal(report['MEMA episode awake count'], 1)
+    npt.assert_equal(report['MEMA episode awake ratio'], 1.0)
+
+
+def test_generate_bruxism_report_with_sleep():
+    classif = [False, False, False, True, True, True]
+    sleep_labels = ["awake", "REM", "awake", "awake", "REM", "REM"]
+    report = generate_bruxism_report(classif, 1, delim=3, sleep_labels=sleep_labels)
+    npt.assert_equal(report['bruxism episode awake count'], 1)
+    npt.assert_equal(report['bruxism episode awake ratio'], 1.0)
+
+
 def test_generate_report_fails_noparams():
     """check if the parameters are required or test fails"""
     classif = [False, False]
@@ -404,3 +466,4 @@ def test_generate_report_fails_noparams():
         generate_bruxism_report(classif)
     with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
         generate_MEMA_report(classif)
+
