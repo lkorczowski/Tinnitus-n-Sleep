@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list,\
-    fuse_with_classif_result, crop_to_proportional_length, resample_labels
+    fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, merge_label_and_events
 from scipy.interpolate import interp1d
 
 
@@ -146,18 +146,19 @@ def test_resample_labels():
     n_epochs = len(labels)
     n_epoch_new = 8
     x = [-1, 1, 2, 3, 4]
-    xnew = np.linspace(0, n_epochs, n_epoch_new, endpoint=True)
+    xnew = np.linspace(0, n_epochs, n_epoch_new, endpoint=False)
     f = interp1d(x, range(len(labels)), kind='previous', fill_value=(0, len(x)-1), bounds_error=False)
     y_idx = f(xnew)
     labels_new = [labels[int(i)] for i in y_idx]
 
     # ad-hoc regression tests
     npt.assert_equal(resample_labels(labels, xnew), labels_new)
+    print(resample_labels(labels, n_epoch_new))
     npt.assert_equal(resample_labels(labels, n_epoch_new), labels_new)
     npt.assert_equal(resample_labels(labels, xnew, x), labels_new)
 
     # simple regression tests
-    npt.assert_equal(resample_labels(labels, 2), ["A", "E"])
+    npt.assert_equal(resample_labels(labels, 2), ["A", "C"])
     npt.assert_equal(resample_labels(labels, [-10, 1.5]), ["A", "B"])
     npt.assert_equal(resample_labels(labels, [-10, 1000]), ["A", "E"])
 
@@ -197,3 +198,20 @@ def test_crop_to_proportional_length_fails():
         epochs = np.ones((3, 2, 2))
         valid_labels = [[True] * 5, [True, False]]
         crop_to_proportional_length(epochs, valid_labels)
+
+
+def test_generate_label_report_basic():
+    sleep_labels = np.array(["awake", "N1", "N1", "N2", "invalid", "N3", "NREM", "awake"])
+    report = label_report(sleep_labels)
+    report_expected = dict()
+    for label in np.unique(sleep_labels):
+        report_expected[f"{label} count"] = np.sum(sleep_labels == label)
+        report_expected[f"{label} ratio"] = np.sum(sleep_labels == label) / len(sleep_labels)
+    npt.assert_equal(report, report_expected)
+
+
+def test_generate_sleep_report_with_episodes():
+    time_interval = 1.0
+    event_start = [0.5, 5.3, 5.8]
+    sleep_labels = np.array(["awake", "N1", "N1", "N2", "invalid", "N3", "REM", "awake"])
+    npt.assert_equal(merge_label_and_events(event_start, sleep_labels, time_interval), ["awake", "N3", "N3"])

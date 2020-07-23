@@ -200,7 +200,7 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
         labels = np.array(labels)
     n_labels = len(labels)
     if isinstance(xnew, int):
-        xnew = np.linspace(0, n_labels, xnew, endpoint=True)
+        xnew = np.linspace(0, n_labels, xnew, endpoint=False)
 
     if x is None:
         x = range(len(labels))
@@ -210,3 +210,16 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
     f = interp1d(x, range(len(labels)), kind=kind, fill_value=(0, len(x)-1), bounds_error=False)
 
     return labels[f(xnew).astype(int)]
+
+
+def label_report(labels):
+    report = dict()
+    for label in np.unique(labels):
+        report[f"{label} count"] = np.sum(labels == label)
+        report[f"{label} ratio"] = np.sum(labels == label) / len(labels)
+    return report
+
+
+def merge_label_and_events(events_time, labels, time_interval):
+    x = np.linspace(0, (len(labels)-1)*time_interval, len(labels))
+    return resample_labels(labels, events_time, x)
