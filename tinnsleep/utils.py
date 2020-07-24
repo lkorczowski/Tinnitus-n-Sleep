@@ -181,7 +181,7 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
     ----------
     labels : ndarray-like, shape (nb_labels, )
         list of labels (containing any type or mixed type)
-    xnew : int | ndarray-like, shape (nb_labels,)
+    xnew : int | ndarray-like, shape (nb_labels_new,)
         If int : Number of elements in the new list of labels
         If ndarray-like : the timestamp of the new labels
     x : ndarray-like (default: range(len(labels)) )
@@ -213,6 +213,11 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
 
 
 def label_report(labels):
+    if labels is None:
+        labels = []
+    if isinstance(labels, list):
+        labels = np.array(labels)
+
     report = dict()
     for label in np.unique(labels):
         report[f"{label} count"] = np.sum(labels == label)
