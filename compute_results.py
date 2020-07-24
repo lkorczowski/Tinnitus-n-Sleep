@@ -30,6 +30,7 @@ def main(argv):
 print("config loaded.")
 
 if __name__ == "__main__":
+    #%%
     import os
     import os.path
     import mne
@@ -38,9 +39,10 @@ if __name__ == "__main__":
     import warnings
     from time import time
     from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess
-    from tinnsleep.utils import crop_to_proportional_length
+    from tinnsleep.utils import crop_to_proportional_length, resample_labels
     from tinnsleep.config import Config
     from ast import literal_eval
+    from datetime import datetime
 
     bruxism, mema, OVERWRITE_RESULTS = main(sys.argv[1:])
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "notebooks/"))
@@ -63,15 +65,13 @@ if __name__ == "__main__":
     print("parameters set")
 
     # Importing personnalized parameters for dataset
-    # = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
     data_info = pd.read_csv("data/data_info.csv", engine='python', sep=";")
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
     data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
     mema_files = data_info.query("mema == 1")["filename"].values
-    #dico_chans = pd.read_pickle("data/valid_chans_THR_imp.pk").to_dict("list")  # TODO: check if valid for all subjects
     dico_chans = data_info.set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
 
-    # Processing of the dataset and report generation
+    #%% Processing of the dataset and report generation
     if (not OVERWRITE_RESULTS) and os.path.isfile(results_file_MEMA) and os.path.isfile(results_file_bruxism):
         print(f"result files exist: Reports creation skipped.")
     else:
@@ -83,6 +83,7 @@ if __name__ == "__main__":
 
             print("Files processed: ")
             start = time()
+            #%%
             for filename in EDF_list:
 
                 # opens the raw file
@@ -101,8 +102,36 @@ if __name__ == "__main__":
                 ind_picks_imp = dico_chans.loc[file]['Valid_imps']
                 # Get THR_imp value for filename
                 THR_imp = dico_chans.loc[file]['THR_IMP']
+                # Get sleep stages if exist
+                sleep_file = "data/sleep_labels/" + file.split(".")[0] + ".csv"
+                if os.path.isfile(sleep_file):
+                    # prepare timestamps of the sleep labels and convert it to seconds relative to beginning of
+                    # recording.
+                    print(f"(sleep labels", end=" ")
 
-                # ----------------- Prepare parameters -----------------------------------------------
+                    sleep_labels = pd.read_csv(sleep_file, sep=";")
+                    sleep_label_timestamp = sleep_labels["Horodatage"]
+                    sleep_labels = sleep_labels["Sommeil"].values
+
+                    delta_start = (datetime.strptime(str(sleep_label_timestamp.iloc[0]), '%H:%M:%S') -\
+                        datetime.strptime(str(raw.info["meas_date"].time()), '%H:%M:%S')).total_seconds()\
+                        %(3600*24)
+                    if delta_start > 30:
+                        print(f"WARNING delta_start {delta_start}", end=" ")
+
+                    tmp = pd.to_datetime(sleep_label_timestamp)
+                    sleep_label_timestamp = (tmp - tmp[0]).astype('timedelta64[s]').mod(3600*24).values + delta_start
+
+                    delta_end = raw.times[-1] - (sleep_label_timestamp[-1] + 30)
+                    if delta_start > 30:
+                        print(f"WARNING delta_end {delta_end}", end=" ")
+
+                    print(f", loaded)", end=" ")
+                else:
+                    print(f"(sleep labels not found)", end=" ")
+                    sleep_labels = None
+
+                #%% ----------------- Prepare parameters -----------------------------------------------
                 duration_bruxism = int(window_length_common * raw.info['sfreq'])  # in sample
                 window_length_bruxism = duration_bruxism / raw.info['sfreq']  # recompute exact window_length
                 duration_MEMA = duration_factor_MEMA * duration_bruxism
@@ -124,7 +153,7 @@ if __name__ == "__main__":
                 DO_BRUXISM = len(picks_chan_bruxism) > 0 and bruxism
                 DO_MEMA = file in mema_files and mema
 
-                # ----------------- Preprocessing ----------------------------------------------------
+                #%% ----------------- Preprocessing ----------------------------------------------------
                 print(f"preprocess...", end=" ")
                 valid_labels_bruxism = []
                 valid_labels_MEMA = []
@@ -163,7 +192,7 @@ if __name__ == "__main__":
                 else:
                     print(f"skipped)", end=" ")
 
-                # ----------------- Finding artifacts in other channels (can be stacked) --------------
+                #%% ----------------- Finding artifacts in other channels (can be stacked) --------------
                 # 1. OMA
                 if DO_BRUXISM or DO_MEMA:
                     filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
@@ -199,7 +228,7 @@ if __name__ == "__main__":
                                                                  )
                     valid_labels_bruxism.append(valid_labels_IMP)
 
-                # ----------------- Merging artifacts labels ------------------------------------------
+                #%% ----------------- Merging artifacts labels ------------------------------------------
 
                 if DO_BRUXISM:
                     epochs_bruxism, valid_labels_bruxism = crop_to_proportional_length(epochs_bruxism,
@@ -208,27 +237,40 @@ if __name__ == "__main__":
                     epochs_MEMA, valid_labels_MEMA = crop_to_proportional_length(epochs_MEMA, valid_labels_MEMA)
                 print(f"DONE ({time() - tmp:.2f}s)", end=" ")
 
-                # ----------------- REPORTING ---------------------------------------------------------
+                #%% ----------------- REPORTING ---------------------------------------------------------
                 print("report... Bruxism(", end="")
                 tmp = time()
 
                 if DO_BRUXISM and np.sum(valid_labels_bruxism) > 0:
+                    if sleep_labels is not None:
+                        xnew = np.linspace(0, len(epochs_bruxism) * window_length_bruxism,
+                                           len(epochs_bruxism), endpoint=False)
+                        sleep_labels_bruxism = resample_labels(sleep_labels, xnew, x=sleep_label_timestamp,
+                                                            kind='previous')
+
                     results_bruxism[file] = reporting(epochs_bruxism, valid_labels_bruxism, THR_classif_bruxism,
                                                       time_interval=window_length_bruxism,
                                                       delim=delim, n_adaptive=n_adaptive_bruxism, log=log,
-                                                      generate_report=generate_bruxism_report)
+                                                      generate_report=generate_bruxism_report,
+                                                      sleep_labels=sleep_labels_bruxism)
                     print(f"done)", end=" ")
                 else:
                     print(f"skipped)", end=" ")
 
                 print("MEMA(", end="")
                 if DO_MEMA:
+                    if sleep_labels is not None:
+                        xnew = np.linspace(0, len(epochs_MEMA) * window_length_MEMA, len(epochs_MEMA), endpoint=False)
+                        sleep_labels_MEMA = resample_labels(sleep_labels, xnew, x=sleep_label_timestamp,
+                                                            kind='previous')
+
                     print("report...", end="");
                     tmp = time()
                     results_MEMA[file] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
                                                    time_interval=window_length_MEMA, delim=delim,
                                                    n_adaptive=n_adaptive_MEMA,
-                                                   generate_report=generate_MEMA_report)
+                                                   generate_report=generate_MEMA_report,
+                                                   sleep_labels=sleep_labels_MEMA)
                     print(f"done)", end=" ")
                 else:
                     print(f"skipped)", end=" ")
