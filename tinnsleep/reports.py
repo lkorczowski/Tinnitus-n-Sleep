@@ -34,13 +34,13 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
     report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim, min_burst_joining=min_burst_joining)
 
-    print(sleep_labels)
     if sleep_labels is not None:
+        if len(classif) != len(sleep_labels):
+            raise ValueError(f"classif is ({len(classif)},), sleep_labels is ({len(sleep_labels)},)")
         episodes_beginning = [epi.beg for epi in li_episodes]
         episodes_labels = merge_label_and_events(episodes_beginning, sleep_labels, time_interval)
         episodes_labels = np.char.add('bruxism episode ', episodes_labels)
         report.update(label_report(episodes_labels))
-        print(report)
 
     nb_episodes = len(li_episodes)
     report["Total number of episodes"] = nb_episodes
@@ -105,6 +105,8 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None):
     li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
 
     if sleep_labels is not None:
+        if len(classif) != len(sleep_labels):
+            raise ValueError(f"classif is ({len(classif)},), sleep_labels is ({len(sleep_labels)},)")
         episodes_beginning = [epi.beg for epi in li_episodes]
         episodes_labels = merge_label_and_events(episodes_beginning, sleep_labels, time_interval)
         episodes_labels = np.char.add('MEMA episode ', episodes_labels)
@@ -251,7 +253,7 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     generate_report: function (default: tinnsleep.scoring.generate_bruxism_report)
         function to convert labels into a report
     sleep_labels : ndarray, shape (n_epochs, ), (default: None)
-        Sleep Stages in ["N1", "N2", "N3", "NREM"], all other labels are discontinued and rejected from analysis.
+        Sleep Stages in ["N1", "N2", "N3", "REM"], all other labels are discontinued and rejected from analysis.
 
 
     Returns
@@ -269,6 +271,9 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     if sleep_labels is not None:
         sleep_labels_index = np.isin(sleep_labels, valid_sleep_stages)
         valid_labels = valid_labels & sleep_labels_index
+        sleep_labels_valid = sleep_labels[valid_labels]
+    else:
+        sleep_labels_valid = None
 
     # for each value of THR_classif, create a report and a list of labels
     for THR in THR_classif:
@@ -285,15 +290,14 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             # Logical OR -- merged backward and forward
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
-        report = generate_report(labels, time_interval, delim)
-        report["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
-        if sleep_labels is not None:
-            report.update(label_report(sleep_labels))
+        report_ = generate_report(labels, time_interval, delim, sleep_labels=sleep_labels_valid)
+        report_.update(label_report(sleep_labels))
+        report_["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
 
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
         labs.append(labels)
-        reps.append(report)
+        reps.append(report_)
 
     parameters = dict()
     parameters['valid_labels'] = valid_labels
