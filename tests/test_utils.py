@@ -153,7 +153,6 @@ def test_resample_labels():
 
     # ad-hoc regression tests
     npt.assert_equal(resample_labels(labels, xnew), labels_new)
-    print(resample_labels(labels, n_epoch_new))
     npt.assert_equal(resample_labels(labels, n_epoch_new), labels_new)
     npt.assert_equal(resample_labels(labels, xnew, x), labels_new)
 

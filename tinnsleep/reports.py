@@ -84,7 +84,7 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None):
     ----------
     classif : list of booleans,
         output of a classification algorithm that detect non aggregated bursts from a recording
-    interval : float,
+    time_interval : float,
         time interval in seconds between 2 elementary events
     delim : float,
         maximal time interval considered eligible between two bursts within a episode
@@ -244,7 +244,7 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
         time interval in seconds between 2 elementary events
     delim: float, (default: 3)
         maximal time interval considered eligible between two bursts within a episode
-    n_adaptative : int (default: 0)
+    n_adaptive : int (default: 0)
         number of epochs for adaptive baseline calculation
         if positive uses casual adaptive scheme
         if negative uses acasual forward-backward adaptive scheme
@@ -286,7 +286,7 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             # Reversing epochs array, computing backward and reversing labels
             pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=abs(n_adaptive))
             labels_b = pipeline.fit_predict(X[::-1])[::-1]
-            #-----------------foward-backward merge ---------------------------------------
+            # -----------------foward-backward merge ---------------------------------------
             # Logical OR -- merged backward and forward
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
@@ -330,10 +330,10 @@ def _cond_subclassif(ep_to_sub, labels_condition, time_interval):
     pure_ep = []
     # merge episodes and compare with condition and artefacts
     for elm in ep_to_sub:
-            if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
-                comb_ep.append(elm)
-            else:
-                pure_ep.append(elm)
+        if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
+            comb_ep.append(elm)
+        else:
+            pure_ep.append(elm)
 
     # ------------------
     # Pure episodes creation
@@ -412,7 +412,7 @@ def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEM
         else:
             labels_MEMA = merge_labels_list([labels_MEMA], len(labels_brux))
             time_interval = time_interval_brux
-    else: #inputs of same length
+    else:  # inputs of same length
         time_interval = time_interval_brux
     # Creating lists of episode and bursts for bruxism and MEMA
     brux_burst_ep, li_ep_brux = _labels_to_ep_and_bursts(labels_brux, time_interval, delim_ep_brux,
@@ -421,9 +421,7 @@ def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEM
                                                          min_burst_joining=min_burst_joining_MEMA)
 
     # Conditionnal labelling of events
-    MEMA_comb_ep, MEMA_pure_ep= _cond_subclassif(li_ep_MEMA,
-                                                                 brux_burst_ep, time_interval)
-    brux_comb_ep, brux_pure_ep = _cond_subclassif(li_ep_brux,
-                                                                   MEMA_burst_ep, time_interval)
+    MEMA_comb_ep, MEMA_pure_ep = _cond_subclassif(li_ep_MEMA, brux_burst_ep, time_interval)
+    brux_comb_ep, brux_pure_ep = _cond_subclassif(li_ep_brux, MEMA_burst_ep, time_interval)
 
     return brux_comb_ep, brux_pure_ep, MEMA_comb_ep, MEMA_pure_ep

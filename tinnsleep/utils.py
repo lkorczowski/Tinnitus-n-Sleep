@@ -5,6 +5,7 @@ from scipy.interpolate import interp1d
 import logging
 logger = logging.getLogger(__name__)
 
+
 def epoch(data, duration, interval, axis=-1):
     """ Small proof of concept of an epoching function using NumPy strides
     License: BSD-3-Clause
