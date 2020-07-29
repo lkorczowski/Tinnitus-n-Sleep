@@ -3,7 +3,7 @@ from tinnsleep.data import RawToEpochs_sliding
 from tinnsleep.classification import AmplitudeThresholding
 from tinnsleep.utils import fuse_with_classif_result, merge_labels_list
 from tinnsleep.signal import rms
-from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episodes_to_list, create_list_events
+from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episodes_to_list
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 

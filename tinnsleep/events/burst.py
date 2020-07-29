@@ -74,7 +74,7 @@ class burst():
         is_contained = self.beg >= burst.beg and self.end <= burst.end
         contains = self.beg <= burst.beg and self.end >= burst.end
         ov_left = (self.beg >= burst.beg and self.end >= burst.end) and (burst.end - self.beg > 0)
-        ov_right = (self.beg <= burst.beg and self.end <= burst.end) and (self.end-burst.beg > 0)
+        ov_right = (self.beg <= burst.beg and self.end <= burst.end) and (self.end - burst.beg > 0)
         return is_contained or contains or ov_right or ov_left
             
     def merge_if_overlap(self, burst):
