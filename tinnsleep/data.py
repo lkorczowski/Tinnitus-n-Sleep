@@ -1,6 +1,11 @@
 import mne
 from tinnsleep.utils import epoch
 import numpy as np
+import os
+import pandas as pd
+from datetime import datetime
+import logging
+LOGGER = logging.getLogger(__name__)
 
 
 def CreateRaw(data, sfreq, ch_names, montage=None, ch_types='misc'):
@@ -175,3 +180,73 @@ def convert_Annotations(annotations):
         converted_annot.append(annot)
 
     return converted_annot
+
+
+def align_labels_with_raw(labels, labels_timestamp, raw_info_start_time, raw_times=None, time_format='%H:%M:%S'):
+    """Align timestamped labels DataFrame with the timestamps of mne.Raw.
+
+    NOTE: timestamps are managed with second-precision.
+
+    Align labels which has absolute datetime timestamps with relative reference of given raw. The new reference will be
+    the start of the recording using ``raw_info_start_time`` parameter (see example below).
+    Return some logging warning if the sampling of ``labels_timestamp`` is non-uniform or if ``labels_timestamp``
+    doesn't match the recording length (too short or too long).
+
+    Example
+    -------
+    >>> from tinnsleep.data import align_labels_with_raw
+    >>> import pandas as pd
+    >>> raw = mne.io.read_raw_edf(".data/raw.edf")
+    >>> df_labels = pd.read_csv(sleep_file, sep=";")
+    >>> labels_timestamp = align_labels_with_raw(df_labels["labels"], df_labels["date"], raw.info["meas_date"].time(), raw.times())
+
+    Parameters
+    ----------
+    labels: ndarray
+        array containing any type of label.
+    labels_timestamp: ndarray
+        array containing the timestamps of labels with the format '%H:%M:%S' (example : '23:25:20')
+    raw_info_start_time: datetime.time instance
+        can be generate by raw.info["meas_date"].time()
+    raw_times: ndarray (optional, default: None)
+        the vector of index of the raw instance.
+        can be generate by raw.times()
+        if given, the function will return a warning if the labels_timestamp are much shorter that the mne.Raw.
+        Doesn't change the output.
+
+    Returns
+    -------
+    labels_timestamp: ndarray
+        an array of timestamps in seconds relative to the start of the mne.Raw instance.
+
+    """
+    if len(labels) != len(labels_timestamp):
+        raise ValueError(f"labels ({len(labels)},) and labels_timestamp ({len(labels_timestamp)},) should be same length")
+
+    delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format) - \
+                   datetime.strptime(str(raw_info_start_time), time_format)).total_seconds() \
+                  % (3600 * 24)
+
+    tmp = pd.to_datetime(pd.Series(labels_timestamp))
+    labels_timestamp = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
+
+    # OPTIONAL CHECKS
+    # the warnings shouldn't be deal-breaker in most of the situation but aweness of those might be important
+    # TODO: MAYBE REMOVE ?
+    interval = np.unique(np.diff(labels_timestamp))
+    if len(interval) > 1:
+        LOGGER.warning(f"non uniform interval (values: {interval}), taking median")
+        interval = np.median(np.diff(labels_timestamp))
+    else:
+        interval = interval[0]
+
+    if delta_start > interval:
+        LOGGER.warning(f"delta_start {delta_start}")
+
+    # optional check
+    if raw_times is not None:
+        delta_end = raw_times[-1] - (labels_timestamp[-1] + interval)
+        if delta_start > interval:
+            LOGGER.warning(f"delta_end ({delta_end}) > interval ({interval})")
+
+    return labels_timestamp
