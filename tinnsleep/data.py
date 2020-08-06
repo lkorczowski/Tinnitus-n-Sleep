@@ -182,10 +182,12 @@ def convert_Annotations(annotations):
     return converted_annot
 
 
-def align_labels_with_raw(labels, labels_timestamp, raw_info_start_time, raw_times=None, time_format='%H:%M:%S'):
+def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None, time_format='%H:%M:%S'):
     """Align timestamped labels DataFrame with the timestamps of mne.Raw.
 
-    NOTE: timestamps are managed with second-precision.
+    NOTE: timestamps are managed with second-precision by default, but automatically switch to
+          `time_format='%H:%M:%S.%f'` for sub-second precision. Other format should be given using ``time_format``
+          parameter.
 
     Align labels which has absolute datetime timestamps with relative reference of given raw. The new reference will be
     the start of the recording using ``raw_info_start_time`` parameter (see example below).
@@ -198,21 +200,22 @@ def align_labels_with_raw(labels, labels_timestamp, raw_info_start_time, raw_tim
     >>> import pandas as pd
     >>> raw = mne.io.read_raw_edf(".data/raw.edf")
     >>> df_labels = pd.read_csv(sleep_file, sep=";")
-    >>> labels_timestamp = align_labels_with_raw(df_labels["labels"], df_labels["date"], raw.info["meas_date"].time(), raw.times())
+    >>> labels_timestamp = align_labels_with_raw(df_labels["date"], raw.info["meas_date"].time(), raw.times)
 
     Parameters
     ----------
-    labels: ndarray
-        array containing any type of label.
     labels_timestamp: ndarray
-        array containing the timestamps of labels with the format '%H:%M:%S' (example : '23:25:20')
+        array containing the timestamps of labels with the format by default '%H:%M:%S' (example : '23:25:20')
     raw_info_start_time: datetime.time instance
         can be generate by raw.info["meas_date"].time()
+        WARNING: manage only format ``datetime.time`` with hour-minute-second (without micro-second).
     raw_times: ndarray (optional, default: None)
         the vector of index of the raw instance.
-        can be generate by raw.times()
+        can be generate by raw.times
         if given, the function will return a warning if the labels_timestamp are much shorter that the mne.Raw.
         Doesn't change the output.
+    time_format: string (default: '%H:%M:%S')
+        time format for reading ``labels_timestamp``.
 
     Returns
     -------
@@ -220,13 +223,15 @@ def align_labels_with_raw(labels, labels_timestamp, raw_info_start_time, raw_tim
         an array of timestamps in seconds relative to the start of the mne.Raw instance.
 
     """
-    if len(labels) != len(labels_timestamp):
-        raise ValueError(f"labels ({len(labels)},) and labels_timestamp ({len(labels_timestamp)},) should be same length")
 
-    delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format) - \
+    try:
+        delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format) - \
                    datetime.strptime(str(raw_info_start_time), time_format)).total_seconds() \
                   % (3600 * 24)
-
+    except ValueError:
+        delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format + ".%f") - \
+                   datetime.strptime(str(raw_info_start_time), time_format)).total_seconds() \
+                  % (3600 * 24)
     tmp = pd.to_datetime(pd.Series(labels_timestamp))
     labels_timestamp = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
 

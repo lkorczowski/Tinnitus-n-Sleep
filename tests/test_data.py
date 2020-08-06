@@ -5,6 +5,7 @@ from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, 
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
+from datetime import time
 import logging
 LOGGER = logging.getLogger(__name__)
 
@@ -186,28 +187,18 @@ def test_convert_Annotations(dummyraw):
 
 
 def test_align_labels_with_raw():
-    from datetime import time
-    labels = np.array(["awake", "N2", "N3"])
     timestamps = np.array(['23:30:00', '00:00:00', '00:30:00'])
     time_start = time(23, 29, 25)
     times = np.linspace(0, 1560, 1560, endpoint=False)
-    npt.assert_equal(align_labels_with_raw(labels, timestamps, time_start, times), [35, 1835, 3635])
+    npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [35, 1835, 3635])
 
     time_start = time(23, 30, 25)
     times = np.linspace(0, 1560, 1560, endpoint=False)
-    align_labels_with_raw(labels, timestamps, time_start, times)
+    align_labels_with_raw(timestamps, time_start, times)
 
 
-def test_align_labels_with_raw_invalid(caplog):
-    from datetime import time
-    labels = np.array(["awake", "N2", "N3", "N1"])
-    timestamps = np.array(['23:30:00', '00:00:00', '00:30:00'])
+def test_align_labels_with_raw_format():
+    timestamps = np.array(['23:30:00.001', '00:00:00.001', '00:30:00.001'])
     time_start = time(23, 29, 25)
     times = np.linspace(0, 1560, 1560, endpoint=False)
-    with pytest.raises(ValueError):
-     align_labels_with_raw(labels, timestamps, time_start, times)
-
-    labels = np.array(["awake", "N2", "N3"])
-    timestamps = np.array(['23:30:00', '00:00:00', '00:30:00', '01:00:00'])
-    with pytest.raises(ValueError):
-        align_labels_with_raw(labels, timestamps, time_start, times)
+    npt.assert_almost_equal(align_labels_with_raw(timestamps, time_start, times), [35.001, 1835.001, 3635.001])
