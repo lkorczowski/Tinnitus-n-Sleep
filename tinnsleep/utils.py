@@ -229,3 +229,8 @@ def label_report(labels):
 def merge_label_and_events(events_time, labels, time_interval):
     x = np.linspace(0, (len(labels)-1)*time_interval, len(labels))
     return resample_labels(labels, events_time, x)
+
+
+def print_dict(data_dict):
+    for key, value in data_dict.items():
+        print(key, ' : ', value)

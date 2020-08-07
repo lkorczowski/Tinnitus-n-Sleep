@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list,\
-    fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, merge_label_and_events
+    fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, merge_label_and_events, print_dict
 from scipy.interpolate import interp1d
 
 
@@ -214,3 +214,8 @@ def test_generate_sleep_report_with_episodes():
     event_start = [0.5, 5.3, 5.8]
     sleep_labels = np.array(["awake", "N1", "N1", "N2", "invalid", "N3", "REM", "awake"])
     npt.assert_equal(merge_label_and_events(event_start, sleep_labels, time_interval), ["awake", "N3", "N3"])
+
+
+def test_print_dict():
+    a = {'a': 1}
+    print_dict(a)
