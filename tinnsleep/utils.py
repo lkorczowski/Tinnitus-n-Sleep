@@ -179,7 +179,21 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
     To do so, ``labels`` are assigned to ``x`` timestamps and interpolated to new ``xnew`` timestamps.
     By default, user just need to give ``labels`` and a int as ``xnew`` for the length of the output labels.
     ``x`` and ``xnew`` can also be given as a old and new timestamp for interpolating complex value.
-    By default, the labels are associated with the previous
+    By default, the new labels are associated with the previous observed label :
+
+    Example
+    -------
+    >>> resample_labels(['A', 'B', 'C'], 2) # reduce labels
+    array(['A', 'B'], dtype='<U1')
+
+    >>> resample_labels(['A', 'B', 'C'], [0, 1]) # identical to previous example
+    array(['A', 'B'], dtype='<U1')
+
+
+    >>> xold = np.linspace(0, 2, 3)
+    >>> xnew = np.linspace(0, 2, 2) # resample same interval including edges
+    >>> resample_labels(['A', 'B', 'C'], xnew, x=xold)
+    array(['A', 'C'], dtype='<U1')
 
     Parameters
     ----------
