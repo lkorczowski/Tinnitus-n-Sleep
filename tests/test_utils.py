@@ -1,9 +1,11 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list,\
-    fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, merge_label_and_events, print_dict
+from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list, \
+    fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, \
+    merge_label_and_events, print_dict, round_time
 from scipy.interpolate import interp1d
+import datetime
 
 
 def test_compute_nb_epochs():
@@ -19,12 +21,12 @@ def test_compute_nb_epochs_invalid():
 
 def test_epoch_unit1():
     np.random.seed(seed=42)
-    N = 1000               # signal length
-    T = 100                # window length
-    I = 101                # interval
-    Ne = 8                 # electrodes
-    window_length = 1      # in seconds
-    window_overlap = 0     # in seconds
+    N = 1000  # signal length
+    T = 100  # window length
+    I = 101  # interval
+    Ne = 8  # electrodes
+    window_length = 1  # in seconds
+    window_overlap = 0  # in seconds
     X = np.random.randn(Ne, N)
     K = compute_nb_epochs(N, T, I)
     epochs = epoch(X, T, I)
@@ -33,10 +35,10 @@ def test_epoch_unit1():
 
 def test_epoch_unit2():
     np.random.seed(seed=42)
-    N = 100               # signal length
-    T = 100                # window length
-    I = 101                # interval
-    Ne = 8                 # electrodes
+    N = 100  # signal length
+    T = 100  # window length
+    I = 101  # interval
+    Ne = 8  # electrodes
     X = np.random.randn(Ne, N)
     K = compute_nb_epochs(N, T, I)
     epochs = epoch(X, T, I)
@@ -45,10 +47,10 @@ def test_epoch_unit2():
 
 def test_epoch_unit_with_axis1():
     np.random.seed(seed=42)
-    N = 1000               # signal length
-    T = 100                # window length
-    I = 10                 # interval
-    Ne = 8                 # electrodes
+    N = 1000  # signal length
+    T = 100  # window length
+    I = 10  # interval
+    Ne = 8  # electrodes
     X = np.random.randn(Ne, N)
     K = compute_nb_epochs(N, T, I)
     epochs = epoch(X.T, T, I, axis=0)
@@ -56,12 +58,12 @@ def test_epoch_unit_with_axis1():
 
 
 def test_epoch_unit_with_axis2():
-    epochs_target = np.array([[[1,  2,  3,  4]],
-                              [[4,  5,  6,  7]],
-                              [[7,  8,  9, 10]]])
+    epochs_target = np.array([[[1, 2, 3, 4]],
+                              [[4, 5, 6, 7]],
+                              [[7, 8, 9, 10]]])
     X = np.expand_dims(np.arange(1, 11), axis=0)
-    T = 4                 # window length
-    I = 3                  # interval
+    T = 4  # window length
+    I = 3  # interval
     epochs = epoch(X, T, I, axis=1)
     npt.assert_array_equal(epochs, epochs_target)
 
@@ -123,7 +125,6 @@ def test_merge_labels_list_proportional_downsampling():
     npt.assert_equal(v_lab, [True, False])
 
 
-
 def test_merge_labels_list_non_proportional():
     # downsampling interpolation
     v_lab = merge_labels_list([[True, True, False, False, False]], 2)
@@ -147,7 +148,7 @@ def test_resample_labels():
     n_epoch_new = 8
     x = [-1, 1, 2, 3, 4]
     xnew = np.linspace(0, n_epochs, n_epoch_new, endpoint=False)
-    f = interp1d(x, range(len(labels)), kind='previous', fill_value=(0, len(x)-1), bounds_error=False)
+    f = interp1d(x, range(len(labels)), kind='previous', fill_value=(0, len(x) - 1), bounds_error=False)
     y_idx = f(xnew)
     labels_new = [labels[int(i)] for i in y_idx]
 
@@ -163,7 +164,8 @@ def test_resample_labels():
 
     # test non-monotonical arrangement
     npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000]), ["B", "A", "C"])
-    npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000], kind='nearest'), ["B", "B", "D"])
+    npt.assert_equal(resample_labels(labels, [-2, -10, 1000], [-20, -5, 20, 1500, 10000], kind='nearest'),
+                     ["B", "B", "D"])
 
     # error with wrong parameter
     with pytest.raises(ValueError, match="Number of labels is 5, number of associated timestamps is 4"):
@@ -172,20 +174,20 @@ def test_resample_labels():
 
 def test_fuse_with_classif_result():
     check_imp = [[False, False], [False, True], [True, True], [True, False], [True, True], [True, False]]
-    classif=np.asanyarray([1, 2, 3, 4])
+    classif = np.asanyarray([1, 2, 3, 4])
     classif = fuse_with_classif_result(check_imp, classif)
     npt.assert_equal(classif, [1, 2, False, 3, False, 4])
 
 
 def test_crop_to_proportional_length():
     epochs = np.ones((5, 2, 2))
-    valid_labels = [[True]*5, [True, False]]
+    valid_labels = [[True] * 5, [True, False]]
     epochs, valid_labels = crop_to_proportional_length(epochs, valid_labels)
     npt.assert_equal(epochs.shape, (4, 2, 2))
     npt.assert_equal(valid_labels, [True, True, False, False])
 
     epochs = np.ones((8, 2, 2))
-    valid_labels = [[True]*8, [True, True, False]]
+    valid_labels = [[True] * 8, [True, True, False]]
     epochs, valid_labels = crop_to_proportional_length(epochs, valid_labels)
     npt.assert_equal(epochs.shape, (6, 2, 2))
     npt.assert_equal(valid_labels, [True, True, True, True, False, False])
@@ -219,3 +221,33 @@ def test_generate_sleep_report_with_episodes():
 def test_print_dict():
     a = {'a': 1}
     print_dict(a)
+
+
+def test_round_time():
+    # hour rounding of hte current time
+    now = datetime.datetime.now()
+    npt.assert_equal(round_time(round_to=3600),
+                     datetime.datetime(now.year, now.month, \
+                                       now.day, now.hour + (now.minute > 29))
+                     )
+
+    # minute rounding
+    dt = datetime.datetime(1900, 1, 1, 23, 59, 31)
+    npt.assert_equal(round_time(dt=dt, round_to=60), datetime.datetime(1900, 1, 2))
+
+    # hour rounding
+    dt = datetime.datetime(1900, 1, 1, 23, 31, 31)
+    npt.assert_equal(round_time(dt=dt, round_to=60 * 60), datetime.datetime(1900, 1, 2))
+
+    # day rounding
+    dt = datetime.datetime(1900, 1, 1, 13, 31, 31)
+    npt.assert_equal(round_time(dt=dt, round_to=60 * 60 * 24), datetime.datetime(1900, 1, 2))
+
+    # 30-sec rounding
+    dt = datetime.datetime(1900, 1, 1, 23, 59, 44)
+    npt.assert_equal(round_time(dt=dt, round_to=30), datetime.datetime(1900, 1, 1, 23, 59, 30))
+
+    # 500 ms rounding (not actually working now)
+    with pytest.raises(ValueError):
+        dt = datetime.datetime(1900, 1, 1, 23, 59, 58, 990)
+        round_time(dt=dt, round_to=0.5)
