@@ -3,7 +3,9 @@ from numpy.lib import stride_tricks
 from sklearn.utils.validation import check_array
 from scipy.interpolate import interp1d
 import logging
+
 logger = logging.getLogger(__name__)
+import datetime
 
 
 def epoch(data, duration, interval, axis=-1):
@@ -73,7 +75,7 @@ def compute_nb_epochs(N, T, I):
     if (T < 1) | (I < 1):
         raise ValueError("Invalid range for parameters")
 
-    return int(np.ceil((N-T+1) / I))
+    return int(np.ceil((N - T + 1) / I))
 
 
 def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all, kind='nearest'):
@@ -106,8 +108,8 @@ def merge_labels_list(list_valid_labels, n_epoch_final, merge_fun=np.all, kind='
         resampling_factor = float(n_epoch_final / n_epoch_before)
 
         # downsampling
-        if (1/resampling_factor).is_integer() and (resampling_factor != 1):
-            resampling_factor = int(1/resampling_factor)
+        if (1 / resampling_factor).is_integer() and (resampling_factor != 1):
+            resampling_factor = int(1 / resampling_factor)
             valid_labels[:, i] = [np.sum(list_valid_labels[i][j * resampling_factor:(j + 1) * resampling_factor])
                                   /
                                   resampling_factor == 1 for j in range(n_epoch_final)]
@@ -151,7 +153,7 @@ def fuse_with_classif_result(check_imp, labels):
     labels = labels.tolist()
     for i in range(len(check_imp)):
         if np.mean(check_imp[i]) == 1:
-            labels.insert(i, False)   # inserting False (neutral) values in the labels array where they were deleted
+            labels.insert(i, False)  # inserting False (neutral) values in the labels array where they were deleted
     return labels
 
 
@@ -162,7 +164,8 @@ def crop_to_proportional_length(epochs, valid_labels):
 
     # find the common denominator
     min_labels = min([len(i) * j for (i, j) in zip(valid_labels, resampling_factors)])
-    assert (len(epochs) - min_labels) <= max(resampling_factors), f"shift of {len(epochs) - min_labels} epochs max ({max(resampling_factors)}), please check that all duration are proportional"
+    assert (len(epochs) - min_labels) <= max(
+        resampling_factors), f"shift of {len(epochs) - min_labels} epochs max ({max(resampling_factors)}), please check that all duration are proportional"
     epochs = epochs[:min_labels]  # crop last epochs
     valid_labels_crop = [i[:int(min_labels / j)] for (i, j) in
                          zip(valid_labels, resampling_factors)]  # crop valid_labels
@@ -208,7 +211,7 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
     elif len(x) != len(labels):
         raise ValueError(f"Number of labels is {len(labels)}, number of associated timestamps is {len(x)}")
 
-    f = interp1d(x, range(len(labels)), kind=kind, fill_value=(0, len(x)-1), bounds_error=False)
+    f = interp1d(x, range(len(labels)), kind=kind, fill_value=(0, len(x) - 1), bounds_error=False)
 
     return labels[f(xnew).astype(int)]
 
@@ -227,10 +230,36 @@ def label_report(labels):
 
 
 def merge_label_and_events(events_time, labels, time_interval):
-    x = np.linspace(0, (len(labels)-1)*time_interval, len(labels))
+    x = np.linspace(0, (len(labels) - 1) * time_interval, len(labels))
     return resample_labels(labels, events_time, x)
 
 
 def print_dict(data_dict):
     for key, value in data_dict.items():
         print(key, ' : ', value)
+
+
+def round_time(dt=None, round_to=60):
+    """
+    Parameters
+    ----------
+    dt : datetime instance at second accuracy (doesn't work bellow)
+        a datetime
+    round_to : float
+        number of second to round
+        example : `round_to=60` rounds dt to the nearest minute
+
+    Returns
+    -------
+    dt_rounded : datetime instance
+        datetime rounded to the closest date using round_to interval.
+    """
+    if dt is None:
+        dt = datetime.datetime.now()
+
+    if round_to < 1:
+        raise ValueError("round_time doesn't manage rounding under second")
+
+    seconds = (dt - dt.min).seconds
+    rounding = (seconds + round_to / 2) // round_to * round_to
+    return dt + datetime.timedelta(0, rounding - seconds, -dt.microsecond)
