@@ -219,7 +219,7 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None,
 
     Returns
     -------
-    labels_timestamp: ndarray
+    labels_timestamp_delta: ndarray
         an array of timestamps in seconds relative to the start of the mne.Raw instance.
 
     """
@@ -233,15 +233,19 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None,
                    datetime.strptime(str(raw_info_start_time), time_format)).total_seconds() \
                   % (3600 * 24)
     tmp = pd.to_datetime(pd.Series(labels_timestamp))
-    labels_timestamp = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
+    labels_timestamp_delta = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
 
     # OPTIONAL CHECKS
     # the warnings shouldn't be deal-breaker in most of the situation but aweness of those might be important
     # TODO: MAYBE REMOVE ?
-    interval = np.unique(np.diff(labels_timestamp))
+    interval = np.unique(np.diff(labels_timestamp_delta))
     if len(interval) > 1:
-        LOGGER.warning(f"non uniform interval (values: {interval}), taking median")
-        interval = np.median(np.diff(labels_timestamp))
+        interval_count = []
+        for inter in interval:
+            interval_count.append((inter, np.sum(np.diff(labels_timestamp_delta)==inter)))
+        interval = np.median(np.diff(labels_timestamp_delta))
+        LOGGER.warning(f"non uniform interval (count: {interval_count}), taking median: {interval}")
+        LOGGER.warning(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[0]}")
     else:
         interval = interval[0]
 
@@ -250,8 +254,8 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None,
 
     # optional check
     if raw_times is not None:
-        delta_end = raw_times[-1] - (labels_timestamp[-1] + interval)
+        delta_end = raw_times[-1] - (labels_timestamp_delta[-1] + interval)
         if delta_start > interval:
             LOGGER.warning(f"delta_end ({delta_end}) > interval ({interval})")
 
-    return labels_timestamp
+    return labels_timestamp_delta

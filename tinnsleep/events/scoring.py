@@ -11,7 +11,7 @@ def classif_to_burst(classif, time_interval=0.25):
     ----------
     classif : list of booleans,
         output of a classification algorithm that detect non aggregated bursts from a recording
-    interval: float,
+    time_interval: float,
         time in seconds interval between 2 elements of classif
     Returns
     -------
@@ -29,6 +29,9 @@ def classif_to_burst(classif, time_interval=0.25):
     # set a beginning if classif[0]==True
     if flag:
         beg = 0
+    else:
+        beg = np.nan
+
     i = 1
     # Loop that merges contiguous bursts together
     while i < leny:
@@ -38,7 +41,7 @@ def classif_to_burst(classif, time_interval=0.25):
             if not classif[i]:
                 # We close the burst
                 flag = False
-                burst_list.append(burst(beg * time_interval, (i) * time_interval))
+                burst_list.append(burst(beg * time_interval, i * time_interval))
 
         else:
             if classif[i]:
@@ -53,7 +56,7 @@ def classif_to_burst(classif, time_interval=0.25):
     return burst_list
 
 
-def rearrange_chronological(brux_list):
+def rearrange_chronological(burst_list):
     """Rearrange a given burst list or episode list in the chronological order according to the beg attribute
 
     Parameters
@@ -66,8 +69,8 @@ def rearrange_chronological(brux_list):
         same list, chronologically ordered
         """
 
-    brux_list.sort(key=lambda x: x.beg)
-    return brux_list
+    burst_list.sort(key=lambda x: x.beg)
+    return burst_list
 
 
 def burst_to_episode(burst_list, delim=3, min_burst_joining=3):
@@ -140,27 +143,6 @@ def generate_annotations(li_ep):
     for ep in li_ep:
         annotations.append(ep.generate_annotation())
     return annotations
-
-
-def get_event_label(episode):
-    """ return the label of the episode
-
-    Parameters
-    ----------
-    episode : episode instance
-
-    Returns
-    -------
-    int
-        int label of the type of episode
-    """
-
-    if episode.is_tonic:
-        return 1
-    if episode.is_phasic:
-        return 2
-    if episode.is_mixed:
-        return 3
 
 
 def episodes_to_list(list_episodes, time_interval, n_labels):
