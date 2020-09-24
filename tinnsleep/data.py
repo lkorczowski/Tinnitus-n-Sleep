@@ -226,11 +226,11 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None,
 
     try:
         delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format) - \
-                   datetime.strptime(str(raw_info_start_time), time_format)).total_seconds() \
+                   datetime.strptime(str(raw_info_start_time), "%H:%M:%S")).total_seconds() \
                   % (3600 * 24)
     except ValueError:
         delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format + ".%f") - \
-                   datetime.strptime(str(raw_info_start_time), time_format)).total_seconds() \
+                   datetime.strptime(str(raw_info_start_time), "%H:%M:%S")).total_seconds() \
                   % (3600 * 24)
     tmp = pd.to_datetime(pd.Series(labels_timestamp))
     labels_timestamp_delta = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values

@@ -1,7 +1,6 @@
 import numpy.testing as npt
 from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, rearrange_chronological
 from tinnsleep.events.burst import burst
-import numpy as np
 
 
 def test_classif_to_burst():
@@ -10,6 +9,7 @@ def test_classif_to_burst():
     interval = 1
     li_burst = classif_to_burst(li, interval)
     npt.assert_equal(len(li_burst), 6)
+    li_burst[1].beg
 
 
 def test_empty_classif_to_burst():
