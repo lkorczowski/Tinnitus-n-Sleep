@@ -204,10 +204,18 @@ def test_crop_to_proportional_length_fails():
 def test_generate_label_report_basic():
     sleep_labels = np.array(["awake", "N1", "N1", "N2", "invalid", "N3", "NREM", "awake"])
     report = label_report(sleep_labels)
-    report_expected = dict()
-    for label in np.unique(sleep_labels):
-        report_expected[f"{label} count"] = np.sum(sleep_labels == label)
-        report_expected[f"{label} ratio"] = np.sum(sleep_labels == label) / len(sleep_labels)
+    report_expected = {'N1 count': 2,
+                         'N1 ratio': 0.25,
+                         'N2 count': 1,
+                         'N2 ratio': 0.125,
+                         'N3 count': 1,
+                         'N3 ratio': 0.125,
+                         'NREM count': 1,
+                         'NREM ratio': 0.125,
+                         'awake count': 2,
+                         'awake ratio': 0.25,
+                         'invalid count': 1,
+                         'invalid ratio': 0.125}
     npt.assert_equal(report, report_expected)
 
 
