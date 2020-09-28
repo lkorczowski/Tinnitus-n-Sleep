@@ -231,6 +231,7 @@ def resample_labels(labels, xnew, x=None, kind='previous'):
 
 
 def label_report(labels):
+    """Returns a dictionary with the count and the ratio of each unique labels from a list/array."""
     if labels is None:
         labels = []
     if isinstance(labels, list):
