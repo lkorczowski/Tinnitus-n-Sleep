@@ -131,12 +131,14 @@ if __name__ == "__main__":
     print("saving results")
     df_results.to_csv("./data/results_sleep_comparison.csv")
 
-    plt.subplot(131)
+    plt.subplot(141)
     ax = sns.boxplot(x="kind", y="recall", data=df_results.loc["Wake"])
-    plt.subplot(132)
+    plt.subplot(142)
     ax = sns.boxplot(x="kind", y="precision", data=df_results.loc["Wake"])
-    plt.subplot(133)
-    ax = sns.boxplot(x="kind", y="support", data=df_results.loc["Wake"])
+    plt.subplot(143)
+    ax = sns.boxplot(x="kind", y="precision", data=df_results.loc["Wake"])
+    plt.subplot(144)
+    ax = sns.boxplot(x="kind", y="f1-score", data=df_results.loc["Wake"])
     plt.savefig("./data/results_sleep_comparison_wake.png")
 
     plt.show()
