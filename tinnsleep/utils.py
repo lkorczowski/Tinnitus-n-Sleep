@@ -245,6 +245,23 @@ def label_report(labels):
 
 
 def merge_label_and_events(events_time, labels, time_interval):
+    """Resample a list of labels at events_time from labels sampled at time_interval.
+
+    Parameters
+    ----------
+    events_time : ndarray-like, shape (nb_resampled_labels, )
+        list of timestamps in seconds.
+    labels : ndarray-like, shape (nb_labels, )
+        list of labels (containing any type or mixed type)
+    time_interval : float
+        the initial interval between two labels.
+
+    Parameters
+    ----------
+    resampled_labels : ndarray-like, shape (nb_resampled_labels, )
+        the resampled labels extracted from ``labels`` at time ``events_time``
+
+    """
     x = np.linspace(0, (len(labels) - 1) * time_interval, len(labels))
     return resample_labels(labels, events_time, x)
 
