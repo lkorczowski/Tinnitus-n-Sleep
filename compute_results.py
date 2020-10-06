@@ -65,8 +65,10 @@ if __name__ == "__main__":
     print("parameters set")
 
     # Importing personnalized parameters for dataset
-    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=";")
+    data_info = pd.read_csv("data/data_info2.csv", engine='python', sep=",")
+    #data_info["Valid_chans"][data_info["Valid_chans"].isna()]='[0]'
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
+    #data_info["Valid_imps"][data_info["Valid_imps"].isna()]='[1]'
     data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
     mema_files = data_info.query("mema == 1")["filename"].values
     dico_chans = data_info.set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
@@ -109,7 +111,7 @@ if __name__ == "__main__":
                     # recording.
                     print(f"(sleep labels", end=" ")
 
-                    sleep_labels = pd.read_csv(sleep_file, sep=";")
+                    sleep_labels = pd.read_csv(sleep_file, sep=";", error_bad_lines=False)
                     sleep_label_timestamp = sleep_labels["Horodatage"]
                     sleep_labels = sleep_labels["Sommeil"].values
 
@@ -181,6 +183,8 @@ if __name__ == "__main__":
 
                 print(f"MEMA(", end="")
                 if DO_MEMA:
+                    if 'Mask Pressure' in raw.info['ch_names']:
+                        raw.rename_channels({'Mask Pressure': 'Airflow', "Pression diff": 'Airflow (L)'})
                     filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
                                          fir_design='firwin', filter_length='auto', phase='zero-double',
                                          picks=['Airflow'])
@@ -263,6 +267,8 @@ if __name__ == "__main__":
                         xnew = np.linspace(0, len(epochs_MEMA) * window_length_MEMA, len(epochs_MEMA), endpoint=False)
                         sleep_labels_MEMA = resample_labels(sleep_labels, xnew, x=sleep_label_timestamp,
                                                             kind='previous')
+                    else:
+                        sleep_labels_MEMA = None
 
                     print("report...", end="");
                     tmp = time()
