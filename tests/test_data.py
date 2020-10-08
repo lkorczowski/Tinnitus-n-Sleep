@@ -159,13 +159,13 @@ def test_CleanAnnotations(dummyraw):
     assert len(raw.annotations) == 0
 
 
-def test_convert_Annotations(dummyraw):
+def test_convert_Annotations_merge(dummyraw):
     interval = 50
     duration = 250
     labels = [2, 1, 3]
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
-                   interval=interval, duration=duration)
+                   interval=interval, duration=duration, merge=True)
     expected_annots = [
                     OrderedDict([('onset', 0.),
                                  ('duration', 1.0),
