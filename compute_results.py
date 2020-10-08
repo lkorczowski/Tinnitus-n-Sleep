@@ -86,7 +86,7 @@ if __name__ == "__main__":
             print("Files processed: ")
             start = time()
             #%%
-            for filename in EDF_list:
+            for filename in EDF_list: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
 
                 # opens the raw file
                 raw = mne.io.read_raw_edf(filename, preload=False, verbose=False)  # prepare loading
@@ -107,28 +107,32 @@ if __name__ == "__main__":
                 # Get sleep stages if exist
                 sleep_file = "data/sleep_labels/" + file.split(".")[0] + ".csv"
                 if os.path.isfile(sleep_file):
-                    # prepare timestamps of the sleep labels and convert it to seconds relative to beginning of
-                    # recording.
-                    print(f"(sleep labels", end=" ")
+                    try:
+                        # prepare timestamps of the sleep labels and convert it to seconds relative to beginning of
+                        # recording.
+                        print(f"(sleep labels", end=" ")
 
-                    sleep_labels = pd.read_csv(sleep_file, sep=";", error_bad_lines=False)
-                    sleep_label_timestamp = sleep_labels["Horodatage"]
-                    sleep_labels = sleep_labels["Sommeil"].values
+                        sleep_labels = pd.read_csv(sleep_file, sep=";", error_bad_lines=False)
+                        sleep_label_timestamp = sleep_labels["Horodatage"]
+                        sleep_labels = sleep_labels["Sommeil"].values
 
-                    delta_start = (datetime.strptime(str(sleep_label_timestamp.iloc[0]), '%H:%M:%S') -\
-                        datetime.strptime(str(raw.info["meas_date"].time()), '%H:%M:%S')).total_seconds()\
-                        %(3600*24)
-                    if delta_start > 30:
-                        print(f"WARNING delta_start {delta_start}", end=" ")
+                        delta_start = (datetime.strptime(str(sleep_label_timestamp.iloc[0]), '%H:%M:%S') -\
+                            datetime.strptime(str(raw.info["meas_date"].time()), '%H:%M:%S')).total_seconds()\
+                            %(3600*24)
+                        if delta_start > 30:
+                            print(f"WARNING delta_start {delta_start}", end=" ")
 
-                    tmp = pd.to_datetime(sleep_label_timestamp)
-                    sleep_label_timestamp = (tmp - tmp[0]).astype('timedelta64[s]').mod(3600*24).values + delta_start
+                        tmp = pd.to_datetime(sleep_label_timestamp)
+                        sleep_label_timestamp = (tmp - tmp[0]).astype('timedelta64[s]').mod(3600*24).values + delta_start
 
-                    delta_end = raw.times[-1] - (sleep_label_timestamp[-1] + 30)
-                    if delta_start > 30:
-                        print(f"WARNING delta_end {delta_end}", end=" ")
+                        delta_end = raw.times[-1] - (sleep_label_timestamp[-1] + 30)
+                        if delta_start > 30:
+                            print(f"WARNING delta_end {delta_end}", end=" ")
 
-                    print(f", loaded)", end=" ")
+                        print(f", loaded)", end=" ")
+                    except:
+                        print(f"(error with sleep labels)", end=" ")
+                        sleep_labels = None
                 else:
                     print(f"(sleep labels not found)", end=" ")
                     sleep_labels = None
