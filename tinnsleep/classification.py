@@ -2,9 +2,8 @@
 
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin
-from sklearn.utils.validation import check_array, check_is_fitted
-from sklearn.metrics import euclidean_distances
-from sklearn.utils.extmath import softmax
+from sklearn.utils.validation import check_array
+
 
 class AmplitudeThresholding(BaseEstimator, ClassifierMixin, TransformerMixin):
     """Classification by Thresholding

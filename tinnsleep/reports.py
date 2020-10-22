@@ -1,13 +1,13 @@
 import numpy as np
 from tinnsleep.data import RawToEpochs_sliding
 from tinnsleep.classification import AmplitudeThresholding
-from tinnsleep.utils import fuse_with_classif_result, merge_labels_list
+from tinnsleep.utils import fuse_with_classif_result, merge_labels_list, label_report, merge_label_and_events
 from tinnsleep.signal import rms
 from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episodes_to_list
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 
-def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3):
+def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, sleep_labels=None):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -33,6 +33,15 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3):
     report["Total number of burst"] = nb_burst
     report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim, min_burst_joining=min_burst_joining)
+
+    if sleep_labels is not None:
+        if len(classif) != len(sleep_labels):
+            raise ValueError(f"classif is ({len(classif)},), sleep_labels is ({len(sleep_labels)},)")
+        episodes_beginning = [epi.beg for epi in li_episodes]
+        episodes_labels = merge_label_and_events(episodes_beginning, sleep_labels, time_interval)
+        episodes_labels = np.char.add('bruxism episode ', episodes_labels)
+        report.update(label_report(episodes_labels))
+
     nb_episodes = len(li_episodes)
     report["Total number of episodes"] = nb_episodes
     if nb_episodes > 0:
@@ -68,17 +77,19 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3):
     return report
 
 
-def generate_MEMA_report(classif, time_interval, delim):
+def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None):
     """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
 
     Parameters
     ----------
     classif : list of booleans,
         output of a classification algorithm that detect non aggregated bursts from a recording
-    interval : float,
+    time_interval : float,
         time interval in seconds between 2 elementary events
     delim : float,
         maximal time interval considered eligible between two bursts within a episode
+
+
     Returns
     -------
     report : dict
@@ -92,6 +103,15 @@ def generate_MEMA_report(classif, time_interval, delim):
     report["Total number of MEMA burst"] = nb_burst
     report["Number of MEMA bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
+
+    if sleep_labels is not None:
+        if len(classif) != len(sleep_labels):
+            raise ValueError(f"classif is ({len(classif)},), sleep_labels is ({len(sleep_labels)},)")
+        episodes_beginning = [epi.beg for epi in li_episodes]
+        episodes_labels = merge_label_and_events(episodes_beginning, sleep_labels, time_interval)
+        episodes_labels = np.char.add('MEMA episode ', episodes_labels)
+        report.update(label_report(episodes_labels))
+
     nb_episodes = len(li_episodes)
     report["Total number of MEMA episodes"] = nb_episodes
     if nb_episodes > 0:
@@ -207,7 +227,9 @@ def preprocess(raw, duration, interval,
     return epochs, valid_labels, log
 
 
-def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptive=0, log={}, generate_report=generate_bruxism_report):
+def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptive=0, log={},
+              generate_report=generate_bruxism_report,
+              sleep_labels=None):
     """creates clinical reports of bruxism out of a epoch array, for different thresholding values
     Parameters
     ----------
@@ -220,9 +242,9 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
        example: THR_classif=[[0,2],[0,3]]
     time_interval: float
         time interval in seconds between 2 elementary events
-    delim: float, (default 3)
+    delim: float, (default: 3)
         maximal time interval considered eligible between two bursts within a episode
-    n_adaptative : int (default: 0)
+    n_adaptive : int (default: 0)
         number of epochs for adaptive baseline calculation
         if positive uses casual adaptive scheme
         if negative uses acasual forward-backward adaptive scheme
@@ -230,6 +252,8 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
         logs of the preprocessing steps, including the number of epochs rejected at each step
     generate_report: function (default: tinnsleep.scoring.generate_bruxism_report)
         function to convert labels into a report
+    sleep_labels : ndarray, shape (n_epochs, ), (default: None)
+        Sleep Stages in ["N1", "N2", "N3", "REM"], all other labels are discontinued and rejected from analysis.
 
 
     Returns
@@ -243,6 +267,14 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     """
     labs = []
     reps = []
+    valid_sleep_stages = ["N1", "N2", "N3", "REM"]
+    if sleep_labels is not None:
+        sleep_labels_index = np.isin(sleep_labels, valid_sleep_stages)
+        valid_labels = valid_labels & sleep_labels_index
+        sleep_labels_valid = sleep_labels[valid_labels]
+    else:
+        sleep_labels_valid = None
+
     # for each value of THR_classif, create a report and a list of labels
     for THR in THR_classif:
         X = rms(epochs[valid_labels])  # take only valid labels
@@ -254,17 +286,18 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             # Reversing epochs array, computing backward and reversing labels
             pipeline = AmplitudeThresholding(abs_threshold=THR[0], rel_threshold=THR[1], n_adaptive=abs(n_adaptive))
             labels_b = pipeline.fit_predict(X[::-1])[::-1]
-            #-----------------foward-backward merge ---------------------------------------
+            # -----------------foward-backward merge ---------------------------------------
             # Logical OR -- merged backward and forward
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
-        report = generate_report(labels, time_interval, delim)
-        report["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
+        report_ = generate_report(labels, time_interval, delim, sleep_labels=sleep_labels_valid)
+        report_.update(label_report(sleep_labels))
+        report_["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
 
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
         labs.append(labels)
-        reps.append(report)
+        reps.append(report_)
 
     parameters = dict()
     parameters['valid_labels'] = valid_labels
@@ -272,6 +305,7 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     parameters['time_interval'] = time_interval
     parameters['delim'] = delim
     parameters['n_adaptive'] = n_adaptive
+    parameters['sleep_labels'] = sleep_labels
 
     return {"THR_classif": THR_classif, "labels": labs, "reports": reps, "log": log, "parameters": parameters}
 
@@ -296,10 +330,10 @@ def _cond_subclassif(ep_to_sub, labels_condition, time_interval):
     pure_ep = []
     # merge episodes and compare with condition and artefacts
     for elm in ep_to_sub:
-            if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
-                comb_ep.append(elm)
-            else:
-                pure_ep.append(elm)
+        if np.sum(labels_condition[int(elm.beg / time_interval):int(elm.end / time_interval)]) > 0:
+            comb_ep.append(elm)
+        else:
+            pure_ep.append(elm)
 
     # ------------------
     # Pure episodes creation
@@ -310,6 +344,7 @@ def _cond_subclassif(ep_to_sub, labels_condition, time_interval):
     li_ep_c = np.where(li_ep_c != 0, True, False)
 
     return li_ep_c, li_ep_p
+
 
 def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=0):
     """joining near bursts into episodes but keeping isolated bursts intact for future mutual conditioned analysis
@@ -335,8 +370,6 @@ def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=
     events = episodes_to_list(li_ep, time_interval, len(labels))
     events = np.where(events != 0, True, False)
     return events, li_ep
-
-
 
 
 def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
@@ -379,7 +412,7 @@ def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEM
         else:
             labels_MEMA = merge_labels_list([labels_MEMA], len(labels_brux))
             time_interval = time_interval_brux
-    else: #inputs of same length
+    else:  # inputs of same length
         time_interval = time_interval_brux
     # Creating lists of episode and bursts for bruxism and MEMA
     brux_burst_ep, li_ep_brux = _labels_to_ep_and_bursts(labels_brux, time_interval, delim_ep_brux,
@@ -388,9 +421,7 @@ def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEM
                                                          min_burst_joining=min_burst_joining_MEMA)
 
     # Conditionnal labelling of events
-    MEMA_comb_ep, MEMA_pure_ep= _cond_subclassif(li_ep_MEMA,
-                                                                 brux_burst_ep, time_interval)
-    brux_comb_ep, brux_pure_ep = _cond_subclassif(li_ep_brux,
-                                                                   MEMA_burst_ep, time_interval)
+    MEMA_comb_ep, MEMA_pure_ep = _cond_subclassif(li_ep_MEMA, brux_burst_ep, time_interval)
+    brux_comb_ep, brux_pure_ep = _cond_subclassif(li_ep_brux, MEMA_burst_ep, time_interval)
 
     return brux_comb_ep, brux_pure_ep, MEMA_comb_ep, MEMA_pure_ep

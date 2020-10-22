@@ -9,13 +9,13 @@ import numpy as np
 if __name__ == "__main__":
     threshold_index_bruxism = 3
     threshold_index_MEMA = 2
-    mema_files = pd.read_csv("data/mema_files.csv", engine='python', sep="; ")["files_with_mema"].values
-
+    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=";")
+    mema_files = data_info[data_info["mema"] == 1]['filename'].values
     results_MEMA = pd.read_pickle("data/reports_and_datas_MEMA.pk").to_dict()
     results_brux = pd.read_pickle("data/reports_and_datas_bruxism.pk").to_dict()
     min_burst_joining_brux = 3
     min_burst_joining_MEMA = 0
-    file = '1GB19_nuit_hab.edf' #
+    file = '1GB18_nuit_hab.edf' #
     filename = [filename for filename in Config.bruxisme_files if filename.endswith(file)][0]
     # Loop on all the patient files
     print(file, end=" ")

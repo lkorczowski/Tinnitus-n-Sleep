@@ -1,9 +1,13 @@
 import pytest
 import numpy as np
-from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations, convert_Annotations
+from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations, \
+    convert_Annotations, align_labels_with_raw
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
+from datetime import time
+import logging
+LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture
 def data():
@@ -155,13 +159,13 @@ def test_CleanAnnotations(dummyraw):
     assert len(raw.annotations) == 0
 
 
-def test_convert_Annotations(dummyraw):
+def test_convert_Annotations_merge(dummyraw):
     interval = 50
     duration = 250
     labels = [2, 1, 3]
     dict_annotations = {1: "bad EPOCH", 2: "nice"}
     raw = AnnotateRaw_sliding(dummyraw, labels=labels, dict_annotations=dict_annotations,
-                   interval=interval, duration=duration)
+                   interval=interval, duration=duration, merge=True)
     expected_annots = [
                     OrderedDict([('onset', 0.),
                                  ('duration', 1.0),
@@ -180,3 +184,27 @@ def test_convert_Annotations(dummyraw):
     annots = convert_Annotations(raw.annotations)
 
     assert annots == expected_annots
+
+
+def test_align_labels_with_raw():
+    timestamps = np.array(['23:30:00', '00:00:00', '00:30:00'])
+    time_start = time(23, 29, 25)
+    times = np.linspace(0, 1560, 1560, endpoint=False)
+    npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [35, 1835, 3635])
+
+    time_start = time(23, 30, 25)
+    times = np.linspace(0, 1560, 1560, endpoint=False)
+    align_labels_with_raw(timestamps, time_start, times)
+
+
+
+def test_align_labels_with_raw_format():
+    timestamps = np.array(['23:30:00.001', '00:00:00.001', '00:30:00.001'])
+    time_start = time(23, 29, 25)
+    times = np.linspace(0, 1560, 1560, endpoint=False)
+    npt.assert_almost_equal(align_labels_with_raw(timestamps, time_start, times), [35.001, 1835.001, 3635.001])
+
+    timestamps = np.array(['23:30:00', '00:00:00', '00:30:00'])
+    time_start = time(23, 29, 25)
+    times = np.linspace(0, 1560, 1560, endpoint=False)
+    npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [35, 1835, 3635])
