@@ -112,21 +112,25 @@ if __name__ == "__main__":
                         # recording.
                         print(f"(sleep labels", end=" ")
 
+                        # prepare local variable
                         sleep_labels = pd.read_csv(sleep_file, sep=";", error_bad_lines=False)
                         sleep_label_timestamp = sleep_labels["Horodatage"]
                         sleep_labels = sleep_labels["Sommeil"].values
 
+                        # compute time different between the start of the EDF recording and the first label
                         delta_start = (datetime.strptime(str(sleep_label_timestamp.iloc[0]), '%H:%M:%S') -\
                             datetime.strptime(str(raw.info["meas_date"].time()), '%H:%M:%S')).total_seconds()\
                             %(3600*24)
-                        if delta_start > 30:
+
+                        if delta_start > 30:  # EDF and labels doesn't match perfectly (wrong EDF or truncated ?)
                             print(f"WARNING delta_start {delta_start}", end=" ")
 
+                        # convert all labels' timestamps to delta time from start of EDF recording.
                         tmp = pd.to_datetime(sleep_label_timestamp)
                         sleep_label_timestamp = (tmp - tmp[0]).astype('timedelta64[s]').mod(3600*24).values + delta_start
 
-                        delta_end = raw.times[-1] - (sleep_label_timestamp[-1] + 30)
-                        if delta_start > 30:
+                        delta_end = raw.times[-1] - (sleep_label_timestamp[-1] + 30)  #
+                        if delta_end > 30:  # EDF and labels doesn't match perfectly (wrong EDF or truncated ?)
                             print(f"WARNING delta_end {delta_end}", end=" ")
 
                         print(f", loaded)", end=" ")
