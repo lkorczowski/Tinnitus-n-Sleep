@@ -65,7 +65,7 @@ if __name__ == "__main__":
     print("parameters set")
 
     # Importing personnalized parameters for dataset
-    data_info = pd.read_csv("data/data_info2.csv", engine='python', sep=",")
+    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
     #data_info["Valid_chans"][data_info["Valid_chans"].isna()]='[0]'
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
     #data_info["Valid_imps"][data_info["Valid_imps"].isna()]='[1]'
