@@ -5,7 +5,7 @@ https://codecov.io/gh/lkorcczowski/Tinnitus-n-Sleep)
 # Tinnitus-n-Sleep
 Detecting events in sleeping tinnitus patients
 
-Work for SIOPI, by Robin Guillard & Louis Korczowski
+Work for SIOPI, by Robin Guillard & Louis Korczowski (2020-)
 
 ## Installation
 The following steps must be performed on a Anaconda prompt console, or 
