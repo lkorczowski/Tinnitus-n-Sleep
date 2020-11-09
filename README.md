@@ -84,6 +84,7 @@ There are several key parameters for classification (see Figure 3). We advice to
 [![bruxism_VAS-I](
 ./images/trend_bruxism_VAS-I.png)](
 ./images/trend_bruxism_VAS-I.png)
+
 **Figure 6:** Relationship between the absolute difference of tinnitus subjective intrusiveness between before sleep onset and after awakening (x-axis) and number of detected bruxism episodes per hour (y-axis). The line represents the trend and area the confidence interval.
 
 ### MEMA
@@ -91,17 +92,20 @@ There are several key parameters for classification (see Figure 3). We advice to
 [![mema_masking](
 ./images/trend_mema_masking.png)](
 ./images/trend_mema_masking.png)
+
 **Figure 7:** Relationship between the absolute difference of tinnitus masking volume between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
 
 [![mema_VAS-L](
 ./images/trend_mema_VAS-L.png)](
 ./images/trend_mema_VAS-L.png)
-**Figure 7:** Relationship between the absolute difference of tinnitus subjective loudness between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+**Figure 8:** Relationship between the absolute difference of tinnitus subjective loudness between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
 
 [![mema_VAS-I](
 ./images/trend_mema_VAS-I.png)](
 ./images/trend_mema_VAS-I.png)
-**Figure 7:** Relationship between the absolute difference of tinnitus subjective intrusiveness volume between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+**Figure 9:** Relationship between the absolute difference of tinnitus subjective intrusiveness volume between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
 
 ## Installation
 The following steps must be performed on a Anaconda prompt console, or 
