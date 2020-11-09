@@ -21,7 +21,7 @@ To so so, this toolbox is organized in several modules and folders:
 - **data**: load, prepare and annotate data (mainly .edf using `mne`)
 - **utils**: a lot of useful methods for preparing data, labels by doing simple operations
 - **signal**: signal processing and automatic artifact thresholding
-- **classification**: classification methods to detects events and artifacts. The main method is *AMDT* (Adaptive Mean Amplitud Thresholding).
+- **classification**: classification methods to detects events and artifacts. The main method is *AMDT* (Adaptive Mean Amplitude Thresholding).
 - **pipeline**: "ready-to-go" configured *ADMT* pipeline for event classification
 - **events**: methods to build and differentiate events
 - **reports**: automatic reporting system using all above
@@ -44,7 +44,7 @@ As shown in `notebooks/demo_mema_detection.ipynb` (e.g. Figure 1), a standardize
 [![demo1](
 ./images/demo_adaptive-emg+mema.png)](
 ./images/demo_adaptive-emg+mema.png)
-**Figure 1:** Detection of both MEMA (orange) and EM (blue) events using adapative scheme. In this situation, EMG baseline has abrutly changed but the adaptive thresholding is able to both detect the first burst of EMG and then adapte to the new baseline. Meanwhile a burst of several MEMA is detected.
+**Figure 1:** Detection of both MEMA (orange) and EM (blue) events using adaptive scheme. In this situation, EMG baseline has abruptly changed but the adaptive thresholding is able to both detect the first burst of adapt to the new baseline (right). Meanwhile a burst of several MEMA is detected.
 
 Classification is not enough to categorize events (see Figure 2), the `tinnsleep.events` methods allow to differentiate between different types of events. To do so, events are labeled into `bursts` and `episodes`:
 - `bursts` are continuous events which are classified using the `tinnsleep.classification` module.
@@ -61,7 +61,7 @@ There are several key parameters for classification (see Figure 3). We advice to
 
 **CLASSIFICATION**
 - Window length: length of the sliding window for computer instantaneous power (default: 250ms for Bruxism, 1s for MEMA)
-- Baseline: memory buffer for the computation of the baseline. By default, we advice to use the non-casual "left-hand"+"righ-hand" baseline (see `tinnsleep.pipeline` for a pre-configured example) 
+- Baseline: memory buffer for the computation of the baseline. By default, we advice to use the non-casual "left-hand"+"right-hand" baseline (see `tinnsleep.pipeline` for a pre-configured example) 
 - Threshold: thresholding detects events for which power is X times greater than adaptive baseline
 
  [![bruxism_category](
