@@ -21,8 +21,8 @@ To so so, this toolbox is organized in several modules and folders:
 - **data**: load, prepare and annotate data (mainly .edf using `mne`)
 - **utils**: a lot of useful methods for preparing data, labels by doing simple operations
 - **signal**: signal processing and automatic artifact thresholding
-- **classification**: classification methods to detects events and artifacts
-- **pipeline**: "ready-to-go" configured classification pipeline for event classification
+- **classification**: classification methods to detects events and artifacts. The main method is *AMDT* (Adaptive Mean Amplitud Thresholding).
+- **pipeline**: "ready-to-go" configured *ADMT* pipeline for event classification
 - **events**: methods to build and differentiate events
 - **reports**: automatic reporting system using all above
 
@@ -36,8 +36,72 @@ To so so, this toolbox is organized in several modules and folders:
 - **Middle_ear_Inter_subject_analyze**: preconfigured notebook for group-level analyze of MEMA (results are computed using ``compute_results.py``)
 - and more...
 
-## Expected results
-TODO
+## Results
+
+### Automatic Detection
+As shown in `notebooks/demo_mema_detection.ipynb` (e.g. Figure 1), a standardized method is used for MEMA and EMG events detection using the `tinnsleep.pipeline` methods. Here is some explained results.
+
+[![demo1](
+./images/demo_adaptive-emg+mema.png)](
+./images/demo_adaptive-emg+mema.png)
+**Figure 1:** Detection of both MEMA (orange) and EM (blue) events using adapative scheme. In this situation, EMG baseline has abrutly changed but the adaptive thresholding is able to both detect the first burst of EMG and then adapte to the new baseline. Meanwhile a burst of several MEMA is detected.
+
+Classification is not enough to categorize events (see Figure 2), the `tinnsleep.events` methods allow to differentiate between different types of events. To do so, events are labeled into `bursts` and `episodes`:
+- `bursts` are continuous events which are classified using the `tinnsleep.classification` module.
+- `episodes` are a succession of bursts which are merged together using *scoring* methods. Each `episode` is labeled thanks to the properties of his bursts into *phasic*, *tonic* or *mixed* events.
+
+[![demo2](
+./images/demo_pure_mema.png)](
+./images/demo_pure_mema.png)
+**Figure 2:** Detection of pure MEMA (orange) `episode` consisting of two distant `bursts`. This two bursts are merged thank to the use of `tinnsleep.events.scoring` methods which allows to labels and categorize detected events. 
+ 
+### Configuration
+
+There are several key parameters for classification (see Figure 3). We advice to used pre-configured AMDT pipeline using `tinnsleep.pipeline`.
+
+**CLASSIFICATION**
+- Window length: length of the sliding window for computer instantaneous power (default: 250ms for Bruxism, 1s for MEMA)
+- Baseline: memory buffer for the computation of the baseline. By default, we advice to use the non-casual "left-hand"+"righ-hand" baseline (see `tinnsleep.pipeline` for a pre-configured example) 
+- Threshold: thresholding detects events for which power is X times greater than adaptive baseline
+
+ [![bruxism_category](
+./images/category_bruxism.png)](
+./images/category_bruxism.png)
+**Figure 3:** Influence of thresholding parameter in AMDT for the detection of the number of bruxism episodes per hour for each patient category (base on VAS-L).
+
+### Bruxism: early results
+
+[![bruxism_masking](
+./images/trend_bruxism_masking.png)](
+./images/trend_bruxism_masking.png)
+**Figure 4:** Relationship between the absolute difference of tinnitus masking volume between before sleep onset and after awakening (x-axis) and number of detected bruxism episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+[![bruxism_VAS-L](
+./images/trend_bruxism_VAS-L.png)](
+./images/trend_bruxism_VAS-L.png)
+**Figure 5:** Relationship between the absolute difference of tinnitus subjective loudness between before sleep onset and after awakening (x-axis) and number of detected bruxism episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+[![bruxism_VAS-I](
+./images/trend_bruxism_VAS-I.png)](
+./images/trend_bruxism_VAS-I.png)
+**Figure 6:** Relationship between the absolute difference of tinnitus subjective intrusiveness between before sleep onset and after awakening (x-axis) and number of detected bruxism episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+### MEMA
+
+[![mema_masking](
+./images/trend_mema_masking.png)](
+./images/trend_mema_masking.png)
+**Figure 7:** Relationship between the absolute difference of tinnitus masking volume between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+[![mema_VAS-L](
+./images/trend_mema_VAS-L.png)](
+./images/trend_mema_VAS-L.png)
+**Figure 7:** Relationship between the absolute difference of tinnitus subjective loudness between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
+
+[![mema_VAS-I](
+./images/trend_mema_VAS-I.png)](
+./images/trend_mema_VAS-I.png)
+**Figure 7:** Relationship between the absolute difference of tinnitus subjective intrusiveness volume between before sleep onset and after awakening (x-axis) and number of detected MEMA episodes per hour (y-axis). The line represents the trend and area the confidence interval.
 
 ## Installation
 The following steps must be performed on a Anaconda prompt console, or 
