@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations, \
-    convert_Annotations, align_labels_with_raw
+    convert_Annotations, align_labels_with_raw, read_sleep_file
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
@@ -213,3 +213,26 @@ def test_align_labels_with_raw_format():
     time_start = None
     times = np.linspace(0, 1560, 1560, endpoint=False)
     npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [0, 1800, 3600])
+
+
+def test_read_sleep_file():
+    sep=";"
+    sleep_file = "./dummy_sleep.csv"
+    sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                          map_columns=None,
+                                                          sep=sep,
+                                                          encoding="ISO-8859-1",
+                                                          time_format="%H:%M:%S"
+                                                          )
+    npt.assert_equal(sleep_labels[:10], ['Wake']*10)
+    npt.assert_equal(sleep_label_timestamp[:10], [30.0*i for i in range(10)])
+    time_start = time(23, 55, 00)
+
+    sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                          map_columns=None,
+                                                          sep=sep,
+                                                          encoding="ISO-8859-1",
+                                                          time_format="%H:%M:%S",
+                                                          raw_info_start_time=time_start
+                                                          )
+    npt.assert_equal(sleep_label_timestamp[:10], [30.0*(i+1) for i in range(10)])

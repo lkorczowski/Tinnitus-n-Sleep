@@ -223,11 +223,15 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=
         an array of timestamps in seconds relative to the start of the mne.Raw instance.
 
     """
+    try:  # find first timestamp index
+        start_idx = labels_timestamp.first_valid_index()  # for DataFrame
+    except AttributeError:
+        start_idx = 0  # for numpy
 
     try:  # read first timestamp
-        start_labels = datetime.strptime(str(labels_timestamp[0]), time_format)
+        start_labels = datetime.strptime(str(labels_timestamp[start_idx]), time_format)
     except ValueError:
-        start_labels = datetime.strptime(str(labels_timestamp[0]), time_format + ".%f")
+        start_labels = datetime.strptime(str(labels_timestamp[start_idx]), time_format + ".%f")
 
     if raw_info_start_time is None:  # read recording date
         start_recording = start_labels
@@ -238,7 +242,7 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=
                   % (3600 * 24)
 
     tmp = pd.to_datetime(pd.Series(labels_timestamp))
-    labels_timestamp_delta = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
+    labels_timestamp_delta = ((tmp - tmp[start_idx]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
 
     # OPTIONAL CHECKS
     # the warnings shouldn't be deal-breaker in most of the situation but aweness of those might be important
@@ -250,7 +254,7 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=
             interval_count.append((inter, np.sum(np.diff(labels_timestamp_delta)==inter)))
         interval = np.median(np.diff(labels_timestamp_delta))
         LOGGER.warning(f"non uniform interval (count: {interval_count}), taking median: {interval}")
-        LOGGER.warning(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[0]}")
+        LOGGER.warning(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[start_idx]}")
     else:
         interval = interval[0]
 
@@ -266,27 +270,36 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=
     return labels_timestamp_delta
 
 
-def read_sleep_labels(sleep_file,
+def read_sleep_file(sleep_file,
                       map_columns=None,
                       sep=";",
                       encoding="ISO-8859-1",
                       time_format='%H:%M:%S',
                       raw_info_start_time=None,
                       raw_times=None):
-    """
+    """Read sleep .csv file and return labels and timestamps in seconds
+
     Parameters
     ----------
-    sleep_file: ndarray
+    sleep_file: str
+        .csv file full path
+    map_columns: dict
+        convert columns to normalized columns name "Start Time", and "Sleep"
+    sep: str (default: ";")
+        separator of the csv file.
+    encoding: str (default: "ISO-8859-1")
+        encoding of the csv file.
+    raw_info_start_time: datetime.time instance
+        can be generate by raw.info["meas_date"].time()
+        WARNING: manage only format ``datetime.time`` with hour-minute-second (without micro-second).
+    raw_times: ndarray (optional, default: None)
+        the vector of index of the raw instance.
+        can be generate by raw.times
+        if given, the function will return a warning if the labels_timestamp are much shorter that the mne.Raw.
+        Doesn't change the output.
+    time_format: string (default: '%H:%M:%S')
+        time format for reading ``labels_timestamp``.
 
-    map_columns:
-
-    sep:
-
-    encoding:
-
-    time_format:
-
-    raw_info_start_time:
 
     Returns
     -------
@@ -302,6 +315,10 @@ def read_sleep_labels(sleep_file,
 
     df_labels = pd.read_csv(sleep_file, sep=sep, encoding=encoding)
     df_labels = df_labels.rename(columns=map_columns)
+
+    # take only valid labels
+    df_labels = df_labels[df_labels["Sleep"].str.contains("")==True]
+
     sleep_labels = df_labels["Sleep"].values
 
     # replace specific values
