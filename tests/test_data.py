@@ -208,3 +208,8 @@ def test_align_labels_with_raw_format():
     time_start = time(23, 29, 25)
     times = np.linspace(0, 1560, 1560, endpoint=False)
     npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [35, 1835, 3635])
+
+    timestamps = np.array(['23:30:00', '00:00:00', '00:30:00'])
+    time_start = None
+    times = np.linspace(0, 1560, 1560, endpoint=False)
+    npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [0, 1800, 3600])
