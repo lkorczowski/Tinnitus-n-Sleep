@@ -182,8 +182,8 @@ def convert_Annotations(annotations):
     return converted_annot
 
 
-def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None, time_format='%H:%M:%S'):
-    """Align timestamped labels DataFrame with the timestamps of mne.Raw.
+def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=None, time_format='%H:%M:%S'):
+    """Convert timestamps to delta time and align timestamped labels DataFrame with the timestamps of mne.Raw.
 
     NOTE: timestamps are managed with second-precision by default, but automatically switch to
           `time_format='%H:%M:%S.%f'` for sub-second precision. Other format should be given using ``time_format``
@@ -224,14 +224,19 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None,
 
     """
 
-    try:
-        delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format) - \
-                   datetime.strptime(str(raw_info_start_time), "%H:%M:%S")).total_seconds() \
-                  % (3600 * 24)
+    try:  # read first timestamp
+        start_labels = datetime.strptime(str(labels_timestamp[0]), time_format)
     except ValueError:
-        delta_start = (datetime.strptime(str(labels_timestamp[0]), time_format + ".%f") - \
-                   datetime.strptime(str(raw_info_start_time), "%H:%M:%S")).total_seconds() \
+        start_labels = datetime.strptime(str(labels_timestamp[0]), time_format + ".%f")
+
+    if raw_info_start_time is None:  # read recording date
+        start_recording = start_labels
+    else:
+        start_recording = datetime.strptime(str(raw_info_start_time), "%H:%M:%S")
+
+    delta_start = (start_labels - start_recording).total_seconds() \
                   % (3600 * 24)
+
     tmp = pd.to_datetime(pd.Series(labels_timestamp))
     labels_timestamp_delta = ((tmp - tmp[0]).astype('timedelta64[s]') + delta_start).mod(3600 * 24).values
 
@@ -259,3 +264,56 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time, raw_times=None,
             LOGGER.warning(f"delta_end ({delta_end}) > interval ({interval})")
 
     return labels_timestamp_delta
+
+
+def read_sleep_labels(sleep_file,
+                      map_columns=None,
+                      sep=";",
+                      encoding="ISO-8859-1",
+                      time_format='%H:%M:%S',
+                      raw_info_start_time=None,
+                      raw_times=None):
+    """
+    Parameters
+    ----------
+    sleep_file: ndarray
+
+    map_columns:
+
+    sep:
+
+    encoding:
+
+    time_format:
+
+    raw_info_start_time:
+
+    Returns
+    -------
+    sleep_labels: ndarray
+
+    sleep_label_timestamp: ndarray
+    """
+    if map_columns is None:
+        map_columns = {"Horodatage": "Start Time",
+                       "Sommeil": "Sleep",
+                       "event": "Sleep",
+                       "begin": "Start Time"}
+
+    df_labels = pd.read_csv(sleep_file, sep=sep, encoding=encoding)
+    df_labels = df_labels.rename(columns=map_columns)
+    sleep_labels = df_labels["Sleep"].values
+
+    # replace specific values
+    sleep_labels[sleep_labels == '\x83veil'] = 'Wake'
+    sleep_labels[sleep_labels == 'AWA'] = 'Wake'
+    sleep_labels[sleep_labels.astype(str) == 'nan'] = 'Wake'
+
+
+    sleep_label_timestamp = align_labels_with_raw(
+        df_labels["Start Time"],
+        raw_info_start_time=raw_info_start_time,
+        raw_times=raw_times,
+        time_format=time_format)
+
+    return sleep_labels, sleep_label_timestamp
