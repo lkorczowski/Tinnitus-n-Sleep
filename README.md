@@ -7,6 +7,38 @@ Detecting events in sleeping tinnitus patients
 
 Work for SIOPI, by Robin Guillard & Louis Korczowski (2020-)
 
+## What this toolbox do
+
+This toolbox aims at detecting specific physiological events during sleep of patient suffering of tinnitus. For now, the main focus is 
+1. EMG: automatic bruxism evaluation using detection of burst in electromyography activity
+2. MEMA: automatic middle-ear muscles activation using detection of pressure variation of the ear canal
+ 
+## Repo Organization
+To so so, this toolbox is organized in several modules and folders:
+
+**TINNSLEEP**
+- **config**: configuration for cross-module usage storing user-specific files, folders and data. It is *REQUIRED* to add your data folders (hardcoded) if you want to use the preconfigured script and notebooks. 
+- **data**: load, prepare and annotate data (mainly .edf using `mne`)
+- **utils**: a lot of useful methods for preparing data, labels by doing simple operations
+- **signal**: signal processing and automatic artifact thresholding
+- **classification**: classification methods to detects events and artifacts
+- **pipeline**: "ready-to-go" configured classification pipeline for event classification
+- **events**: methods to build and differentiate events
+- **reports**: automatic reporting system using all above
+
+**SCRIPT**
+- ``compute_results.py`` is a preconfigured script which should be used in command line with option (by default it **WON'T** overwrite exiting results). It will load all suitable data and use `data_info.csv` to infers which operation to do for which file. Requirements: (a) add your local data folders in `tinnsleep.config.Config` (b) have a configured `data_info.csv` for the each related file.
+
+**NOTEBOOKS**
+- **Bruxism_detection**: preconfigured notebook to classify and visualize classification outputs for Bruxism detection of one subject.
+- **Bruxism_Inter_subject_analyze**: preconfigured notebook for group-level analyze of bruxism (results are computed using ``compute_results.py``)
+- **Middle_ear_detection**: preconfigured notebook to classify and visualize classification outputs for middle ear muscles activity (MEMA) detection
+- **Middle_ear_Inter_subject_analyze**: preconfigured notebook for group-level analyze of MEMA (results are computed using ``compute_results.py``)
+- and more...
+
+## Expected results
+TODO
+
 ## Installation
 The following steps must be performed on a Anaconda prompt console, or 
 alternatively, in a Windows command console that has executed the 
