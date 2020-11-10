@@ -7,6 +7,7 @@ import mne
 from collections import OrderedDict
 from datetime import time
 import logging
+import os
 LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture
@@ -217,7 +218,7 @@ def test_align_labels_with_raw_format():
 
 def test_read_sleep_file():
     sep=";"
-    sleep_file = "./dummy_sleep.csv"
+    sleep_file = os.path.join(os.path.dirname(__file__), "./dummy_sleep.csv")
     sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
                                                           map_columns=None,
                                                           sep=sep,
