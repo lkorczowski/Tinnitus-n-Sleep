@@ -3,8 +3,8 @@ import sys, getopt
 
 def main(argv):
     bruxism = False
-    mema = False
-    overwrite = False
+    mema = True
+    overwrite = True
     try:
         opts, args = getopt.getopt(argv, "hb:m:o:", ["bruxism=", "mema=", "overwrite="])
     except getopt.GetoptError:
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     print("parameters set")
 
     # Importing personnalized parameters for dataset
-    data_info = pd.read_csv("data/data_info2.csv", engine='python', sep=",")
+    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
     #data_info["Valid_chans"][data_info["Valid_chans"].isna()]='[0]'
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
     #data_info["Valid_imps"][data_info["Valid_imps"].isna()]='[1]'
@@ -106,7 +106,7 @@ if __name__ == "__main__":
                 # Get THR_imp value for filename
                 THR_imp = dico_chans.loc[file]['THR_IMP']
                 # Get sleep stages if exist
-                sleep_file = "data/sleep_labels/" + file.split(".")[0] + ".csv"
+                sleep_file = "data/sleep_labels/robin/" + file.split(".")[0] + ".csv"
                 if os.path.isfile(sleep_file):
                     try:
                         # prepare timestamps of the sleep labels and convert it to seconds relative to beginning of
@@ -115,9 +115,9 @@ if __name__ == "__main__":
 
                         # prepare local variable
                         sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
-                                        sep=";",
+                                        sep=",",
                                         encoding="ISO-8859-1",
-                                        time_format='%H:%M:%S',
+                                        time_format='%d/%m/%Y %H:%M:%S',
                                         raw_info_start_time=raw.info["meas_date"].time())
 
                         print(f", loaded)", end=" ")

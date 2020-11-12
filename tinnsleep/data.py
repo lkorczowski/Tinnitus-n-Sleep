@@ -311,6 +311,7 @@ def read_sleep_file(sleep_file,
         map_columns = {"Horodatage": "Start Time",
                        "Sommeil": "Sleep",
                        "event": "Sleep",
+                       "Event": "Sleep",
                        "begin": "Start Time"}
 
     df_labels = pd.read_csv(sleep_file, sep=sep, encoding=encoding)
@@ -318,7 +319,7 @@ def read_sleep_file(sleep_file,
 
     # take only valid labels
     df_labels = df_labels[df_labels["Sleep"].str.contains("")==True]
-
+    df_labels = df_labels[df_labels["Sleep"].str.contains("\[\]") == False]
     sleep_labels = df_labels["Sleep"].values
 
     # replace specific values
