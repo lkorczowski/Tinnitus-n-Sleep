@@ -150,7 +150,8 @@ def fuse_with_classif_result(check_imp, labels):
     mod_labels : ndarray, shape (n_trials,)
         Modified labels to fit a length of n_trials
     """
-    labels = labels.tolist()
+    if not isinstance(labels, list):
+        labels = labels.tolist()
     for i in range(len(check_imp)):
         if np.mean(check_imp[i]) == 1:
             labels.insert(i, False)  # inserting False (neutral) values in the labels array where they were deleted

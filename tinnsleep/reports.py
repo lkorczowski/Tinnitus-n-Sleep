@@ -7,7 +7,7 @@ from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episode
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 
-def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, sleep_labels=None, valid_labels=None):
+def generate_bruxism_report(classif, time_interval, delim, valid_labels, min_burst_joining=3, sleep_labels=None):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -18,8 +18,12 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
         time interval in seconds between 2 elementary events
     delim: float,
         maximal time interval considered eligible between two bursts within a episode
+    valid_labels : list of booleans
+        labels of the epochs as good (True) or bad (False) for future annotation and reporting
     min_burst_joining : int
         minimal number of events to join to form an episode
+    sleep_labels : ndarray, shape (n_epochs, ), (default: None)
+        Sleep Stages in `valid_sleep_stages`, all other labels are discontinued and rejected from analysis.
     Returns
     -------
     report :  dict
@@ -28,18 +32,19 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
     recording_duration = len(classif) * time_interval
     report["Clean data duration"] = recording_duration
     report["Total burst duration"] = np.sum(classif) * time_interval
-    li_burst = classif_to_burst(classif, time_interval)
+    classif_good_length = fuse_with_classif_result(np.invert(valid_labels),
+                                                   classif)  # add the missing labels removed with artefacts
+    li_burst = classif_to_burst(classif_good_length, time_interval=time_interval)
     nb_burst = len(li_burst)
     report["Total number of burst"] = nb_burst
     report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim, min_burst_joining=min_burst_joining)
 
-    if valid_labels is not None:
-        new_ep_list=[]
-        for ep in li_episodes:
-            if np.sum(np.invert(valid_labels[int(ep.beg/time_interval):int(ep.end/time_interval)]))==0:
-                new_ep_list.append(ep)
-        li_episodes = new_ep_list
+    new_ep_list = []
+    for ep in li_episodes:
+        if np.sum(np.invert(valid_labels[int(ep.beg / time_interval):int(ep.end / time_interval)])) == 0:
+            new_ep_list.append(ep)
+    li_episodes = new_ep_list
 
     if sleep_labels is not None:
         if len(classif) != len(sleep_labels):
@@ -84,7 +89,7 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
     return report
 
 
-def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None, valid_labels=None):
+def generate_MEMA_report(classif, time_interval, delim, valid_labels, sleep_labels=None):
     """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
 
     Parameters
@@ -95,6 +100,10 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None, valid
         time interval in seconds between 2 elementary events
     delim : float,
         maximal time interval considered eligible between two bursts within a episode
+    valid_labels : list of booleans
+        labels of the epochs as good (True) or bad (False) for future annotation and reporting
+    sleep_labels : ndarray, shape (n_epochs, ), (default: None)
+        Sleep Stages in `valid_sleep_stages`, all other labels are discontinued and rejected from analysis.
 
 
     Returns
@@ -105,18 +114,20 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None, valid
     recording_duration = len(classif) * time_interval
     report["Clean MEMA duration"] = recording_duration
     report["Total MEMA burst duration"] = np.sum(classif) * time_interval
-    li_burst = classif_to_burst(classif, time_interval=time_interval)
+    classif_good_length = fuse_with_classif_result(np.invert(valid_labels),
+                                                   classif)  # add the missing labels removed with artefacts
+    li_burst = classif_to_burst(classif_good_length, time_interval=time_interval)
     nb_burst = len(li_burst)
     report["Total number of MEMA burst"] = nb_burst
     report["Number of MEMA bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
+    nb_episodes = len(li_episodes)
 
-    if valid_labels is not None:
-        new_ep_list=[]
-        for ep in li_episodes:
-            if np.sum(np.invert(valid_labels[int(ep.beg/time_interval):int(ep.end/time_interval)]))==0:
-                new_ep_list.append(ep)
-        li_episodes = new_ep_list
+    new_ep_list = []
+    for ep in li_episodes:
+        if np.sum(np.invert(valid_labels[int(ep.beg / time_interval):int(ep.end / time_interval)])) == 0:
+            new_ep_list.append(ep)
+    li_episodes = new_ep_list
 
     if sleep_labels is not None:
         if len(classif) != len(sleep_labels):
@@ -142,12 +153,12 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None, valid
 
 
 def preprocess(raw, duration, interval,
-                picks_chan="all",
-                is_good_kwargs=None,
-                filter_kwargs=None,
-                Thresholding_kwargs=None,
-                burst_to_episode_kwargs=None,
-                merge_fun=None):
+               picks_chan="all",
+               is_good_kwargs=None,
+               filter_kwargs=None,
+               Thresholding_kwargs=None,
+               burst_to_episode_kwargs=None,
+               merge_fun=None):
     """Preprocesses raw and apply a list of operations for events detection. Each step can be muted by giving None.
 
 
@@ -210,7 +221,7 @@ def preprocess(raw, duration, interval,
     if is_good_kwargs is not None:
         amplitude_labels, bad_lists = is_good_epochs(epochs, **is_good_kwargs)
     else:
-        amplitude_labels, bad_lists = [True]*epochs.shape[0], []
+        amplitude_labels, bad_lists = [True] * epochs.shape[0], []
 
     suppressed_is_good = np.sum(np.invert(amplitude_labels))
 
@@ -220,7 +231,7 @@ def preprocess(raw, duration, interval,
         pipeline = AmplitudeThresholding(**Thresholding_kwargs)
         RMSlabels = pipeline.fit_predict(X)
         if isinstance(burst_to_episode_kwargs, dict) and np.any(RMSlabels):
-            time_interval = interval/raw.info["sfreq"]
+            time_interval = interval / raw.info["sfreq"]
             RMSlabels = 0 < episodes_to_list(
                 burst_to_episode(
                     classif_to_burst(RMSlabels, time_interval=time_interval),
@@ -228,7 +239,7 @@ def preprocess(raw, duration, interval,
                 ), time_interval=time_interval, n_labels=X.shape[0]
             )
     else:
-        RMSlabels = [False]*epochs.shape[0]
+        RMSlabels = [False] * epochs.shape[0]
     suppressed_amp_thr = np.sum(RMSlabels)
     valid_labels = merge_fun(np.c_[np.invert(RMSlabels), amplitude_labels])
     suppressed_all = np.sum(np.invert(valid_labels))
@@ -236,7 +247,7 @@ def preprocess(raw, duration, interval,
            "suppressed_amp_thr": suppressed_amp_thr,
            "suppressed_overall": suppressed_all,
            "total_nb_epochs": len(valid_labels),
-           "suppressed_ratio": suppressed_all/len(valid_labels)}
+           "suppressed_ratio": suppressed_all / len(valid_labels)}
 
     return epochs, valid_labels, log
 
@@ -311,7 +322,8 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             # Logical OR -- merged backward and forward
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
-        report_ = generate_report(labels, time_interval, delim, sleep_labels=sleep_labels_valid, valid_labels=valid_labels)
+        report_ = generate_report(labels, time_interval, delim, valid_labels,  sleep_labels=sleep_labels_valid,
+                                  )
         report_.update(label_report(sleep_labels))
         report_["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
 
@@ -394,7 +406,7 @@ def _labels_to_ep_and_bursts(labels, time_interval, delim_ep, min_burst_joining=
 
 
 def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEMA,
-                     time_interval_MEMA, delim_ep_MEMA,
+                      time_interval_MEMA, delim_ep_MEMA,
                       min_burst_joining_brux=3, min_burst_joining_MEMA=0):
     """Combined analysis of bruxism and MEMA events to separate pure from combined events for both signals
         ----------
@@ -428,7 +440,7 @@ def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEM
     # Putting labels inputs on the same sampling and epoching
     if len(labels_brux) != len(labels_MEMA):
         if len(labels_brux) < len(labels_MEMA):
-            labels_brux = merge_labels_list ([labels_brux], len(labels_MEMA))
+            labels_brux = merge_labels_list([labels_brux], len(labels_MEMA))
             time_interval = time_interval_MEMA
         else:
             labels_MEMA = merge_labels_list([labels_MEMA], len(labels_brux))
