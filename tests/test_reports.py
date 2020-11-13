@@ -226,7 +226,7 @@ def test_reporting_bruxism_with_sleep():
     classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
 
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, valid_labels, sleep_labels=sleep_labels[valid_labels])
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     report_expected.update(label_report(sleep_labels))
     npt.assert_equal(report["labels"][0], classif_expected)
@@ -264,7 +264,7 @@ def test_reporting_bruxism_with_sleep_params():
     classif_expected = np.array([False, False, False, False, False, False, True, False, True, False, False,
                                            False, False, False, False, False])
 
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, valid_labels, sleep_labels=sleep_labels[valid_labels])
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     report_expected.update(label_report(sleep_labels))
     npt.assert_equal(report["labels"][0], classif_expected)
@@ -301,7 +301,7 @@ def test_reporting_MEMA_with_sleep():
     classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
 
-    report_expected = generate_MEMA_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected = generate_MEMA_report(classif_expected[valid_labels], 0.25, 3, valid_labels, sleep_labels=sleep_labels[valid_labels])
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     report_expected.update(label_report(sleep_labels))
     npt.assert_equal(report["labels"][0], classif_expected)
