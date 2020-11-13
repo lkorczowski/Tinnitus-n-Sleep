@@ -513,6 +513,28 @@ def test_generate_bruxism_report():
     npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
     npt.assert_equal(report["Mean duration of tonic episode"], 5)
 
+    #Case with all labels valid
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, True]
+    report = generate_bruxism_report(classif, delim=3, time_interval=1, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 1)
+    #Case with one invalid labels, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, False, True, True, True]
+    report = generate_bruxism_report(classif, delim=3, time_interval=1, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 0)
+    #Case with an invalid label just before the episode, the episode should be conserved
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, False, True, True, True, True, True]
+    report = generate_bruxism_report(classif, delim=3, time_interval=1, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 1)
+    #Case with an invalid labels on the edge of the end of the episode, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, False]
+    report = generate_bruxism_report(classif, delim=3, time_interval=1, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 0)
+
+
 
 def test_generate_MEMA_report():
     classif = [False, False]
@@ -543,6 +565,27 @@ def test_generate_MEMA_report():
     npt.assert_equal(report["Number of MEMA episodes per hour"], 3600/len(classif)*2)
     npt.assert_equal(report["Total number of MEMA burst"], 5)
     npt.assert_equal(report["Mean duration of MEMA episode"], 7.5)
+
+    # Case with all labels valid
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, True]
+    report = generate_MEMA_report(classif, 1, delim=3, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 1)
+    # Case with one invalid labels, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, False, True, True, True]
+    report = generate_MEMA_report(classif, 1, delim=3, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 0)
+    # Case with an invalid label just before the episode, the episode should be conserved
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, False, True, True, True, True, True]
+    report = generate_MEMA_report(classif, 1, delim=3, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 1)
+    # Case with an invalid labels on the edge of the end of the episode, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, False]
+    report = generate_MEMA_report(classif, 1, delim=3, valid_labels=valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 0)
 
 
 def test_generate_bruxism_report2():
