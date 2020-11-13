@@ -39,7 +39,7 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
         for ep in li_episodes:
             if np.sum(np.invert(valid_labels[int(ep.beg/time_interval):int(ep.end/time_interval)]))==0:
                 new_ep_list.append(ep)
-    li_episodes = new_ep_list
+        li_episodes = new_ep_list
 
     if sleep_labels is not None:
         if len(classif) != len(sleep_labels):
@@ -116,7 +116,7 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None, valid
         for ep in li_episodes:
             if np.sum(np.invert(valid_labels[int(ep.beg/time_interval):int(ep.end/time_interval)]))==0:
                 new_ep_list.append(ep)
-    li_episodes = new_ep_list
+        li_episodes = new_ep_list
 
     if sleep_labels is not None:
         if len(classif) != len(sleep_labels):
