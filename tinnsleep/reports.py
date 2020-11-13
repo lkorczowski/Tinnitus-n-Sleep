@@ -7,7 +7,7 @@ from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episode
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 
-def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, sleep_labels=None):
+def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, sleep_labels=None, valid_labels=None):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -33,6 +33,13 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
     report["Total number of burst"] = nb_burst
     report["Number of bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim, min_burst_joining=min_burst_joining)
+
+    if valid_labels is not None:
+        new_ep_list=[]
+        for ep in li_episodes:
+            if np.sum(np.invert(valid_labels[int(ep.beg/time_interval):int(ep.end/time_interval)]))==0:
+                new_ep_list.append(ep)
+    li_episodes = new_ep_list
 
     if sleep_labels is not None:
         if len(classif) != len(sleep_labels):
@@ -77,7 +84,7 @@ def generate_bruxism_report(classif, time_interval, delim, min_burst_joining=3, 
     return report
 
 
-def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None):
+def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None, valid_labels=None):
     """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
 
     Parameters
@@ -103,6 +110,13 @@ def generate_MEMA_report(classif, time_interval, delim, sleep_labels=None):
     report["Total number of MEMA burst"] = nb_burst
     report["Number of MEMA bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
+
+    if valid_labels is not None:
+        new_ep_list=[]
+        for ep in li_episodes:
+            if np.sum(np.invert(valid_labels[int(ep.beg/time_interval):int(ep.end/time_interval)]))==0:
+                new_ep_list.append(ep)
+    li_episodes = new_ep_list
 
     if sleep_labels is not None:
         if len(classif) != len(sleep_labels):
@@ -297,7 +311,7 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
             # Logical OR -- merged backward and forward
             labels = np.any(np.c_[labels, labels_b], axis=-1)
 
-        report_ = generate_report(labels, time_interval, delim, sleep_labels=sleep_labels_valid)
+        report_ = generate_report(labels, time_interval, delim, sleep_labels=sleep_labels_valid, valid_labels=valid_labels)
         report_.update(label_report(sleep_labels))
         report_["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
 
