@@ -38,6 +38,7 @@ if __name__ == "__main__":
     import pandas as pd
     import warnings
     from time import time
+    from tinnsleep.data import read_sleep_file
     from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess
     from tinnsleep.utils import crop_to_proportional_length, resample_labels
     from tinnsleep.config import Config
@@ -105,7 +106,7 @@ if __name__ == "__main__":
                 # Get THR_imp value for filename
                 THR_imp = dico_chans.loc[file]['THR_IMP']
                 # Get sleep stages if exist
-                sleep_file = "data/sleep_labels/" + file.split(".")[0] + ".csv"
+                sleep_file = "data/sleep_labels/robin/" + file.split(".")[0] + ".csv"
                 if os.path.isfile(sleep_file):
                     try:
                         # prepare timestamps of the sleep labels and convert it to seconds relative to beginning of
@@ -113,33 +114,21 @@ if __name__ == "__main__":
                         print(f"(sleep labels", end=" ")
 
                         # prepare local variable
-                        sleep_labels = pd.read_csv(sleep_file, sep=";", error_bad_lines=False)
-                        sleep_label_timestamp = sleep_labels["Horodatage"]
-                        sleep_labels = sleep_labels["Sommeil"].values
-
-                        # compute time different between the start of the EDF recording and the first label
-                        delta_start = (datetime.strptime(str(sleep_label_timestamp.iloc[0]), '%H:%M:%S') -\
-                            datetime.strptime(str(raw.info["meas_date"].time()), '%H:%M:%S')).total_seconds()\
-                            %(3600*24)
-
-                        if delta_start > 30:  # EDF and labels doesn't match perfectly (wrong EDF or truncated ?)
-                            print(f"WARNING delta_start {delta_start}", end=" ")
-
-                        # convert all labels' timestamps to delta time from start of EDF recording.
-                        tmp = pd.to_datetime(sleep_label_timestamp)
-                        sleep_label_timestamp = (tmp - tmp[0]).astype('timedelta64[s]').mod(3600*24).values + delta_start
-
-                        delta_end = raw.times[-1] - (sleep_label_timestamp[-1] + 30)  #
-                        if delta_end > 30:  # EDF and labels doesn't match perfectly (wrong EDF or truncated ?)
-                            print(f"WARNING delta_end {delta_end}", end=" ")
+                        sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                        sep=",",
+                                        encoding="ISO-8859-1",
+                                        time_format='%d/%m/%Y %H:%M:%S',
+                                        raw_info_start_time=raw.info["meas_date"].time())
 
                         print(f", loaded)", end=" ")
                     except:
                         print(f"(error with sleep labels)", end=" ")
                         sleep_labels = None
+                        sleep_label_timestamp = None
                 else:
                     print(f"(sleep labels not found)", end=" ")
                     sleep_labels = None
+                    sleep_label_timestamp = None
 
                 #%% ----------------- Prepare parameters -----------------------------------------------
                 duration_bruxism = int(window_length_common * raw.info['sfreq'])  # in sample
@@ -254,11 +243,14 @@ if __name__ == "__main__":
                 tmp = time()
 
                 if DO_BRUXISM and np.sum(valid_labels_bruxism) > 0:
+                    #
                     if sleep_labels is not None:
                         xnew = np.linspace(0, len(epochs_bruxism) * window_length_bruxism,
                                            len(epochs_bruxism), endpoint=False)
                         sleep_labels_bruxism = resample_labels(sleep_labels, xnew, x=sleep_label_timestamp,
                                                             kind='previous')
+                    else:
+                        sleep_labels_bruxism = None
 
                     results_bruxism[file] = reporting(epochs_bruxism, valid_labels_bruxism, THR_classif_bruxism,
                                                       time_interval=window_length_bruxism,

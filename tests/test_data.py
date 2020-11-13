@@ -1,12 +1,14 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations, \
-    convert_Annotations, align_labels_with_raw
+    convert_Annotations, align_labels_with_raw, read_sleep_file
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
+import pandas as pd
 from datetime import time
 import logging
+import os
 LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture
@@ -208,3 +210,59 @@ def test_align_labels_with_raw_format():
     time_start = time(23, 29, 25)
     times = np.linspace(0, 1560, 1560, endpoint=False)
     npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [35, 1835, 3635])
+
+    timestamps = np.array(['23:30:00', '00:00:00', '00:30:00'])
+    time_start = None
+    times = np.linspace(0, 1560, 1560, endpoint=False)
+    npt.assert_equal(align_labels_with_raw(timestamps, time_start, times), [0, 1800, 3600])
+
+
+def test_read_sleep_file():
+    sep=";"
+    sleep_file = os.path.join(os.path.dirname(__file__), "./dummy_sleep.csv")
+    sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                          map_columns=None,
+                                                          sep=sep,
+                                                          encoding="ISO-8859-1",
+                                                          time_format="%H:%M:%S"
+                                                          )
+    npt.assert_equal(sleep_labels[:10], ['Wake']*10)
+    npt.assert_equal(sleep_label_timestamp[:10], [30.0*i for i in range(10)])
+    time_start = time(23, 55, 00)
+
+    sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                          map_columns=None,
+                                                          sep=sep,
+                                                          encoding="ISO-8859-1",
+                                                          time_format="%H:%M:%S",
+                                                          raw_info_start_time=time_start
+                                                          )
+    npt.assert_equal(sleep_label_timestamp[:10], [30.0*(i+1) for i in range(10)])
+
+
+def test_read_sleep_file_map():
+    sep=";"
+    encoding="ISO-8859-1"
+    time_format = "%H:%M:%S"
+    sleep_file = os.path.join(os.path.dirname(__file__), "./dummy_sleep.csv")
+
+    df_labels = pd.read_csv(sleep_file, sep=sep, encoding=encoding)
+    map_columns = {"Horodatage": "Start Time",
+                   "event": "Sleep",
+                   "begin": "Start Time"}
+
+    with pytest.raises(KeyError, match="Sleep"):
+        sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                              map_columns=map_columns,
+                                                              sep=sep,
+                                                              encoding=encoding,
+                                                              time_format=time_format
+                                                              )
+
+    time_format = "%Y-%m-%d %H:%M:%S"
+    with pytest.raises(ValueError, match="time data '23:55:30' does not match format '%Y-%m-%d %H:%M:%S.%f'"):
+        sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                              sep=sep,
+                                                              encoding=encoding,
+                                                              time_format=time_format
+                                                              )

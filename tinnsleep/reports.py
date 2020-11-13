@@ -229,7 +229,8 @@ def preprocess(raw, duration, interval,
 
 def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptive=0, log={},
               generate_report=generate_bruxism_report,
-              sleep_labels=None):
+              sleep_labels=None,
+              valid_sleep_stages=None):
     """creates clinical reports of bruxism out of a epoch array, for different thresholding values
     Parameters
     ----------
@@ -253,7 +254,9 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
     generate_report: function (default: tinnsleep.scoring.generate_bruxism_report)
         function to convert labels into a report
     sleep_labels : ndarray, shape (n_epochs, ), (default: None)
-        Sleep Stages in ["N1", "N2", "N3", "REM"], all other labels are discontinued and rejected from analysis.
+        Sleep Stages in `valid_sleep_stages`, all other labels are discontinued and rejected from analysis.
+    valid_sleep_stages : ndarray, shape (n_unique_labels, ), (default: ["N1", "N2", "N3", "REM", "NREM"])
+        Sleep Stages to keep for the analysis
 
 
     Returns
@@ -265,10 +268,14 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
        - reports: list of clinical reports of the recording for each THR_classif tested in the same order
        - log : log of the pre-processing operations
     """
+    if valid_sleep_stages is None:
+        valid_sleep_stages = ["N1", "N2", "N3", "REM", "NREM"]
+
     labs = []
     reps = []
-    valid_sleep_stages = ["N1", "N2", "N3", "REM"]
+
     if sleep_labels is not None:
+        # Analyze only epochs during sleep (all other are rejected)
         sleep_labels_index = np.isin(sleep_labels, valid_sleep_stages)
         valid_labels = valid_labels & sleep_labels_index
         sleep_labels_valid = sleep_labels[valid_labels]

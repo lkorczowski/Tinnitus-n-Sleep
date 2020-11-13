@@ -1,6 +1,6 @@
 from tinnsleep.config import Config
 import mne
-from tinnsleep.data import align_labels_with_raw
+from tinnsleep.data import align_labels_with_raw, read_sleep_file
 from tinnsleep.utils import round_time
 import pandas as pd
 import os
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         sleep_files = []  # TUPPLE LIST FORMAT : (kind, file, separator, time format)
 
         # ALWAYS APPEND reference labels first
-        sleep_files.append(("reference", "data/sleep_labels/" + file.split(".")[0] + ".csv", ";", '%H:%M:%S'))
+        sleep_files.append(("reference", "data/sleep_labels/maxime/" + file.split(".")[0] + ".csv", ";", '%H:%M:%S'))
 
         # APPEND the labels you want to compare with the reference labels
         sleep_files.append(("noxturnal", "data/sleep_labels/auto_noxturnal/" + file.split(".")[0] + ".csv", ",", '%H:%M:%S'))
@@ -46,38 +46,14 @@ if __name__ == "__main__":
             labels_timestamp_dict[file] = []
             for kind, sleep_file, sep, time_format in sleep_files:
                 try:
-                    # extract sleep labels
-                    if kind == 'algo':
-                        print("stop")
-                    df_labels = pd.read_csv(sleep_file, sep=sep, encoding="ISO-8859-1")
-                    df_labels = df_labels.rename(columns=map_columns)
-                    sleep_labels = df_labels["Sleep"].values
-                    # replace specific values
-                    sleep_labels[sleep_labels=='\x83veil'] = 'Wake'
-                    sleep_labels[sleep_labels=='AWA'] = 'Wake'
-                    sleep_labels[sleep_labels.astype(str)=='nan'] = 'Wake'
-
-                    # extract sleep timestamps
-                    # f_round_time = lambda x: round_time(x, 30)  # round timestamps to closest 30 sec.
-                    #
-                    # # convert to time array
-                    # sleep_label_timestamp = pd.to_datetime(df_labels["Start Time"])
-                    # sleep_label_timestamp = f_round_time(sleep_label_timestamp)
-                    # sleep_label_timestamp
-                    #
-                    # # find the delta between start of recording and first label
-                    # start_time = datetime(datetime.now().year, datetime.now().month, datetime.now().day,
-                    #          raw.info["meas_date"].hour, raw.info["meas_date"].minute, raw.info["meas_date"].second )
-                    # delta_start = (sleep_label_timestamp[0] - start_time).total_seconds() % (3600 * 24)
-
-                    # create a array of seconds
-                    # labels_timestamp_delta = ((sleep_label_timestamp - sleep_label_timestamp[0]).astype('timedelta64[s]') + delta_start).mod(
-                    #     3600 * 24).values
-                    # TODO: align_labels uses text numpy array instead of datetime array : THIS IS WRONG
-
-                    sleep_label_timestamp = align_labels_with_raw(df_labels["Start Time"],
-                                          raw.info["meas_date"].time(), raw.times,
-                                          time_format=time_format)
+                    # extract sleep labels and timestamp
+                    sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                    map_columns=map_columns,
+                                    sep=sep,
+                                    encoding="ISO-8859-1",
+                                    time_format=time_format,
+                                    raw_info_start_time=raw.info["meas_date"].time(),
+                                    raw_times=raw.times)
 
                     # round to closest 30 sec.
                     f_round = lambda x: np.ceil(x / 30).astype(int)*30
@@ -94,12 +70,6 @@ if __name__ == "__main__":
                             # intersect1d takes only the timestamp that are perfectly aligned
                             intersectionT, indtref, indt = np.intersect1d(sleep_label_timestamp_reference, sleep_label_timestamp,
                                                      assume_unique=True, return_indices=True)
-
-                            # use resample_labels instead of intersect1d timestamps doesn't match exactly
-                            # sleep_labels = resample_labels(sleep_labels,
-                            #                 labels_timestamp_dict[file][0][1],
-                            #                 x=sleep_label_timestamp,
-                            #                 kind='previous')
 
                             y_predicted = sleep_labels[indt]
                             y = labels_dict[file][0][1][indtref]
