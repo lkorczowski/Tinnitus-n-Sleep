@@ -5,6 +5,7 @@ from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, 
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
+import pandas as pd
 from datetime import time
 import logging
 import os
@@ -237,3 +238,31 @@ def test_read_sleep_file():
                                                           raw_info_start_time=time_start
                                                           )
     npt.assert_equal(sleep_label_timestamp[:10], [30.0*(i+1) for i in range(10)])
+
+
+def test_read_sleep_file_map():
+    sep=";"
+    encoding="ISO-8859-1"
+    time_format = "%H:%M:%S"
+    sleep_file = os.path.join(os.path.dirname(__file__), "./dummy_sleep.csv")
+
+    df_labels = pd.read_csv(sleep_file, sep=sep, encoding=encoding)
+    map_columns = {"Horodatage": "Start Time",
+                   "event": "Sleep",
+                   "begin": "Start Time"}
+
+    with pytest.raises(KeyError, match="Sleep"):
+        sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                              map_columns=map_columns,
+                                                              sep=sep,
+                                                              encoding=encoding,
+                                                              time_format=time_format
+                                                              )
+
+    time_format = "%Y-%m-%d %H:%M:%S"
+    with pytest.raises(ValueError, match="time data '23:55:30' does not match format '%Y-%m-%d %H:%M:%S.%f'"):
+        sleep_labels, sleep_label_timestamp = read_sleep_file(sleep_file,
+                                                              sep=sep,
+                                                              encoding=encoding,
+                                                              time_format=time_format
+                                                              )

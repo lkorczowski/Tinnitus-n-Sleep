@@ -233,6 +233,44 @@ def test_reporting_bruxism_with_sleep():
     npt.assert_equal(report["reports"][0], report_expected)
 
 
+def test_reporting_bruxism_with_sleep_params():
+    np.random.seed(42)
+    data = 1e-7 * np.random.randn(2, 800)
+    data[0][100:150] += 100 # epoch 2 (also bad epoch)
+    data[1][100:150] += 100
+    data[0][200:250] += 100 # epoch 4
+    data[1][200:250] += 100
+    data[0][300:350] += 100 # epoch 6
+    data[1][300:350] += 100
+    data[0][400:450] += 100 # epoch 8
+    data[1][400:450] += 100
+
+    duration = 50
+    interval = 50
+
+    epochs = epoch(data, duration, interval, axis=-1)
+    THR_classif = [[0, 2], [0, 3]]
+    valid_labels = [True, True, False, True, False, True, True, True, True, True, True, True, True, True, True, True]
+    sleep_labels = ["REM"] * len(epochs)
+    sleep_labels[10] = "awake"
+    valid_labels[10] = False
+    sleep_labels[1] = "N2"
+    sleep_labels[2] = "N3"
+    sleep_labels[4] = "awake"
+
+    sleep_labels = np.array(sleep_labels)
+
+    report = reporting(epochs, valid_labels, THR_classif, time_interval=0.25, delim=3, log={}, sleep_labels=sleep_labels)
+    classif_expected = np.array([False, False, False, False, False, False, True, False, True, False, False,
+                                           False, False, False, False, False])
+
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
+    report_expected.update(label_report(sleep_labels))
+    npt.assert_equal(report["labels"][0], classif_expected)
+    npt.assert_equal(report["reports"][0], report_expected)
+
+
 def test_reporting_MEMA_with_sleep():
     np.random.seed(42)
     data = 1e-7 * np.random.randn(2, 800)
