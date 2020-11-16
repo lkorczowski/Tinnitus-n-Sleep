@@ -259,3 +259,71 @@ def test_round_time():
     with pytest.raises(ValueError):
         dt = datetime.datetime(1900, 1, 1, 23, 59, 58, 990)
         round_time(dt=dt, round_to=0.5)
+
+def test_extending_episodes_right():
+    l=[0]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [0])
+    l=[1]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [1])
+    l=[0,0]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [0,0])
+    l=[0,1]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [0,1])
+    l=[1,0]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [1,1])
+    l=[1,1]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [1,1])
+    l=[1,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1]
+    n_l = extending_episodes_right(l)
+    npt.assert_equal(n_l, [1,1,1,0,0,0,1,1,1,0,0,1,1,0,0,1])
+
+def test_extending_episodes_left():
+    l=[0]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [0])
+    l=[1]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [1])
+    l=[0,0]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [0,0])
+    l=[0,1]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [1,1])
+    l=[1,0]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [1,0])
+    l=[1,1]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [1,1])
+    l=[1,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1]
+    n_l = extending_episodes_left(l)
+    npt.assert_equal(n_l, [1,1,0,0,0,1,1,1,0,0,1,1,0,0,1,1])
+
+def test_labels_1s_extension():
+    l=[0]
+    npt.assert_equal(labels_1s_extension(l,1,1), [0])
+    l=[1]
+    npt.assert_equal(labels_1s_extension(l, 1, 1), [1])
+    l=[0,0]
+    npt.assert_equal(labels_1s_extension(l, 1, 1), [0,0])
+    npt.assert_equal(labels_1s_extension(l, 1, 0), [0,0])
+    npt.assert_equal(labels_1s_extension(l, 0, 1), [0,0])
+    l=[0,1]
+    npt.assert_equal(labels_1s_extension(l, 1, 1), [1,1])
+    l=[1,0]
+    npt.assert_equal(labels_1s_extension(l, 1, 1), [1,1])
+    l=[1,1]
+    npt.assert_equal(labels_1s_extension(l, 1, 1), [1,1])
+    l=[1,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1]
+    npt.assert_equal(labels_1s_extension(l, 0, 0), [1,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1])
+    npt.assert_equal(labels_1s_extension(l, 1, 0), [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1])
+    npt.assert_equal(labels_1s_extension(l, 0, 1), [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1])
+    npt.assert_equal(labels_1s_extension(l, 1, 1), [1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1])
+    npt.assert_equal(labels_1s_extension(l, 1, 2), [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])

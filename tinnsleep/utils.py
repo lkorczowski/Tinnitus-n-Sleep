@@ -296,3 +296,94 @@ def round_time(dt=None, round_to=60):
     seconds = (dt - dt.min).seconds
     rounding = (seconds + round_to / 2) // round_to * round_to
     return dt + datetime.timedelta(0, rounding - seconds, -dt.microsecond)
+
+def extending_episodes_right(l):
+    """
+    Parameters
+    ----------
+    l : list of booleans / 0s and 1s
+        a list of labels
+
+    Returns
+    -------
+    new_l : list of booleans/ 0s and 1s
+        the same list where every time a series of 1 is present, another is added at the end (except at the list's end)
+    """
+    new_l = []
+    if l[0] == 1:
+        flag = True
+    else:
+        flag = False
+    for elm in l:
+        if flag == True:
+            if elm == 1:
+                new_l.append(1)
+            else:
+                new_l.append(1)
+                flag = False
+        else:
+            if flag == False:
+                if elm == 0:
+                    new_l.append(0)
+                else:
+                    new_l.append(1)
+                    flag = True
+    return new_l
+
+def extending_episodes_left(l):
+    """
+    Parameters
+    ----------
+    l : list of booleans / 0s and 1s
+        a list of labels
+
+    Returns
+    -------
+    new_l : list of booleans/ 0s and 1s
+        the same list where every time a series of 1 is present, another is added at the beginning (except at the list's
+        beginning)
+    """
+    new_l = []
+    if l[0] == 1:
+        flag = True
+    else:
+        flag = False
+    for elm in l:
+        if flag == True:
+            if elm == 1:
+                new_l.append(1)
+            else:
+                new_l.append(0)
+                flag = False
+        else:
+            if flag == False:
+                if elm == 0:
+                    new_l.append(0)
+                else:
+                    new_l[-1] = 1
+                    new_l.append(1)
+                    flag = True
+    return new_l
+
+def labels_1s_extension(l, added_left, added_right):
+    """
+    Parameters
+    ----------
+    l : list of booleans / 0s and 1s
+        a list of labels
+    added_left : int
+        number of 1s intended to be added to the left of each pack of 1s in l
+    added_right : int
+        number of 1s intended to be added to the right of each pack of 1s in l
+
+    Returns
+    -------
+    new_l : list of booleans/ 0s and 1s of the same length as l
+        the same list where every time a series of 1 is present, it is completed by added_left 1s on the left and
+        added_right 1s on the right
+    """
+    for i in range(added_left):
+        l = extending_episodes_left(l)
+    for i in range(added_right):
+        l = extending_episodes_right(l)
+    return l
