@@ -213,7 +213,9 @@ if __name__ == "__main__":
                                                                                               delim=3)
                                                                  )
                     #Extending OMA episodes of OMA_extension[0] on the left and OMA_extension[1] on the right
-                    valid_labels_OMA = labels_1s_extension(valid_labels_OMA, OMA_extension[0], OMA_extension[1])
+                    res = list(map(lambda x: 1 - x, valid_labels_OMA))
+                    out = labels_1s_extension(res, OMA_extension[0], OMA_extension[1])
+                    valid_labels_OMA = list(map(lambda x: 1 - x, out))
                     valid_labels_bruxism.append(valid_labels_OMA)
                     valid_labels_MEMA.append(valid_labels_OMA)
 
