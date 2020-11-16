@@ -3,7 +3,7 @@ import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list, \
     fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, \
-    merge_label_and_events, print_dict, round_time
+    merge_label_and_events, print_dict, round_time, labels_1s_extension
 from scipy.interpolate import interp1d
 import datetime
 

@@ -40,7 +40,7 @@ if __name__ == "__main__":
     from time import time
     from tinnsleep.data import read_sleep_file
     from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess
-    from tinnsleep.utils import crop_to_proportional_length, resample_labels
+    from tinnsleep.utils import crop_to_proportional_length, resample_labels, labels_1s_extension
     from tinnsleep.config import Config
     from ast import literal_eval
     from datetime import datetime
