@@ -40,7 +40,7 @@ if __name__ == "__main__":
     from time import time
     from tinnsleep.data import read_sleep_file
     from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess
-    from tinnsleep.utils import crop_to_proportional_length, resample_labels, labels_1s_extension
+    from tinnsleep.utils import crop_to_proportional_length, resample_labels, labels_1s_propagation
     from tinnsleep.config import Config
     from ast import literal_eval
     from datetime import datetime
@@ -59,8 +59,11 @@ if __name__ == "__main__":
     n_adaptive_bruxism = -120  # number of seconds for adaptive (negative for forward-backward adaptive scheme)
     n_adaptive_MEMA = -60  # number of seconds for adaptive (negative for forward-backward adaptive scheme)
     delim = 3  # maximal time interval between bursts to merge episode in seconds
-    OMA_extension = [1, 2] # extension of 1s of the OMA labels, put [0,0] if no extension is desired, first value is for
-    #left extension and second value is for right extension
+
+    # extension of 1s of the OMA labels, put [0,0] if no extension is desired, first value is
+    #      for left extension and second value is for right extension
+    OMA_extension = [1, 2]
+
     results_file_MEMA = "data/reports_and_datas_MEMA.pk"
     results_file_bruxism = "data/reports_and_datas_bruxism.pk"
 
@@ -69,9 +72,7 @@ if __name__ == "__main__":
 
     # Importing personnalized parameters for dataset
     data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
-    #data_info["Valid_chans"][data_info["Valid_chans"].isna()]='[0]'
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
-    #data_info["Valid_imps"][data_info["Valid_imps"].isna()]='[1]'
     data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
     mema_files = data_info.query("mema == 1")["filename"].values
     dico_chans = data_info.set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
@@ -230,10 +231,10 @@ if __name__ == "__main__":
                                                                      burst_to_episode_kwargs=dict(min_burst_joining=0,
                                                                                                   delim=3)
                                                                      )
-                        #Extending OMA episodes of OMA_extension[0] on the left and OMA_extension[1] on the right
-                        res = list(map(lambda x: 1 - x, valid_labels_OMA))
-                        out = labels_1s_extension(res, OMA_extension[0], OMA_extension[1])
-                        valid_labels_OMA = list(map(lambda x: 1 - x, out))
+                        # Extending OMA episodes of OMA_extension[0] on the left and OMA_extension[1] on the right
+                        list_OMA = list(map(lambda x: 1 - x, valid_labels_OMA))  #
+                        list_OMA = labels_1s_propagation(list_OMA, OMA_extension[0], OMA_extension[1])
+                        valid_labels_OMA = list(map(lambda x: 1 - x, list_OMA))
                         valid_labels_bruxism.append(valid_labels_OMA)
                         valid_labels_MEMA.append(valid_labels_OMA)
 
