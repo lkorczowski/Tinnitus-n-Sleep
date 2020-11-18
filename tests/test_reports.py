@@ -169,7 +169,7 @@ def test_reporting():
     report = reporting(epochs, valid_labels, THR_classif, time_interval=0.25, delim=3, log={})
     classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3)
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, valid_labels)
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     npt.assert_equal(report["labels"][0], classif_expected)
     npt.assert_equal(report["reports"][0], report_expected)
@@ -186,7 +186,7 @@ def test_reporting2():
     valid_labels = [True] * n_epochs
 
     classif_expected = np.array([False, True, True, True, False, False])
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim,  valid_labels)
 
     THR_classif = [[0, 1.5], [0, 1.6]]
     report = reporting(epochs, valid_labels, THR_classif,
@@ -226,7 +226,7 @@ def test_reporting_bruxism_with_sleep():
     classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
 
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, valid_labels, sleep_labels=sleep_labels[valid_labels])
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     report_expected.update(label_report(sleep_labels))
     npt.assert_equal(report["labels"][0], classif_expected)
@@ -264,7 +264,7 @@ def test_reporting_bruxism_with_sleep_params():
     classif_expected = np.array([False, False, False, False, False, False, True, False, True, False, False,
                                            False, False, False, False, False])
 
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], 0.25, 3, valid_labels, sleep_labels=sleep_labels[valid_labels])
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     report_expected.update(label_report(sleep_labels))
     npt.assert_equal(report["labels"][0], classif_expected)
@@ -301,7 +301,7 @@ def test_reporting_MEMA_with_sleep():
     classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
 
-    report_expected = generate_MEMA_report(classif_expected[valid_labels], 0.25, 3, sleep_labels=sleep_labels[valid_labels])
+    report_expected = generate_MEMA_report(classif_expected[valid_labels], 0.25, 3, valid_labels, sleep_labels=sleep_labels[valid_labels])
     report_expected["Power Ratio"] = power_ratio(epochs[valid_labels], classif_expected[valid_labels])
     report_expected.update(label_report(sleep_labels))
     npt.assert_equal(report["labels"][0], classif_expected)
@@ -346,8 +346,8 @@ def test_reporting_adaptive_bruxism():
                        time_interval=time_interval, delim=delim, log={},
                        generate_report=generate_bruxism_report,
                        n_adaptive=n_adaptive)
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
-    report_expected2 = generate_bruxism_report(classif_expected2[valid_labels], time_interval, delim)
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim, valid_labels)
+    report_expected2 = generate_bruxism_report(classif_expected2[valid_labels], time_interval, delim, valid_labels)
 
     npt.assert_equal(report["labels"][0], classif_expected)
     npt.assert_equal(report["labels"][1], classif_expected2)
@@ -377,8 +377,8 @@ def test_reporting_adaptive_MEMA():
                        time_interval=time_interval, delim=delim, log={},
                        generate_report=generate_MEMA_report,
                        n_adaptive=n_adaptive)
-    report_expected = generate_MEMA_report(classif_expected[valid_labels], time_interval, delim)
-    report_expected2 = generate_MEMA_report(classif_expected2[valid_labels], time_interval, delim)
+    report_expected = generate_MEMA_report(classif_expected[valid_labels], time_interval, delim, valid_labels)
+    report_expected2 = generate_MEMA_report(classif_expected2[valid_labels], time_interval, delim, valid_labels)
 
     npt.assert_equal(report["labels"][0], classif_expected)
     npt.assert_equal(report["labels"][1], classif_expected2)
@@ -401,7 +401,7 @@ def test_reporting_adaptive_forward_backward():
     valid_labels = [True] * n_epochs
 
     classif_expected = np.array([False, True, True, True, False, False])  # not loosing any because fb adaptive
-    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim)
+    report_expected = generate_bruxism_report(classif_expected[valid_labels], time_interval, delim, valid_labels)
 
     THR_classif = [[0, 1.5], [0, 1.6]]
     report = reporting(epochs, valid_labels, THR_classif,
@@ -473,12 +473,15 @@ def test_combine_brux_MEMA():
 
 def test_generate_bruxism_report():
     classif = [False, False]
-    report = generate_bruxism_report(classif, delim=3, time_interval=1)
+    valid_labels = [True, True]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
     npt.assert_equal( report["Number of bursts per episode"], 0)
 
     classif = [True, False, True, False, False, True, True, False, True, True, True,
           True, False, False, False, False, False, True, True, True, False, True]
-    report = generate_bruxism_report(classif, 1, 3)
+    valid_labels = [True, True, True, True, True, True, True, True, True, True, True,
+        True, True, True, True, True, True, True, True, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
     npt.assert_equal(len(report), 13)
 
     npt.assert_equal(report["Clean data duration"], len(classif))
@@ -497,7 +500,9 @@ def test_generate_bruxism_report():
 
 
     classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
-    report = generate_bruxism_report(classif, 1, 3)
+    #valid_labels.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
+    valid_labels.extend([True, True, True, True, True, True, True, True, True, True, True, True, True])
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
     npt.assert_equal(len(report), 13)
     npt.assert_equal(report["Clean data duration"], len(classif))
     npt.assert_equal(report["Total burst duration"], 15)
@@ -513,14 +518,38 @@ def test_generate_bruxism_report():
     npt.assert_equal(report["Mean duration of phasic episode"], 7.0)
     npt.assert_equal(report["Mean duration of tonic episode"], 5)
 
+    #Case with all labels valid
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 1)
+    #Case with one invalid labels, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, False, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 0)
+    #Case with an invalid label just before the episode, the episode should be conserved
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, False, True, True, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 1)
+    #Case with an invalid labels on the edge of the end of the episode, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, False]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of episodes"], 0)
+
+
 
 def test_generate_MEMA_report():
     classif = [False, False]
-    report = generate_MEMA_report(classif, 1, delim=3)
+    valid_labels = [True, True]
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
     npt.assert_equal( report["Number of MEMA bursts per episode"], 0)
 
     classif = [True, True, True, False, False, True, True, True]
-    report = generate_MEMA_report(classif, 1, delim=3)
+    valid_labels = [True, True, True, True, True, True, True, True, True]
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
     npt.assert_equal(len(report), 8)
     npt.assert_equal(report["Clean MEMA duration"], len(classif))
     npt.assert_equal(report["Total MEMA burst duration"], 6)
@@ -533,7 +562,8 @@ def test_generate_MEMA_report():
 
 
     classif.extend([False, False, False, False, False, False, True, False, False, True, False, False, True])
-    report = generate_MEMA_report(classif, 1, delim=3)
+    valid_labels.extend([True, True, True, True, True, True, True, True, True, True, True, True, True])
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
     npt.assert_equal(len(report), 8)
     npt.assert_equal(report["Clean MEMA duration"], len(classif))
     npt.assert_equal(report["Total MEMA burst duration"], 9)
@@ -544,10 +574,32 @@ def test_generate_MEMA_report():
     npt.assert_equal(report["Total number of MEMA burst"], 5)
     npt.assert_equal(report["Mean duration of MEMA episode"], 7.5)
 
+    # Case with all labels valid
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, True]
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 1)
+    # Case with one invalid labels, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, False, True, True, True]
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 0)
+    # Case with an invalid label just before the episode, the episode should be conserved
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, False, True, True, True, True, True]
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 1)
+    # Case with an invalid labels on the edge of the end of the episode, the episode should be suppressed
+    classif = [False, False, True, False, True, False, True]
+    valid_labels = [True, True, True, True, True, True, False]
+    report = generate_MEMA_report(classif, 1, 3, valid_labels)
+    npt.assert_equal(report["Total number of MEMA episodes"], 0)
+
 
 def test_generate_bruxism_report2():
     classif = [False, False, False, True, True, True]
-    report = generate_bruxism_report(classif, 1, 3)
+    valid_labels = [True, True, True, True, True, True]
+    report = generate_bruxism_report(classif, 1, 3, valid_labels)
     npt.assert_equal(len(report), 13)
 
     npt.assert_equal(report["Clean data duration"], len(classif))
@@ -567,40 +619,36 @@ def test_generate_bruxism_report2():
 
 def test_generate_MEMA_report_with_sleep():
     classif = [False, False, False, True, True, True]
+    valid_labels = [True, True, True, True, True, True]
     sleep_labels = ["awake", "REM", "awake", "awake", "REM", "REM"]
-    report = generate_MEMA_report(classif, 1, delim=3, sleep_labels=sleep_labels)
+    report = generate_MEMA_report(classif, 1, 3,valid_labels, sleep_labels=sleep_labels)
     npt.assert_equal(report['MEMA episode awake count'], 1)
     npt.assert_equal(report['MEMA episode awake ratio'], 1.0)
 
 
 def test_generate_bruxism_report_with_sleep():
     classif = [False, False, False, True, True, True]
+    valid_labels = [True, True, True, True, True, True]
     sleep_labels = ["awake", "REM", "awake", "awake", "REM", "REM"]
-    report = generate_bruxism_report(classif, 1, delim=3, sleep_labels=sleep_labels)
+    report = generate_bruxism_report(classif, 1, 3,valid_labels, sleep_labels=sleep_labels)
     npt.assert_equal(report['bruxism episode awake count'], 1)
     npt.assert_equal(report['bruxism episode awake ratio'], 1.0)
-
-
-def test_generate_report_fails_noparams():
-    """check if the parameters are required or test fails"""
-    classif = [False, False]
-    with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
-        generate_bruxism_report(classif)
-    with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
-        generate_MEMA_report(classif)
+    npt.assert_equal(report['bruxism episode awake ratio'], 1.0)
 
 
 def test_generate_MEMA_report_with_sleep_mismatch():
     classif = [False, False, False, True, True, True]
+    valid_labels = [True, True, True, True, True, True]
     sleep_labels = ["awake", "REM", "awake", "awake", "REM"]
     with pytest.raises(ValueError,
                        match=f"classif is \({len(classif)},\), sleep_labels is \({len(sleep_labels)},\)"):
-        generate_MEMA_report(classif, 1, delim=3, sleep_labels=sleep_labels)
+        generate_MEMA_report(classif, 1, 3, valid_labels, sleep_labels=sleep_labels)
 
 
 def test_generate_bruxism_report_with_sleep_mismatch():
     classif = [False, False, False, True, True, True]
+    valid_labels = [True, True, True,True, True, True]
     sleep_labels = ["awake", "REM", "awake", "awake", "REM"]
     with pytest.raises(ValueError,
                        match=f"classif is \({len(classif)},\), sleep_labels is \({len(sleep_labels)},\)"):
-        generate_bruxism_report(classif, 1, delim=3, sleep_labels=sleep_labels)
+        generate_bruxism_report(classif, 1, 3, valid_labels, sleep_labels=sleep_labels)

@@ -3,7 +3,8 @@ import numpy as np
 import numpy.testing as npt
 from tinnsleep.utils import epoch, compute_nb_epochs, merge_labels_list, \
     fuse_with_classif_result, crop_to_proportional_length, resample_labels, label_report, \
-    merge_label_and_events, print_dict, round_time
+    merge_label_and_events, print_dict, round_time, labels_1s_propagation, propagate_value_in_list_left, \
+    propagate_value_in_list_right
 from scipy.interpolate import interp1d
 import datetime
 
@@ -98,7 +99,7 @@ def test_merge_labels_list_ident():
 
 
 def test_merge_labels_list_proportional_upsampling():
-    # dealing with 2 coherent arrays of len(l) and 2*len(l) and getting output in 2*len(l):
+    # dealing with 2 coherent arrays of len(list_bool) and 2*len(list_bool) and getting output in 2*len(list_bool):
     v_lab = merge_labels_list([[True, False], [True, True, False, False]], 4)
     npt.assert_equal(v_lab, [True, True, False, False])
 
@@ -112,7 +113,7 @@ def test_merge_labels_list_proportional_upsampling():
 
 
 def test_merge_labels_list_proportional_downsampling():
-    # dealing with 2 coherent arrays of len(l) and 2*len(l) and getting output in len(l):
+    # dealing with 2 coherent arrays of len(list_bool) and 2*len(list_bool) and getting output in len(list_bool):
     v_lab = merge_labels_list([[True, False], [True, True, False, False]], 2)
     npt.assert_equal(v_lab, [True, False])
 
@@ -178,6 +179,11 @@ def test_fuse_with_classif_result():
     classif = fuse_with_classif_result(check_imp, classif)
     npt.assert_equal(classif, [1, 2, False, 3, False, 4])
 
+def test_fuse_with_classif_result_all_valid():
+    check_imp = [0, 0 , 0, 0]
+    classif = np.asanyarray([1, 2, 3, 4])
+    classif = fuse_with_classif_result(check_imp, classif)
+    npt.assert_equal(classif, [1, 2, 3, 4])
 
 def test_crop_to_proportional_length():
     epochs = np.ones((5, 2, 2))
@@ -205,17 +211,17 @@ def test_generate_label_report_basic():
     sleep_labels = np.array(["awake", "N1", "N1", "N2", "invalid", "N3", "NREM", "awake"])
     report = label_report(sleep_labels)
     report_expected = {'N1 count': 2,
-                         'N1 ratio': 0.25,
-                         'N2 count': 1,
-                         'N2 ratio': 0.125,
-                         'N3 count': 1,
-                         'N3 ratio': 0.125,
-                         'NREM count': 1,
-                         'NREM ratio': 0.125,
-                         'awake count': 2,
-                         'awake ratio': 0.25,
-                         'invalid count': 1,
-                         'invalid ratio': 0.125}
+                       'N1 ratio': 0.25,
+                       'N2 count': 1,
+                       'N2 ratio': 0.125,
+                       'N3 count': 1,
+                       'N3 ratio': 0.125,
+                       'NREM count': 1,
+                       'NREM ratio': 0.125,
+                       'awake count': 2,
+                       'awake ratio': 0.25,
+                       'invalid count': 1,
+                       'invalid ratio': 0.125}
     npt.assert_equal(report, report_expected)
 
 
@@ -259,3 +265,81 @@ def test_round_time():
     with pytest.raises(ValueError):
         dt = datetime.datetime(1900, 1, 1, 23, 59, 58, 990)
         round_time(dt=dt, round_to=0.5)
+
+
+def test_propagate_right():
+    l = [0]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [0])
+    l = [1]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [1])
+    l = [0, 0]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [0, 0])
+    l = [0, 1]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [0, 1])
+    l = [1, 0]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [1, 1])
+    l = [1, 1]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [1, 1])
+    l = [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    n_l = propagate_value_in_list_right(l)
+    npt.assert_equal(n_l, [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1])
+
+
+def test_propagate_left():
+    l = [0]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [0])
+    l = [1]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [1])
+    l = [0, 0]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [0, 0])
+    l = [0, 1]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [1, 1])
+    l = [1, 0]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [1, 0])
+    l = [1, 1]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [1, 1])
+    l = [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    n_l = propagate_value_in_list_left(l)
+    npt.assert_equal(n_l, [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1])
+
+
+def test_labels_1s_extension():
+    l = [0]
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), l)
+    l = [1]
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), l)
+    l = [0, 0]
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), l)
+    npt.assert_equal(labels_1s_propagation(l, 1, 0), l)
+    npt.assert_equal(labels_1s_propagation(l, 0, 1), l)
+    l = [0, 1]
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), [1, 1])
+    l = [1, 0]
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), [1, 1])
+    l = [1, 1]
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), [1, 1])
+    l = [1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1]
+    npt.assert_equal(labels_1s_propagation(l, 0, 0), l)
+    npt.assert_equal(labels_1s_propagation(l, 1, 0), [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1])
+    npt.assert_equal(labels_1s_propagation(l, 0, 1), [1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1])
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), [1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1])
+    npt.assert_equal(labels_1s_propagation(l, 1, 2), [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+
+    l = [0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0]
+    npt.assert_equal(labels_1s_propagation(l, 0, 0), l)
+    npt.assert_equal(labels_1s_propagation(l, 1, 0), [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0])
+    npt.assert_equal(labels_1s_propagation(l, 0, 1), [0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1])
+    npt.assert_equal(labels_1s_propagation(l, 1, 1), [1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1])
+    npt.assert_equal(labels_1s_propagation(l, 1, 2), [1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])

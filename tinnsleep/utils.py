@@ -150,7 +150,8 @@ def fuse_with_classif_result(check_imp, labels):
     mod_labels : ndarray, shape (n_trials,)
         Modified labels to fit a length of n_trials
     """
-    labels = labels.tolist()
+    if not isinstance(labels, list):
+        labels = labels.tolist()
     for i in range(len(check_imp)):
         if np.mean(check_imp[i]) == 1:
             labels.insert(i, False)  # inserting False (neutral) values in the labels array where they were deleted
@@ -295,3 +296,99 @@ def round_time(dt=None, round_to=60):
     seconds = (dt - dt.min).seconds
     rounding = (seconds + round_to / 2) // round_to * round_to
     return dt + datetime.timedelta(0, rounding - seconds, -dt.microsecond)
+
+
+def propagate_value_in_list_right(list_bool):
+    """
+    Parameters
+    ----------
+    list_bool : list of booleans / 0s and 1s
+        a list of labels
+
+    Returns
+    -------
+    new_l : list of booleans/ 0s and 1s
+        the same list where every time a series of 1 is present, another is added at the end (except at the list's end)
+    """
+    new_list = []
+    if list_bool[0] == 1:
+        flag = True
+    else:
+        flag = False
+    for elm in list_bool:
+        if flag:
+            if elm == 1:
+                new_list.append(1)
+            else:
+                new_list.append(1)
+                flag = False
+        else:
+            if not flag:
+                if elm == 0:
+                    new_list.append(0)
+                else:
+                    new_list.append(1)
+                    flag = True
+    return new_list
+
+
+def propagate_value_in_list_left(list_bool, value_to_propagate=1):
+    """
+    Parameters
+    ----------
+    list_bool : list of booleans / 0s and 1s
+        a list of labels
+
+    Returns
+    -------
+    new_l : list of booleans/ 0s and 1s
+        the same list where every time a series of 1 is present, another is added at the beginning (except at the list's
+        beginning)
+    """
+    new_list = []
+    if list_bool[0] == 1:
+        flag = True
+    else:
+        flag = False
+    for elm in list_bool:
+        if flag:
+            if elm == 1:
+                new_list.append(1)
+            else:
+                new_list.append(0)
+                flag = False
+        else:
+            if not flag:
+                if elm == 0:
+                    new_list.append(0)
+                else:
+                    new_list[-1] = 1
+                    new_list.append(1)
+                    flag = True
+    return new_list
+
+
+def labels_1s_propagation(list_bool, added_left, added_right):
+    """
+    Enlarges the events labels desired of added_left on the left and
+     added_right to the right, useful to enlarge OMA events.
+    Parameters
+    ----------
+    list_bool : list of booleans / 0s and 1s
+        a list of labels
+    added_left : int
+        number of 1s intended to be added to the left of each pack of 1s in list_bool
+    added_right : int
+        number of 1s intended to be added to the right of each pack of 1s in list_bool
+
+    Returns
+    -------
+    new_list : list of booleans/ 0s and 1s of the same length as list_bool
+        the same list where every time a series of 1 is present, it is completed by added_left 1s on the left and
+        added_right 1s on the right
+    """
+    for i in range(added_left):
+        list_bool = propagate_value_in_list_left(list_bool)
+    for i in range(added_right):
+        list_bool = propagate_value_in_list_right(list_bool)
+    return list_bool
