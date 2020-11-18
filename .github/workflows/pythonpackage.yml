@@ -18,7 +18,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2
-      - uses: goanpeca/setup-miniconda@v1
+      - uses: conda-incubator/setup-miniconda@v2.0.0
         with:
            activate-environment: tinnsleep-env
            environment-file: environment.yaml
