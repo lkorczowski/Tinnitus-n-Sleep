@@ -179,6 +179,11 @@ def test_fuse_with_classif_result():
     classif = fuse_with_classif_result(check_imp, classif)
     npt.assert_equal(classif, [1, 2, False, 3, False, 4])
 
+def test_fuse_with_classif_result_all_valid():
+    check_imp = [0, 0 , 0, 0]
+    classif = np.asanyarray([1, 2, 3, 4])
+    classif = fuse_with_classif_result(check_imp, classif)
+    npt.assert_equal(classif, [1, 2, 3, 4])
 
 def test_crop_to_proportional_length():
     epochs = np.ones((5, 2, 2))
@@ -262,7 +267,7 @@ def test_round_time():
         round_time(dt=dt, round_to=0.5)
 
 
-def test_extending_episodes_right():
+def test_propagate_right():
     l = [0]
     n_l = propagate_value_in_list_right(l)
     npt.assert_equal(n_l, [0])

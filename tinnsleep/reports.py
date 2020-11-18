@@ -7,7 +7,7 @@ from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episode
 from tinnsleep.signal import is_good_epochs, power_ratio
 
 
-def generate_bruxism_report(classif, time_interval, delim, valid_labels, min_burst_joining=3, sleep_labels=None):
+def generate_bruxism_report(classif, time_interval, delim, valid_labels=None, min_burst_joining=3, sleep_labels=None):
     """ Generates an automatic clinical bruxism report from a list of events
 
     Parameters
@@ -18,7 +18,7 @@ def generate_bruxism_report(classif, time_interval, delim, valid_labels, min_bur
         time interval in seconds between 2 elementary events
     delim: float,
         maximal time interval considered eligible between two bursts within a episode
-    valid_labels : list of booleans
+    valid_labels : list of booleans (default: all True)
         labels of the epochs as good (True) or bad (False) for future annotation and reporting
     min_burst_joining : int
         minimal number of events to join to form an episode
@@ -28,11 +28,16 @@ def generate_bruxism_report(classif, time_interval, delim, valid_labels, min_bur
     -------
     report :  dict
     """
+    if valid_labels is None:
+        valid_labels = [True] * len(classif)
+    if isinstance(valid_labels, list):
+        valid_labels = np.array(valid_labels)
+
     report = {}
     recording_duration = len(classif) * time_interval
     report["Clean data duration"] = recording_duration
     report["Total burst duration"] = np.sum(classif) * time_interval
-    classif_good_length = fuse_with_classif_result(np.invert(valid_labels),
+    classif_good_length = fuse_with_classif_result(np.invert(valid_labels == 1),
                                                    classif)  # add the missing labels removed with artefacts
     li_burst = classif_to_burst(classif_good_length, time_interval=time_interval)
     nb_burst = len(li_burst)
@@ -89,7 +94,7 @@ def generate_bruxism_report(classif, time_interval, delim, valid_labels, min_bur
     return report
 
 
-def generate_MEMA_report(classif, time_interval, delim, valid_labels, sleep_labels=None):
+def generate_MEMA_report(classif, time_interval, delim, valid_labels=None, sleep_labels=None):
     """ Generates an automatic clinical middle ear activition (MEMA) report from a list of events
 
     Parameters
@@ -100,7 +105,7 @@ def generate_MEMA_report(classif, time_interval, delim, valid_labels, sleep_labe
         time interval in seconds between 2 elementary events
     delim : float,
         maximal time interval considered eligible between two bursts within a episode
-    valid_labels : list of booleans
+    valid_labels : list of booleans (default: all True)
         labels of the epochs as good (True) or bad (False) for future annotation and reporting
     sleep_labels : ndarray, shape (n_epochs, ), (default: None)
         Sleep Stages in `valid_sleep_stages`, all other labels are discontinued and rejected from analysis.
@@ -110,18 +115,22 @@ def generate_MEMA_report(classif, time_interval, delim, valid_labels, sleep_labe
     -------
     report : dict
     """
+    if valid_labels is None:
+        valid_labels = [True] * len(classif)
+    if isinstance(valid_labels, list):
+        valid_labels = np.array(valid_labels)
+
     report = {}
     recording_duration = len(classif) * time_interval
     report["Clean MEMA duration"] = recording_duration
     report["Total MEMA burst duration"] = np.sum(classif) * time_interval
-    classif_good_length = fuse_with_classif_result(np.invert(valid_labels),
+    classif_good_length = fuse_with_classif_result(np.invert(valid_labels == 1),
                                                    classif)  # add the missing labels removed with artefacts
     li_burst = classif_to_burst(classif_good_length, time_interval=time_interval)
     nb_burst = len(li_burst)
     report["Total number of MEMA burst"] = nb_burst
     report["Number of MEMA bursts per hour"] = nb_burst * 3600 / recording_duration
     li_episodes = burst_to_episode(li_burst, delim=delim, min_burst_joining=0)
-    nb_episodes = len(li_episodes)
 
     new_ep_list = []
     for ep in li_episodes:

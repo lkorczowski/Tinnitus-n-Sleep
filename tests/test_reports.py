@@ -633,16 +633,7 @@ def test_generate_bruxism_report_with_sleep():
     report = generate_bruxism_report(classif, 1, 3,valid_labels, sleep_labels=sleep_labels)
     npt.assert_equal(report['bruxism episode awake count'], 1)
     npt.assert_equal(report['bruxism episode awake ratio'], 1.0)
-
-#Needs to be refactored?
-#def test_generate_report_fails_noparams():
-#    """check if the parameters are required or test fails"""
-#    classif = [False, False]
-#
-#    with pytest.raises(TypeError, match=f"missing 3 required positional arguments: 'time_interval', 'delim' and 'valid_labels'"):
-#        generate_bruxism_report(classif)
-#    with pytest.raises(TypeError, match=f"missing 2 required positional arguments: 'time_interval' and 'delim'"):
-#        generate_MEMA_report(classif, 1)
+    npt.assert_equal(report['bruxism episode awake ratio'], 1.0)
 
 
 def test_generate_MEMA_report_with_sleep_mismatch():
