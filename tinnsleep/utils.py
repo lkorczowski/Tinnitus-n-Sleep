@@ -370,6 +370,8 @@ def propagate_value_in_list_left(list_bool, value_to_propagate=1):
 
 def labels_1s_propagation(list_bool, added_left, added_right):
     """
+    Enlarges the events labels desired of added_left on the left and
+     added_right to the right, useful to enlarge OMA events.
     Parameters
     ----------
     list_bool : list of booleans / 0s and 1s
