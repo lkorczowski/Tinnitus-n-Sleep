@@ -297,11 +297,12 @@ def round_time(dt=None, round_to=60):
     rounding = (seconds + round_to / 2) // round_to * round_to
     return dt + datetime.timedelta(0, rounding - seconds, -dt.microsecond)
 
-def extending_episodes_right(l):
+
+def propagate_value_in_list_right(list_bool):
     """
     Parameters
     ----------
-    l : list of booleans / 0s and 1s
+    list_bool : list of booleans / 0s and 1s
         a list of labels
 
     Returns
@@ -309,32 +310,33 @@ def extending_episodes_right(l):
     new_l : list of booleans/ 0s and 1s
         the same list where every time a series of 1 is present, another is added at the end (except at the list's end)
     """
-    new_l = []
-    if l[0] == 1:
+    new_list = []
+    if list_bool[0] == 1:
         flag = True
     else:
         flag = False
-    for elm in l:
-        if flag == True:
+    for elm in list_bool:
+        if flag:
             if elm == 1:
-                new_l.append(1)
+                new_list.append(1)
             else:
-                new_l.append(1)
+                new_list.append(1)
                 flag = False
         else:
-            if flag == False:
+            if not flag:
                 if elm == 0:
-                    new_l.append(0)
+                    new_list.append(0)
                 else:
-                    new_l.append(1)
+                    new_list.append(1)
                     flag = True
-    return new_l
+    return new_list
 
-def extending_episodes_left(l):
+
+def propagate_value_in_list_left(list_bool, value_to_propagate=1):
     """
     Parameters
     ----------
-    l : list of booleans / 0s and 1s
+    list_bool : list of booleans / 0s and 1s
         a list of labels
 
     Returns
@@ -343,47 +345,48 @@ def extending_episodes_left(l):
         the same list where every time a series of 1 is present, another is added at the beginning (except at the list's
         beginning)
     """
-    new_l = []
-    if l[0] == 1:
+    new_list = []
+    if list_bool[0] == 1:
         flag = True
     else:
         flag = False
-    for elm in l:
-        if flag == True:
+    for elm in list_bool:
+        if flag:
             if elm == 1:
-                new_l.append(1)
+                new_list.append(1)
             else:
-                new_l.append(0)
+                new_list.append(0)
                 flag = False
         else:
-            if flag == False:
+            if not flag:
                 if elm == 0:
-                    new_l.append(0)
+                    new_list.append(0)
                 else:
-                    new_l[-1] = 1
-                    new_l.append(1)
+                    new_list[-1] = 1
+                    new_list.append(1)
                     flag = True
-    return new_l
+    return new_list
 
-def labels_1s_extension(l, added_left, added_right):
+
+def labels_1s_propagation(list_bool, added_left, added_right):
     """
     Parameters
     ----------
-    l : list of booleans / 0s and 1s
+    list_bool : list of booleans / 0s and 1s
         a list of labels
     added_left : int
-        number of 1s intended to be added to the left of each pack of 1s in l
+        number of 1s intended to be added to the left of each pack of 1s in list_bool
     added_right : int
-        number of 1s intended to be added to the right of each pack of 1s in l
+        number of 1s intended to be added to the right of each pack of 1s in list_bool
 
     Returns
     -------
-    new_l : list of booleans/ 0s and 1s of the same length as l
+    new_list : list of booleans/ 0s and 1s of the same length as list_bool
         the same list where every time a series of 1 is present, it is completed by added_left 1s on the left and
         added_right 1s on the right
     """
     for i in range(added_left):
-        l = extending_episodes_left(l)
+        list_bool = propagate_value_in_list_left(list_bool)
     for i in range(added_right):
-        l = extending_episodes_right(l)
-    return l
+        list_bool = propagate_value_in_list_right(list_bool)
+    return list_bool
