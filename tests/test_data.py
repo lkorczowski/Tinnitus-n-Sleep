@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from tinnsleep.data import CreateRaw, RawToEpochs_sliding, AnnotateRaw_sliding, CleanAnnotations, \
-    convert_Annotations, align_labels_with_raw, read_sleep_file
+    convert_Annotations, align_labels_with_raw, read_sleep_file, read_etiology_file
 import numpy.testing as npt
 import mne
 from collections import OrderedDict
@@ -266,3 +266,8 @@ def test_read_sleep_file_map():
                                                               encoding=encoding,
                                                               time_format=time_format
                                                               )
+
+def test_read_etiology_file():
+    etiology_file = os.path.join(os.path.dirname(__file__), "./dummy_etiology.xlsx")
+    df_etiology = read_etiology_file(etiology_file)
+    npt.assert_equal(df_etiology["obstructed_ear"].values, [3.0, 1.0, 2.0, 0.0, np.NaN, 1.0])
