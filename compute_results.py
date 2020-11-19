@@ -71,7 +71,9 @@ if __name__ == "__main__":
     print("parameters set")
 
     # Importing personnalized parameters for dataset
-    data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
+    # TODO : à remodifier si besoin!!
+    data_info = pd.read_csv("data/data_info_duo.csv", sep=";")
+    #data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
     data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
     mema_files = data_info.query("mema == 1")["filename"].values
@@ -95,7 +97,7 @@ if __name__ == "__main__":
         print("Files processed: ")
         start = time()
         #%%
-        for filename in EDF_list: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
+        for filename in EDF_list[40:42]: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
             file = filename.split(os.path.sep)[-1]
 
             # check if existing results should be overwritten
@@ -201,16 +203,38 @@ if __name__ == "__main__":
 
                     print(f"MEMA(", end="")
                     if DO_MEMA:
-                        if 'Mask Pressure' in raw.info['ch_names']:
-                            raw.rename_channels({'Mask Pressure': 'Airflow', "Pression diff": 'Airflow (L)'})
-                        filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
-                                             fir_design='firwin', filter_length='auto', phase='zero-double',
-                                             picks=['Airflow'])
-                        epochs_MEMA, valid_labels, log["MEMA"] = preprocess(raw, duration_MEMA, duration_MEMA,
-                                                                            picks_chan=['Airflow'],
-                                                                            filter_kwargs=filter_kwargs)
-                        valid_labels_MEMA.append(valid_labels)
-                        print(f"done)", end=" ")
+                        has_press_diff = int(data_info[data_info["filename"] == file]["pression diff"])
+                        has_airflow = int(data_info[data_info["filename"] == file]["airflow"])
+                        has_mask_pressure = int(data_info[data_info["filename"] == file]["mask pressure"])
+                        #Case where 1 MEMA chan is available:
+                        if (has_mask_pressure + has_press_diff) == 1 or has_airflow == 1:
+                            if has_mask_pressure == 1 :
+                                raw.rename_channels({'Mask Pressure': 'Airflow'})
+                            else:
+                                if has_press_diff == 1:
+                                    raw.rename_channels({"Pression diff": 'Airflow'})
+
+                            filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
+                                                 fir_design='firwin', filter_length='auto', phase='zero-double',
+                                                 picks=['Airflow'])
+                            epochs_MEMA, valid_labels, log["MEMA"] = preprocess(raw, duration_MEMA, duration_MEMA,
+                                                                                picks_chan=['Airflow'],
+                                                                                filter_kwargs=filter_kwargs)
+                            valid_labels_MEMA.append(valid_labels)
+                            print(f"done)", end=" ")
+                        else:
+                            if (has_mask_pressure + has_press_diff) == 2:
+                                raw.rename_channels({"Pression diff": 'Airflow_L', "Mask Pressure": 'Airflow'})
+
+                                filter_kwargs = dict(l_freq=0.25, h_freq=16., n_jobs=4,
+                                                     fir_design='firwin', filter_length='auto', phase='zero-double',
+                                                     picks=['Airflow', 'Airflow_L'])
+                                epochs_MEMA, valid_labels, log["MEMA"] = preprocess(raw, duration_MEMA, duration_MEMA,
+                                                                                    picks_chan=['Airflow', 'Airflow_L'],
+                                                                                    filter_kwargs=filter_kwargs)
+                                valid_labels_MEMA.append(valid_labels)
+                                print(f"done)", end=" ")
+
                     else:
                         print(f"skipped)", end=" ")
 
@@ -297,11 +321,32 @@ if __name__ == "__main__":
 
                         print("report...", end="")
                         tmp = time()
-                        results_MEMA[file] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
-                                                       time_interval=window_length_MEMA, delim=delim,
-                                                       n_adaptive=n_adaptive_MEMA,
-                                                       generate_report=generate_MEMA_report,
-                                                       sleep_labels=sleep_labels_MEMA)
+                        if (has_mask_pressure + has_press_diff) == 2:
+                            results_MEMA[file] = reporting(epochs_MEMA[:,:1,:], valid_labels_MEMA, THR_classif_MEMA,
+                                                           time_interval=window_length_MEMA, delim=delim,
+                                                           n_adaptive=n_adaptive_MEMA,
+                                                           generate_report=generate_MEMA_report,
+                                                           sleep_labels=sleep_labels_MEMA)
+                            results_MEMA[file + "_left"] = reporting(epochs_MEMA[:,1:,:], valid_labels_MEMA, THR_classif_MEMA,
+                                                           time_interval=window_length_MEMA, delim=delim,
+                                                           n_adaptive=n_adaptive_MEMA,
+                                                           generate_report=generate_MEMA_report,
+                                                           sleep_labels=sleep_labels_MEMA)
+                            results_MEMA[file + "_both"] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
+                                                           time_interval=window_length_MEMA, delim=delim,
+                                                           n_adaptive=n_adaptive_MEMA,
+                                                           generate_report=generate_MEMA_report,
+                                                           sleep_labels=sleep_labels_MEMA)
+                        else:
+                            if file[-11:] == "_resmed.edf":
+                                result_key = file[:-11]+".edf_left"
+                            else:
+                                result_key = file
+                            results_MEMA[result_key] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
+                                                           time_interval=window_length_MEMA, delim=delim,
+                                                           n_adaptive=n_adaptive_MEMA,
+                                                           generate_report=generate_MEMA_report,
+                                                           sleep_labels=sleep_labels_MEMA)
                         print(f"done)", end=" ")
                     else:
                         print(f"skipped)", end=" ")
