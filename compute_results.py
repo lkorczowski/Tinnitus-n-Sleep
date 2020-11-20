@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     # Importing personnalized parameters for dataset
     # TODO : à remodifier si besoin!!
-    data_info = pd.read_csv("data/data_info_duo.csv", sep=";")
+    data_info = pd.read_csv("data/data_info.csv", sep=";")
     #data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
     data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
