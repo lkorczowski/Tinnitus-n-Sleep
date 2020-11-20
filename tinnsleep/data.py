@@ -367,7 +367,7 @@ def read_etiology_file(etiology_file,
     mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
     key = "avezvousunsentimentdoreil"
     new_key = "obstructed_ear"
-    df_etiology[new_key] = df_raw[key].replace(mapping)
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
 
     """2)	Otalgie
     Colonne CI de l'excel, champ "avezvousdesdouleursdansou", avec une réponse "oui" (tout le temps, fréquemment, parfois). 
@@ -376,7 +376,7 @@ def read_etiology_file(etiology_file,
     mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
     key = "avezvousdesdouleursdansou"
     new_key = "otalgy"
-    df_etiology[new_key] = df_raw[key].replace(mapping)
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
 
     """3)	hyperacusis
     Colonne BS ou colonne BU = "Oui", (champs "estcequelexpositiondesson" ou "estcequedenombreuxbruitsd")
@@ -396,7 +396,7 @@ def read_etiology_file(etiology_file,
     mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
     key = "estcequelarticulationdevo"
     new_key = "jaw_popping"
-    df_etiology[new_key] = df_raw[key].replace(mapping)
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
 
     """
     5)	Douleur ou fatigue muscle de la mastication ou de la face
@@ -404,11 +404,11 @@ def read_etiology_file(etiology_file,
     Patient 1SL21 concerné, pas évident pour les 2 autres
     Attention, manque 1SA14
     """
-    mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
+    mapping = {"Ne sait pas":0,"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
     key1 = "ressentezvousdesdouleursa"
     key2 = "ressentezvousdelafatiguea"
     new_key = "jaw_pain_and_fatigue"
-    df_etiology[new_key] = (df_raw[key1].replace(mapping) + df_raw[key2].replace(mapping))/2
+    df_etiology[new_key] = (df_raw[key1].replace(mapping) + df_raw[key2].replace(mapping))/2 >=1
 
     """
     6)	Modulation somato-sensorielle si >3
@@ -428,7 +428,7 @@ def read_etiology_file(etiology_file,
            "vosacouphnesvarientilenin_9",
            "vosacouphnesvarientilenin_10"]
     new_key = "somatosensory_modulation"
-    df_etiology[new_key] = df_raw[key].replace(mapping).sum(axis=1)
+    df_etiology[new_key] = df_raw[key].replace(mapping).sum(axis=1) > 3
 
     """7)	Augmentation des acous suite aux siestes
     Colonne BN, champ "ressentezvousunehaussedev", réponse : "Oui je ressens une hausse franche de mon acouphène suite aux siestes" UNIQUEMENT 
