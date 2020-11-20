@@ -97,7 +97,7 @@ if __name__ == "__main__":
         print("Files processed: ")
         start = time()
         #%%
-        for filename in EDF_list[40:42]: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
+        for filename in EDF_list: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
             file = filename.split(os.path.sep)[-1]
 
             # check if existing results should be overwritten
