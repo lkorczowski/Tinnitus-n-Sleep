@@ -267,7 +267,20 @@ def test_read_sleep_file_map():
                                                               time_format=time_format
                                                               )
 
-def test_read_etiology_file():
+def test_read_etiology_file_dummy():
     etiology_file = os.path.join(os.path.dirname(__file__), "./dummy_etiology.xlsx")
+    data_info_file = os.path.join(os.path.dirname(__file__), "./dummy_data_info.csv")
+
     df_etiology = read_etiology_file(etiology_file)
     npt.assert_equal(df_etiology["obstructed_ear"].values, [3.0, 1.0, 2.0, 0.0, np.NaN, 1.0])
+    data_info = pd.read_csv(data_info_file, sep=',')
+    data_info_merged = data_info.merge(df_etiology, on="subject")
+
+def test_read_etiology_file_real():
+    etiology_file = os.path.join(os.path.dirname(__file__), "../notebooks/data/etiology.xlsx")
+    df_etiology = read_etiology_file(etiology_file)
+    data_info_file = os.path.join(os.path.dirname(__file__), "../notebooks/data/data_info.csv")
+    data_info = pd.read_csv(data_info_file, sep=",")
+    data_info.merge(df_etiology, on="subject")
+
+
