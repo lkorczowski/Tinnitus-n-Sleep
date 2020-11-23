@@ -253,13 +253,13 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=
         for inter in interval:
             interval_count.append((inter, np.sum(np.diff(labels_timestamp_delta)==inter)))
         interval = np.median(np.diff(labels_timestamp_delta))
-        LOGGER.warning(f"non uniform interval (count: {interval_count}), taking median: {interval}")
-        LOGGER.warning(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[start_idx]}")
+        LOGGER.info(f"non uniform interval (count: {interval_count}), taking median: {interval}")
+        LOGGER.info(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[start_idx]}")
     else:
         interval = interval[0]
 
     if delta_start > interval:
-        LOGGER.warning(f"delta_start {delta_start}")
+        LOGGER.info(f"delta_start {delta_start}")
 
     # optional check
     if raw_times is not None:
