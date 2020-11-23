@@ -10,7 +10,6 @@ dependencies:
     - matplotlib
     - seaborn
     - xlrd
-    - statannot
 
     # test dependencies (optional)
     - coverage
@@ -21,3 +20,4 @@ dependencies:
     - pip:
         # mandatory dependencies
         - mne
+        - statannot
