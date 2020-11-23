@@ -430,7 +430,7 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
     return meta_results
 
 
-def etiology_report_with_plot(data, etiology, variable, hue=None, hue_stats=None):
+def etiology_report_with_plot(data, etiology, variable, hue=None, hue_stats=None, verbose=2):
     """
     Parameters
     ----------
@@ -458,4 +458,4 @@ def etiology_report_with_plot(data, etiology, variable, hue=None, hue_stats=None
             box_pairs.append(((pair_[0], hue_stats), (pair_[1], hue_stats)))
 
     return add_stat_annotation(ax, data=data, x=etiology, y=variable, box_pairs=box_pairs, hue=hue,
-                                     test='Mann-Whitney', loc='inside', verbose=2)
+                                     test='Mann-Whitney', loc='inside', verbose=verbose)
