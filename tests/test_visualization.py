@@ -265,6 +265,7 @@ def test_plotAnnotations_incorrectparams():
 
 
 def test_regression_report_with_plot():
+    plt.close("all")
     data = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6], "B": [1, 2, 3, 4, 5, 6], "C": [6, 5, 4, 3, 2, 1]})
     variables_x_axis = ["A"]
     variables_y_axis = ["B", "C"]
@@ -274,16 +275,28 @@ def test_regression_report_with_plot():
 
 
 def test_regression_report_with_plot_condition():
+    plt.close("all")
     # inverse times series for variables B & C when conditions changed
     data = pd.DataFrame(
         {"A": [1, 2, 3, 4, 5, 6], "B": [1, 5, 3, 3, 5, 1], "C": [6, 2, 4, 4, 2, 6], "condition": [1, 2, 1, 2, 1, 2]})
     variables_x_axis = ["A"]
     variables_y_axis = ["B", "C"]
+    plt.figure()
     meta_results = regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions="condition",
                                                title=None)
     # rval 1 for A (condition 1) and B (condition 2)
     # rval -1 for B (condition 1) and A (condition 2)
     npt.assert_equal(meta_results.rvalue.values, [1.0, -1.0, -1.0, 1.0])
+
+    # extract specific condition
+    data_loc = data.query("condition == 2")
+    meta_results = regression_report_with_plot(data_loc, variables_x_axis, variables_y_axis, conditions="condition",
+                                               title=None)
+    # rval 1 for A (condition 1) and B (condition 2)
+    # rval -1 for B (condition 1) and A (condition 2)
+    npt.assert_equal(meta_results.rvalue.values, [-1.0, 1.0])
+
+    plt.figure()
 
     data = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6], "B": [1, 5, 3, 3, 5, 1], "C": [6, 2, 4, 4, 2, 6],
                          "condition": [True, False, True, False, True, False]})
@@ -295,7 +308,9 @@ def test_regression_report_with_plot_condition():
     # rval -1 for B (condition 1) and A (condition 2)
     npt.assert_equal(meta_results.rvalue.values, [1.0, -1.0, -1.0, 1.0])
 
+
 def test_regression_report_with_plot_fails():
+    plt.close("all")
     with pytest.raises(ValueError, match=f"conditions should be str \(column key\) or None"):
         # inverse times series for variables B & C when conditions changed
         data = pd.DataFrame(
