@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as npt
@@ -367,6 +368,7 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
 
 
     """
+    mpl.rcParams.update({'figure.max_open_warning': 0})
     meta_results = pd.DataFrame()
     if conditions is None:
         conditions_values = ["None"]
