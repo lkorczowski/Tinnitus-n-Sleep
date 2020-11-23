@@ -119,6 +119,14 @@ if __name__ == "__main__":
                     if file == "1PI07_nuit_hab.edf":
                         croptimes = dict(tmin=raw.times[0] + 10750, tmax=raw.times[-1] - 3330)
                         raw.crop(**croptimes)
+                    if file == "1HB20_nuit_1_resmed.edf" or file == "1ZN04_cohort2.edf" \
+                            or file == "2TL07_nuit_1.edf":
+                        print(raw.info["ch_names"])
+                        if raw.info["ch_names"].__contains__("Airflow"):
+                            raw.rename_channels({'Airflow': 'Nimp'})
+                            raw.rename_channels({'Nasal Pressure': 'Mask Pressure'})
+                        if raw.info["ch_names"].__contains__("Nasal Pressure"):
+                            raw.rename_channels({'Nasal Pressure': 'Airflow'})
 
 
                     print(file, end=" ")
@@ -321,8 +329,17 @@ if __name__ == "__main__":
 
                         print("report...", end="")
                         tmp = time()
+                        if file[-11:] == "_resmed.edf":
+                            result_key = file[:-11] + ".edf_left"
+                        else:
+                            result_key = file
+                        results_MEMA[result_key] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
+                                                       time_interval=window_length_MEMA, delim=delim,
+                                                       n_adaptive=n_adaptive_MEMA,
+                                                       generate_report=generate_MEMA_report,
+                                                       sleep_labels=sleep_labels_MEMA)
                         if (has_mask_pressure + has_press_diff) == 2:
-                            results_MEMA[file] = reporting(epochs_MEMA[:,:1,:], valid_labels_MEMA, THR_classif_MEMA,
+                            results_MEMA[file+ "_right"] = reporting(epochs_MEMA[:,:1,:], valid_labels_MEMA, THR_classif_MEMA,
                                                            time_interval=window_length_MEMA, delim=delim,
                                                            n_adaptive=n_adaptive_MEMA,
                                                            generate_report=generate_MEMA_report,
@@ -332,21 +349,8 @@ if __name__ == "__main__":
                                                            n_adaptive=n_adaptive_MEMA,
                                                            generate_report=generate_MEMA_report,
                                                            sleep_labels=sleep_labels_MEMA)
-                            results_MEMA[file + "_both"] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
-                                                           time_interval=window_length_MEMA, delim=delim,
-                                                           n_adaptive=n_adaptive_MEMA,
-                                                           generate_report=generate_MEMA_report,
-                                                           sleep_labels=sleep_labels_MEMA)
-                        else:
-                            if file[-11:] == "_resmed.edf":
-                                result_key = file[:-11]+".edf_left"
-                            else:
-                                result_key = file
-                            results_MEMA[result_key] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
-                                                           time_interval=window_length_MEMA, delim=delim,
-                                                           n_adaptive=n_adaptive_MEMA,
-                                                           generate_report=generate_MEMA_report,
-                                                           sleep_labels=sleep_labels_MEMA)
+
+
                         print(f"done)", end=" ")
                     else:
                         print(f"skipped)", end=" ")
