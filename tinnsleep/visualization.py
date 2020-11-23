@@ -11,6 +11,8 @@ from tinnsleep.validation import is_valid_ch_names
 import seaborn as sns
 import scipy
 import pandas as pd
+from statannot import add_stat_annotation
+from itertools import combinations
 
 
 def plotTimeSeries(data,
@@ -371,7 +373,7 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
     mpl.rcParams.update({'figure.max_open_warning': 0})
     meta_results = pd.DataFrame()
     if conditions is None:
-        conditions_values = ["None"]
+        conditions_values = [None]
     elif isinstance(conditions, str):
         conditions_values = data[conditions].unique()
     else:
@@ -381,18 +383,24 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
     for y_axis in variables_y_axis:
         # loop on all classification results (each figure)
         for threshold in conditions_values:
-            if conditions is None:
+            if threshold is None:
                 data_loc = data
             else:
                 data_loc = data[data[conditions] == threshold]
 
             f, axes = plt.subplots(1, len(variables_x_axis), figsize=(len(variables_x_axis) * 7, 6))
-            if len(variables_x_axis)==1:
+            if len(variables_x_axis) == 1:
                 axes = [axes]
             # loop on all effect variables (each subplot)
             for x_axis, ax in zip(variables_x_axis, axes):
                 regression_result = scipy.stats.linregress(data_loc[x_axis].values, data_loc[y_axis].values)
-                sns.regplot(x=x_axis, y=y_axis, data=data_loc, fit_reg=True, ax=ax)
+                if regression_result.pvalue < 0.01:
+                    color = 'g'
+                elif regression_result.pvalue < 0.05:
+                    color = 'b'
+                else:
+                    color = 'r'
+                sns.regplot(x=x_axis, y=y_axis, data=data_loc, fit_reg=True, ax=ax, color=color)
                 ax.set_xlim(min(data_loc[x_axis].values) - 0.1, max(data_loc[x_axis].values) + 0.1)
                 if conditions is None:
                     tmp = {"x_axis": x_axis, "y_axis": y_axis}
@@ -401,9 +409,9 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
 
                 if conditions is not None:
                     if isinstance(threshold, (int, float, np.integer, np.float)):
-                        textstr = f"condition {threshold:.1f}"
+                        textstr = f"{conditions} {threshold:.1f}"
                     else:
-                        textstr = f"condition {str(threshold)}"
+                        textstr = f"{conditions} {str(threshold)}"
                 else:
                     textstr = ""
 
@@ -420,3 +428,34 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
                 # save results
                 meta_results = pd.concat([meta_results, pd.DataFrame(tmp)])
     return meta_results
+
+
+def etiology_report_with_plot(data, etiology, variable, hue=None, hue_stats=None):
+    """
+    Parameters
+    ----------
+
+    Returns
+    -------
+    """
+    categories = list(data[etiology].unique())
+    for category in categories:
+        print(
+            f"Tinnitus {category} : {(data[etiology] == category).sum()}, {(list(data[data[etiology] == category]['subject']))}")
+
+    # e.2 Diplay
+    plt.figure()
+    ax = sns.boxplot(data=data, x=etiology, y=variable, hue=hue)
+    if hue is not None:
+        plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
+
+    # e.3 Statistical results
+    box_pairs = []
+    if hue is not None:
+        if hue_stats is None:
+            hue_stats = data[hue].unique()[0]  # do only the first one to avoid clunky the interface
+        for pair_ in list(combinations(categories, 2)):
+            box_pairs.append(((pair_[0], hue_stats), (pair_[1], hue_stats)))
+
+    return add_stat_annotation(ax, data=data, x=etiology, y=variable, box_pairs=box_pairs, hue=hue,
+                                     test='Mann-Whitney', loc='inside', verbose=2)
