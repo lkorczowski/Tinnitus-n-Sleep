@@ -471,7 +471,6 @@ def etiology_report_with_plot(data, etiology, variable, hue=None, hue_value_for_
     # e.2 Diplay
     plt.figure()
     ax = sns.boxplot(data=data, x=etiology, y=variable, hue=hue)
-    ax.set_title(etiology)
     if hue is not None:
         plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
 
