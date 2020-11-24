@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.testing as npt
@@ -7,6 +8,11 @@ from mpl_toolkits.axes_grid1.inset_locator import (
     BboxPatch, BboxConnector, BboxConnectorPatch)
 import mne
 from tinnsleep.validation import is_valid_ch_names
+import seaborn as sns
+import scipy
+import pandas as pd
+from statannot import add_stat_annotation
+from itertools import combinations
 
 
 def plotTimeSeries(data,
@@ -328,3 +334,153 @@ def zoom_effect(ax1, ax2, xmin=None, xmax=None, prop_lines={}, **kwargs):
 
     return c1, c2, bbox_patch1, bbox_patch2, p
 
+
+def regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions=None, title=None):
+    """Make regression on different variable of the DataFrame
+
+    Parameters
+    ----------
+    data: DataFrame
+        all the data with columns being either values for regression or condition
+        use query before to remove unwanted data
+        Example:
+        >>> # remove control subjects and keep only THR_classif of 3.0
+        >>> data = reports.query("category != 'control' & THR_classif==3")  # reports is the full DataFrame report
+    variables_x_axis: list
+        list of keys (columns) for `data` to use as x_axis for the regression (columns' values should be float)
+        Example
+        >>> effect_variable = ["mask_delta", "mask_per", "VAS_I_delta", "VAS_I_per", "VAS_L_delta", "VAS_L_per"]
+    variables_y_axis: list
+        list of keys (columns) for `data` to use as y_axis for the regression (columns' values should be float)
+        Example
+        >>> ['Number of episodes per hour', 'Number of tonic episodes per hour', 'Mean duration of phasic episode']
+    conditions: str (default: None)
+        key (column) for `data` to use as a different regression (values should be discrete)
+
+    Returns
+    -------
+    meta_results: DataFrame
+        the statistical significance, with 'correlation', 'pvalue'
+        Example
+        >>> meta_results.query("pvalue < 0.05")  # get all regression under pval<0.05
+
+
+    """
+    mpl.rcParams.update({'figure.max_open_warning': 0})
+    meta_results = pd.DataFrame()
+    if conditions is None:
+        conditions_values = [None]
+    elif isinstance(conditions, str):
+        conditions_values = data[conditions].unique()
+    else:
+        raise ValueError("conditions should be str (column key) or None")
+
+    # loop over all quantitative variables (y_axis)
+    for y_axis in variables_y_axis:
+        # loop on all classification results (each figure)
+        for threshold in conditions_values:
+            if threshold is None:
+                data_loc = data
+            else:
+                data_loc = data[data[conditions] == threshold]
+
+            f, axes = plt.subplots(1, len(variables_x_axis), figsize=(len(variables_x_axis) * 7, 6))
+            if len(variables_x_axis) == 1:
+                axes = [axes]
+            # loop on all effect variables (each subplot)
+            for x_axis, ax in zip(variables_x_axis, axes):
+                regression_result = scipy.stats.linregress(data_loc[x_axis].values, data_loc[y_axis].values)
+                if regression_result.pvalue < 0.01:
+                    color = 'g'
+                elif regression_result.pvalue < 0.05:
+                    color = 'b'
+                else:
+                    color = 'r'
+                sns.regplot(x=x_axis, y=y_axis, data=data_loc, fit_reg=True, ax=ax, color=color)
+                ax.set_xlim(min(data_loc[x_axis].values) - 0.1, max(data_loc[x_axis].values) + 0.1)
+                if conditions is None:
+                    tmp = {"x_axis": x_axis, "y_axis": y_axis}
+                else:
+                    tmp = {"x_axis": x_axis, "y_axis": y_axis, conditions: [threshold]}
+
+                if conditions is not None:
+                    if isinstance(threshold, (int, float, np.integer, np.float)):
+                        textstr = f"{conditions} {threshold:.1f}"
+                    else:
+                        textstr = f"{conditions} {str(threshold)}"
+                else:
+                    textstr = ""
+
+                for a, re in zip(regression_result._fields, regression_result):
+                    textstr = textstr + "\n" + f"{a} {re:.2f} "
+                    tmp[a] = [re]
+                ax.set_title(title)
+
+                # place patch
+                props = dict(boxstyle='round', facecolor='wheat', alpha=0.2)
+                ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
+                        verticalalignment='top', bbox=props)
+
+                # save results
+                meta_results = pd.concat([meta_results, pd.DataFrame(tmp)])
+    return meta_results
+
+
+def etiology_report_with_plot(data, etiology, variable, hue=None, hue_value_for_stats=None,
+                              test='Mann-Whitney',
+                              verbose=2):
+    """
+    Parameters
+    ----------
+    data: DataFrame
+        all the data with columns being either values for regression or condition
+        use query before to remove unwanted data
+        Example:
+        >>> # remove control subjects and keep only THR_classif of 3.0
+        >>> data = reports.query("category != 'control' & THR_classif==3")  # reports is the full DataFrame report
+    etiology: str
+        column name of `data` used as etiology. The etiology should have at least two different groups
+        e.g. at least True or False.
+        summary:
+            data[etiology].values can be integer or string or boolean (discrete number of unique values).
+            len(data[etiology].unique()) should be greater than 1
+    variable: str
+        column name of `data` used as value for the results
+        data[variable].values should be floats
+        those values are used for the statistical test between the different etiology.
+    hue: str (default: None)
+        column name for `data` for separation into subcategory. Use that if you have different algorithmes that computed
+        data[variable] on the same subjects to check if one algorithm does better.
+        By default, no subcategory so all the data need to be homogeneous. Use data.query() if needed.
+    hue_value_for_stats: type of data[hue].values
+        stats are only computed for this subcategory of data[hue] to avoid clunky the visualization.
+        TODO: change to allow comparaison of all pair of categories.
+    test: str
+        test to apply, see statannot.add_stat_annotation for details.
+    Returns
+    -------
+    """
+    # e.1 prepare data
+    categories = list(data[etiology].unique())
+    assert len(categories) > 1, f"etiology {etiology} have only one type: {categories} "
+    for category in categories:
+        # Display list of subject for each category
+        print(f"{etiology} ({category}) : "
+              f"{(data[etiology] == category).sum()}, {(list(data[data[etiology] == category]['subject']))}")
+
+    # e.2 Diplay
+    plt.figure()
+    ax = sns.boxplot(data=data, x=etiology, y=variable, hue=hue)
+    if hue is not None:
+        plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
+
+    # e.3 Statistical results
+    box_pairs = []
+    if hue is not None:
+        if hue_value_for_stats is None:
+            hue_value_for_stats = data[hue].unique()[0]  # do only the first one to avoid clunky the interface
+        for pair_ in list(combinations(categories, 2)):
+            box_pairs.append(((pair_[0], hue_value_for_stats), (pair_[1], hue_value_for_stats)))
+
+    return add_stat_annotation(ax, data=data, x=etiology, y=variable, box_pairs=box_pairs, hue=hue,
+                                     test=test, loc='inside', verbose=verbose)

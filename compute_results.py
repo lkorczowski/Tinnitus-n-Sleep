@@ -2,9 +2,9 @@ import sys, getopt
 
 
 def main(argv):
-    bruxism = False
+    bruxism = True
     mema = True
-    overwrite = True
+    overwrite = False
     try:
         opts, args = getopt.getopt(argv, "hb:m:o:", ["bruxism=", "mema=", "overwrite="])
     except getopt.GetoptError:
@@ -43,7 +43,6 @@ if __name__ == "__main__":
     from tinnsleep.utils import crop_to_proportional_length, resample_labels, labels_1s_propagation
     from tinnsleep.config import Config
     from ast import literal_eval
-    from datetime import datetime
 
     bruxism, mema, OVERWRITE_RESULTS = main(sys.argv[1:])
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), "notebooks/"))
@@ -73,10 +72,11 @@ if __name__ == "__main__":
     # Importing personnalized parameters for dataset
     # TODO : à remodifier si besoin!!
     data_info = pd.read_csv("data/data_info.csv", sep=";")
-    #data_info = pd.read_csv("data/data_info.csv", engine='python', sep=",")
     data_info["Valid_chans"] = data_info["Valid_chans"].apply(literal_eval)
     data_info["Valid_imps"] = data_info["Valid_imps"].apply(literal_eval)
     mema_files = data_info.query("mema == 1")["filename"].values
+    emg_files = data_info.query("emg == 1")["filename"].values
+
     dico_chans = data_info.set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
 
     #%% Processing of the dataset and report generation
@@ -99,6 +99,14 @@ if __name__ == "__main__":
         #%%
         for filename in EDF_list: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
             file = filename.split(os.path.sep)[-1]
+            print(file, end=" ")
+
+            # Get channels indexes
+            ind_picks_chan = dico_chans.loc[file]['Valid_chans']
+            # Get impedance channels
+            ind_picks_imp = dico_chans.loc[file]['Valid_imps']
+            # Get THR_imp value for filename
+            THR_imp = dico_chans.loc[file]['THR_IMP']
 
             # check if existing results should be overwritten
             if file in results_MEMA.keys():
@@ -111,7 +119,13 @@ if __name__ == "__main__":
             else:
                 OVERWRITE_bruxism = True
 
-            if OVERWRITE_bruxism or OVERWRITE_MEMA:
+            is_valid_bruxism = (len(ind_picks_chan) > 0) & (file in emg_files)
+            is_valid_MEMA = file in mema_files
+
+            DO_BRUXISM = is_valid_bruxism and bruxism and OVERWRITE_bruxism
+            DO_MEMA = is_valid_MEMA and mema and OVERWRITE_MEMA
+
+            if DO_BRUXISM or DO_MEMA:
                 try:
                     # opens the raw file
                     raw = mne.io.read_raw_edf(filename, preload=False, verbose=False)  # prepare loading
@@ -128,14 +142,6 @@ if __name__ == "__main__":
                         if raw.info["ch_names"].__contains__("Nasal Pressure"):
                             raw.rename_channels({'Nasal Pressure': 'Airflow'})
 
-
-                    print(file, end=" ")
-                    # Get channels indexes
-                    ind_picks_chan = dico_chans.loc[file]['Valid_chans']
-                    # Get impedance channels
-                    ind_picks_imp = dico_chans.loc[file]['Valid_imps']
-                    # Get THR_imp value for filename
-                    THR_imp = dico_chans.loc[file]['THR_IMP']
                     # Get sleep stages if exist
                     sleep_file = "data/sleep_labels/robin/" + file.split(".")[0] + ".csv"
                     if os.path.isfile(sleep_file):
@@ -179,9 +185,6 @@ if __name__ == "__main__":
                     picks_imp = []
                     for elm in ind_picks_imp:
                         picks_imp.append(raw.info["ch_names"][elm])
-
-                    DO_BRUXISM = len(picks_chan_bruxism) > 0 and bruxism and OVERWRITE_bruxism
-                    DO_MEMA = file in mema_files and mema and OVERWRITE_MEMA
 
                     #%% ----------------- Preprocessing ----------------------------------------------------
                     print(f"preprocess...", end=" ")
@@ -339,7 +342,7 @@ if __name__ == "__main__":
                                                        generate_report=generate_MEMA_report,
                                                        sleep_labels=sleep_labels_MEMA)
                         if (has_mask_pressure + has_press_diff) == 2:
-                            results_MEMA[file+ "_right"] = reporting(epochs_MEMA[:,:1,:], valid_labels_MEMA, THR_classif_MEMA,
+                            results_MEMA[file + "_right"] = reporting(epochs_MEMA[:,:1,:], valid_labels_MEMA, THR_classif_MEMA,
                                                            time_interval=window_length_MEMA, delim=delim,
                                                            n_adaptive=n_adaptive_MEMA,
                                                            generate_report=generate_MEMA_report,
@@ -364,5 +367,28 @@ if __name__ == "__main__":
                     print(f"DONE ({time() - tmp:.2f}s)")
                 except:
                     print(f"ERROR, SKIPPING <!> ")
+            else:
+                msg="skipped for "
+                if bruxism:
+                    msg += "bruxism("
+                    if OVERWRITE_bruxism:
+                        if not is_valid_bruxism:
+                            msg += "no valid channel)"
+                        else:
+                            msg += "UNKNOW REASON <!!!>)"
+                    else:
+                        msg += "existing results)"
+
+                if mema:
+                    msg += "mema("
+                    if OVERWRITE_MEMA:
+                        if not is_valid_MEMA:
+                            msg += "no valid channel)"
+                        else:
+                            msg += "UNKNOW REASON <!!!>)"
+                    else:
+                        msg += "existing results)"
+
+                print(msg)
 
     print(f"Reports created, process finished in {(time() - start) / 60:.1f} min")

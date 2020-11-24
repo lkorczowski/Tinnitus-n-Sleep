@@ -253,13 +253,13 @@ def align_labels_with_raw(labels_timestamp, raw_info_start_time=None, raw_times=
         for inter in interval:
             interval_count.append((inter, np.sum(np.diff(labels_timestamp_delta)==inter)))
         interval = np.median(np.diff(labels_timestamp_delta))
-        LOGGER.warning(f"non uniform interval (count: {interval_count}), taking median: {interval}")
-        LOGGER.warning(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[start_idx]}")
+        LOGGER.info(f"non uniform interval (count: {interval_count}), taking median: {interval}")
+        LOGGER.info(f"start time, file: {str(raw_info_start_time)} labels: {labels_timestamp[start_idx]}")
     else:
         interval = interval[0]
 
     if delta_start > interval:
-        LOGGER.warning(f"delta_start {delta_start}")
+        LOGGER.info(f"delta_start {delta_start}")
 
     # optional check
     if raw_times is not None:
@@ -335,3 +335,119 @@ def read_sleep_file(sleep_file,
         time_format=time_format)
 
     return sleep_labels, sleep_label_timestamp
+
+def read_etiology_file(etiology_file,
+                      map_columns=None):
+    """Read etiology .xlsx file and return panda dataframe with a column of possible etiology
+
+    Parameters
+    ----------
+    etiology_file: str
+        .xslx file full path
+    map_columns: dict (default: None)
+        dictionary to convert columns if needed, e.g. map_columns={"oldcolumn": "newcolumn"}
+
+
+    Returns
+    -------
+    df_etiology: DataFrame
+        rows: subject's file
+        columns:
+    sleep_label_timestamp: ndarray
+    """
+    df_raw = pd.read_excel(etiology_file)
+    df_etiology = pd.DataFrame()
+
+    # build subject list (should match exiting subject list in data_info.csv)
+    df_etiology["subject"] = df_raw["Identifiant patient"]
+
+#   1)	Oreille bouchée
+#   Colonne CD de l'excel, champ "avezvousunsentimentdoreil", avec une réponse "oui" (tout le temps, fréquemment, parfois). Attention, pour certains patients (1DA15, 1DL12, 1MA16, 1SA14) on n'a pas cette info!
+#   1SL21 et 1UC22 concernés, pas forcément 1HB20.
+    mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
+    key = "avezvousunsentimentdoreil"
+    new_key = "obstructed_ear"
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
+
+    """2)	Otalgie
+    Colonne CI de l'excel, champ "avezvousdesdouleursdansou", avec une réponse "oui" (tout le temps, fréquemment, parfois). 
+    Attention, manque 1SA14
+    1UC22, 1SL21, 1HB20 non concernés"""
+    mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
+    key = "avezvousdesdouleursdansou"
+    new_key = "otalgy"
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
+
+    """3)	hyperacusis
+    Colonne BS ou colonne BU = "Oui", (champs "estcequelexpositiondesson" ou "estcequedenombreuxbruitsd")
+    1UC22 concerné, 1SL21 un petit peu concerné, on ne sait pas exactement pour 1HB20"""
+    mapping = {"Oui": True, "Non": False}
+    key1 = "estcequelexpositiondesson"
+    key2 = "estcequedenombreuxbruitsd"
+    new_key = "hyperacusis"
+    df_etiology[new_key] = df_raw[key1].replace(mapping) | df_raw[key2].replace(mapping)
+
+    """
+    4)	Craquement mâchoire 3-4 fois par semaine 
+    Colonne BZ de l'excel, champ "estcequelarticulationdevo", avec une réponse "oui" (tout le temps, fréquemment, parfois).
+    Patient 1SL21 concerné, pas évident pour les 2 autres
+    Attention, manque 1SA14 
+    """
+    mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
+    key = "estcequelarticulationdevo"
+    new_key = "jaw_popping"
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
+
+    """
+    5)	Douleur ou fatigue muscle de la mastication ou de la face
+    Colonne BX ou BY de l'excel, champ "ressentezvousdesdouleursa" ou "ressentezvousdelafatiguea", avec une réponse "oui" (tout le temps, fréquemment, parfois). 
+    Patient 1SL21 concerné, pas évident pour les 2 autres
+    Attention, manque 1SA14
+    """
+    mapping = {"Ne sait pas":0,"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
+    key1 = "ressentezvousdesdouleursa"
+    key2 = "ressentezvousdelafatiguea"
+    new_key = "jaw_pain_and_fatigue"
+    df_etiology[new_key] = (df_raw[key1].replace(mapping) + df_raw[key2].replace(mapping))/2 >=1
+
+    """
+    6)	Modulation somato-sensorielle si >3
+    Somme des valeurs colonnes DF à DP, test si résultat supérieur à 3. ATTENTION : colonne DQ correspond à "NON" du coup ne pas la compter. 
+    Attention, manque 1SA14
+    Oui pour 1UC22, faux pour les 2 autres"""
+    mapping = {np.NaN: 0}
+    key = ["vosacouphnesvarientilenin_0",
+           "vosacouphnesvarientilenin_1",
+           "vosacouphnesvarientilenin_2",
+           "vosacouphnesvarientilenin_3",
+           "vosacouphnesvarientilenin_4",
+           "vosacouphnesvarientilenin_5",
+           "vosacouphnesvarientilenin_6",
+           "vosacouphnesvarientilenin_7",
+           "vosacouphnesvarientilenin_8",
+           "vosacouphnesvarientilenin_9",
+           "vosacouphnesvarientilenin_10"]
+    new_key = "somatosensory_modulation"
+    df_etiology[new_key] = df_raw[key].replace(mapping).sum(axis=1) > 3
+
+    """7)	Augmentation des acous suite aux siestes
+    Colonne BN, champ "ressentezvousunehaussedev", réponse : "Oui je ressens une hausse franche de mon acouphène suite aux siestes" UNIQUEMENT 
+    Oui pour 1HB20, 1SL21 et 1UC22"""
+
+    mapping = {"Oui je ressens une hausse franche de mon acouphène suite aux siestes": 1}
+    key = "ressentezvousunehaussedev"
+    new_key = "nap_modulation"
+    df_etiology[new_key] = df_raw[key].replace(mapping) == 1
+
+    """
+    8)	Ronflements (ou apnées sans ronflements)
+    Colonne EI, champ "estcequevousronflez", réponse : "Oui"
+    Attention, pour certains patients (1DA15, 1DL12, 1MA16, 1SA14) on n'a pas cette info!
+    Oui pour 1HB20, 1SL21 et 1UC22"""
+
+    mapping = {"Oui": 1, "Non": 0}
+    key = "estcequevousronflez"
+    new_key = "snoring"
+    df_etiology[new_key] = df_raw[key].replace(mapping) == 1
+
+    return df_etiology

@@ -2,11 +2,13 @@ import pytest
 import numpy as np
 from tinnsleep.visualization import (plotTimeSeries,
                                      assert_y_labels_correct, zoom_effect,
-                                     plotAnnotations)
+                                     plotAnnotations,
+                                     regression_report_with_plot)
 import matplotlib.pyplot as plt
 import numpy.testing as npt
 import mne
 from tinnsleep.validation import assert_ax_equals_data
+import pandas as pd
 
 
 def test_plotTimeSeries_noparams():
@@ -30,7 +32,7 @@ def test_plotTimeSeries_offset():
     """
     plt.close("all")
     sfreq = 100
-    offset=-10
+    offset = -10
     np.random.seed(42)
     data = np.random.randn(400, 2)
     fig, ax = plotTimeSeries(data, sfreq=100, offset=offset)
@@ -59,7 +61,9 @@ def test_plotTimeSeries_superimpose2():
     data = np.random.randn(400, 2)
     ax = plt.subplot(212)
     plotTimeSeries(data, ax=ax, color="black")
-    data[10, 1] += 100; data[150, 0] += 25; data[170, 1] += -1e9;  # add artifacts
+    data[10, 1] += 100;
+    data[150, 0] += 25;
+    data[170, 1] += -1e9;  # add artifacts
     plotTimeSeries(data, ax=ax, color="red", zorder=0, ch_names=["Fz", "Cz"])
     plt.legend(["clean", "_nolegend_", "with artefacts", "_nolegend_"])
 
@@ -80,11 +84,11 @@ def test_plotTimeSeries_subplots():
     """Test if two axes can be managed
     """
     plt.close("all")
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(400, 2)
     ax = plt.subplot(2, 1, 2)
-    ch_names=["You underestimate", "my power"]
+    ch_names = ["You underestimate", "my power"]
     fig, ax = plotTimeSeries(data, ax=ax, color="r", marker=".", linestyle='dashed',
                              linewidth=2, markersize=0.5, ch_names=ch_names, sfreq=sfreq)
     plt.title("lava platform")
@@ -136,14 +140,14 @@ def test_zoom_effect():
     a jupyter notebook widget
     """
     plt.close("all")
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(400, 2)
 
     plt.figure(figsize=(5, 5))
     ax1 = plt.subplot(221)
     plotTimeSeries(data, ax=ax1, sfreq=100)
-    #ax1.set_xlim(0, 1)
+    # ax1.set_xlim(0, 1)
     ax2 = plt.subplot(212)
     plotTimeSeries(data, ax=ax2, sfreq=100)
     zoom_effect(ax1, ax2, 0.2, 0.6)
@@ -160,14 +164,14 @@ def test_zoom_effect2():
     a jupyter notebook widget
     """
     plt.close("all")
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(400, 2)
 
     plt.figure(figsize=(5, 5))
     ax1 = plt.subplot(211)
     plotTimeSeries(data, ax=ax1, sfreq=100)
-    #ax1.set_xlim(0, 1)
+    # ax1.set_xlim(0, 1)
     ax2 = plt.subplot(212)
     plotTimeSeries(data, ax=ax2, sfreq=100)
     zoom_effect(ax1, ax2, prop_lines=dict(linestyle="-."))
@@ -179,19 +183,18 @@ def test_zoom_effect_incorrectparams():
     a jupyter notebook widget
     """
     plt.close("all")
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(400, 2)
 
     plt.figure(figsize=(5, 5))
     ax1 = plt.subplot(221)
     plotTimeSeries(data, ax=ax1, sfreq=100)
-    #ax1.set_xlim(0, 1)
+    # ax1.set_xlim(0, 1)
     ax2 = plt.subplot(212)
     plotTimeSeries(data, ax=ax2, sfreq=100)
     with pytest.raises(ValueError, match=r"xmin & xman should be None or float"):
         zoom_effect(ax1, ax2, xmin=0.2)
-
 
 
 def test_plotAnnotations_init():
@@ -202,7 +205,7 @@ def test_plotAnnotations_init():
 
 def test_plotAnnotations():
     plt.close("all")
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(400, 2)
     annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0}]
@@ -215,7 +218,7 @@ def test_plotAnnotations():
 
 def test_plotAnnotations2():
     plt.close("all")
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(400, 2)
     annotations = [{'onset': 0.5, 'duration': 1.0, 'description': "blink", 'orig_time': 0.0},
@@ -230,7 +233,7 @@ def test_plotAnnotations2():
 
 
 def test_plotAnnotations3():
-    sfreq=100
+    sfreq = 100
     np.random.seed(42)
     data = np.random.randn(2, 400)
     info = mne.create_info(["Fz", "Pz"], sfreq=sfreq)
@@ -260,3 +263,59 @@ def test_plotAnnotations_incorrectparams():
     with pytest.raises(ValueError, match="annotations should contains dict"):
         plotAnnotations(annotations)
 
+
+def test_regression_report_with_plot():
+    plt.close("all")
+    data = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6], "B": [1, 2, 3, 4, 5, 6], "C": [6, 5, 4, 3, 2, 1]})
+    variables_x_axis = ["A"]
+    variables_y_axis = ["B", "C"]
+    meta_results = regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions=None, title=None)
+    # rval 1 for A and -1 for B
+    npt.assert_equal(meta_results.rvalue.values, [1.0, -1.0])
+
+
+def test_regression_report_with_plot_condition():
+    plt.close("all")
+    # inverse times series for variables B & C when conditions changed
+    data = pd.DataFrame(
+        {"A": [1, 2, 3, 4, 5, 6], "B": [1, 5, 3, 3, 5, 1], "C": [6, 2, 4, 4, 2, 6], "condition": [1, 2, 1, 2, 1, 2]})
+    variables_x_axis = ["A"]
+    variables_y_axis = ["B", "C"]
+    plt.figure()
+    meta_results = regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions="condition",
+                                               title=None)
+    # rval 1 for A (condition 1) and B (condition 2)
+    # rval -1 for B (condition 1) and A (condition 2)
+    npt.assert_equal(meta_results.rvalue.values, [1.0, -1.0, -1.0, 1.0])
+
+    # extract specific condition
+    data_loc = data.query("condition == 2")
+    meta_results = regression_report_with_plot(data_loc, variables_x_axis, variables_y_axis, conditions="condition",
+                                               title=None)
+    # rval 1 for A (condition 1) and B (condition 2)
+    # rval -1 for B (condition 1) and A (condition 2)
+    npt.assert_equal(meta_results.rvalue.values, [-1.0, 1.0])
+
+    plt.figure()
+
+    data = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6], "B": [1, 5, 3, 3, 5, 1], "C": [6, 2, 4, 4, 2, 6],
+                         "condition": [True, False, True, False, True, False]})
+    variables_x_axis = ["A"]
+    variables_y_axis = ["B", "C"]
+    meta_results = regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions="condition",
+                                               title=None)
+    # rval 1 for A (condition 1) and B (condition 2)
+    # rval -1 for B (condition 1) and A (condition 2)
+    npt.assert_equal(meta_results.rvalue.values, [1.0, -1.0, -1.0, 1.0])
+
+
+def test_regression_report_with_plot_fails():
+    plt.close("all")
+    with pytest.raises(ValueError, match=f"conditions should be str \(column key\) or None"):
+        # inverse times series for variables B & C when conditions changed
+        data = pd.DataFrame(
+            {"A": [1, 2, 3, 4, 5, 6], "B": [1, 5, 3, 3, 5, 1], "C": [6, 2, 4, 4, 2, 6], "condition": [1, 2, 1, 2, 1, 2]})
+        variables_x_axis = ["A"]
+        variables_y_axis = ["B", "C"]
+        meta_results = regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions=["not_a_column"],
+                                                   title=None)
