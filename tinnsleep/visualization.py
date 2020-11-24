@@ -338,7 +338,6 @@ def zoom_effect(ax1, ax2, xmin=None, xmax=None, prop_lines={}, **kwargs):
 def regression_report_with_plot(data, variables_x_axis, variables_y_axis, conditions=None, title=None):
     """Make regression on different variable of the DataFrame
 
-    effect_variable = ["mask_delta", "mask_per", "VAS_I_delta", "VAS_I_per", "VAS_L_delta", "VAS_L_per"]
     Parameters
     ----------
     data: DataFrame
@@ -346,18 +345,15 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
         use query before to remove unwanted data
         Example:
         >>> # remove control subjects and keep only THR_classif of 3.0
-        >>> data = reports.query("category != 'control' & THR_classif==3")
-
-    effect_variable: list
+        >>> data = reports.query("category != 'control' & THR_classif==3")  # reports is the full DataFrame report
+    variables_x_axis: list
         list of keys (columns) for `data` to use as x_axis for the regression (columns' values should be float)
         Example
         >>> effect_variable = ["mask_delta", "mask_per", "VAS_I_delta", "VAS_I_per", "VAS_L_delta", "VAS_L_per"]
-
-    quantitative_variables: list
+    variables_y_axis: list
         list of keys (columns) for `data` to use as y_axis for the regression (columns' values should be float)
         Example
         >>> ['Number of episodes per hour', 'Number of tonic episodes per hour', 'Mean duration of phasic episode']
-
     conditions: str (default: None)
         key (column) for `data` to use as a different regression (values should be discrete)
 
@@ -430,32 +426,62 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
     return meta_results
 
 
-def etiology_report_with_plot(data, etiology, variable, hue=None, hue_stats=None, verbose=2):
+def etiology_report_with_plot(data, etiology, variable, hue=None, hue_value_for_stats=None,
+                              test='Mann-Whitney',
+                              verbose=2):
     """
     Parameters
     ----------
-
+    data: DataFrame
+        all the data with columns being either values for regression or condition
+        use query before to remove unwanted data
+        Example:
+        >>> # remove control subjects and keep only THR_classif of 3.0
+        >>> data = reports.query("category != 'control' & THR_classif==3")  # reports is the full DataFrame report
+    etiology: str
+        column name of `data` used as etiology. The etiology should have at least two different groups
+        e.g. at least True or False.
+        summary:
+            data[etiology].values can be integer or string or boolean (discrete number of unique values).
+            len(data[etiology].unique()) should be greater than 1
+    variable: str
+        column name of `data` used as value for the results
+        data[variable].values should be floats
+        those values are used for the statistical test between the different etiology.
+    hue: str (default: None)
+        column name for `data` for separation into subcategory. Use that if you have different algorithmes that computed
+        data[variable] on the same subjects to check if one algorithm does better.
+        By default, no subcategory so all the data need to be homogeneous. Use data.query() if needed.
+    hue_value_for_stats: type of data[hue].values
+        stats are only computed for this subcategory of data[hue] to avoid clunky the visualization.
+        TODO: change to allow comparaison of all pair of categories.
+    test: str
+        test to apply, see statannot.add_stat_annotation for details.
     Returns
     -------
     """
+    # e.1 prepare data
     categories = list(data[etiology].unique())
+    assert len(categories) > 1, f"etiology {etiology} have only one type: {categories} "
     for category in categories:
-        print(
-            f"Tinnitus {category} : {(data[etiology] == category).sum()}, {(list(data[data[etiology] == category]['subject']))}")
+        # Display list of subject for each category
+        print(f"{etiology} ({category}) : "
+              f"{(data[etiology] == category).sum()}, {(list(data[data[etiology] == category]['subject']))}")
 
     # e.2 Diplay
     plt.figure()
     ax = sns.boxplot(data=data, x=etiology, y=variable, hue=hue)
+    ax.set_title(etiology)
     if hue is not None:
         plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
 
     # e.3 Statistical results
     box_pairs = []
     if hue is not None:
-        if hue_stats is None:
-            hue_stats = data[hue].unique()[0]  # do only the first one to avoid clunky the interface
+        if hue_value_for_stats is None:
+            hue_value_for_stats = data[hue].unique()[0]  # do only the first one to avoid clunky the interface
         for pair_ in list(combinations(categories, 2)):
-            box_pairs.append(((pair_[0], hue_stats), (pair_[1], hue_stats)))
+            box_pairs.append(((pair_[0], hue_value_for_stats), (pair_[1], hue_value_for_stats)))
 
     return add_stat_annotation(ax, data=data, x=etiology, y=variable, box_pairs=box_pairs, hue=hue,
-                                     test='Mann-Whitney', loc='inside', verbose=verbose)
+                                     test=test, loc='inside', verbose=verbose)
