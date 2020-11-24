@@ -280,7 +280,7 @@ def test_read_etiology_file_real():
     etiology_file = os.path.join(os.path.dirname(__file__), "../notebooks/data/etiology.xlsx")
     df_etiology = read_etiology_file(etiology_file)
     data_info_file = os.path.join(os.path.dirname(__file__), "../notebooks/data/data_info.csv")
-    data_info = pd.read_csv(data_info_file, sep=",")
+    data_info = pd.read_csv(data_info_file, sep=";")
     data_info.merge(df_etiology, on="subject")
 
 
