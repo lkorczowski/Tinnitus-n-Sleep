@@ -5,3 +5,4 @@ omit =
     */tests/*
     */notebooks/*
     */tinnsleep/config.py
+    */tinnsleep/external/*
