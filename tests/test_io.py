@@ -1,17 +1,20 @@
 import mne
-from tinnsleep.io import fif2edf
 import os
 import numpy as np
 import numpy.testing as npt
 from tinnsleep.external.save_edf import write_edf
-import numpy.testing as npt
-
+import matplotlib.pyplot as plt
 
 def test_fif2edf():
     fname = "./dummy_fif"
     fname_edf = fname +".edf"
     raw = mne.io.read_raw_fif(fname+".fif", preload=True)
-    raw.plot()
+
+    # plt.close("all")
+    # plt.figure()
+    # raw.plot()
+    # plt.show()
+
     signals = raw.get_data()
     N, T = signals.shape
     scaling = np.ones((signals.shape[0]))
@@ -24,7 +27,9 @@ def test_fif2edf():
     raw2 = mne.io.read_raw_edf(fname_edf)
     signals2 = raw2.get_data()
     is_uV = np.median(np.abs(signals), axis=1)< 1e-3
-    npt.assert_allclose(signals2[is_uV,:T], signals[is_uV,:],atol=0.01)
-    npt.assert_allclose(signals2[~is_uV,:T], signals[~is_uV,:],atol=0.01)
+    npt.assert_allclose(signals2[is_uV,:T], signals[is_uV, :], atol=0.01)
+    npt.assert_allclose(signals2[~is_uV,:T], signals[~is_uV, :], atol=0.01)
 
-    #raw2.plot()
+    # plt.figure()
+    # raw2.plot()
+    # plt.show()

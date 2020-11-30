@@ -1,6 +1,7 @@
 #Notebook draft
 drafts/
 Notebooks/*_vbrouillon.*
+tests/dummy_fif.edf
 
 # Byte-compiled / optimized / DLL files
 results/
