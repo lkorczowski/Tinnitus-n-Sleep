@@ -78,7 +78,6 @@ if __name__ == "__main__":
     emg_files = data_info.query("emg == 1")["filename"].values
 
     dico_chans = data_info.set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
-
     #%% Processing of the dataset and report generation
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -103,6 +102,8 @@ if __name__ == "__main__":
 
             # Get channels indexes
             ind_picks_chan = dico_chans.loc[file]['Valid_chans']
+            print("Chan machoire")
+            print(ind_picks_chan)
             # Get impedance channels
             ind_picks_imp = dico_chans.loc[file]['Valid_imps']
             # Get THR_imp value for filename
@@ -129,6 +130,7 @@ if __name__ == "__main__":
                 try:
                     # opens the raw file
                     raw = mne.io.read_raw_edf(filename, preload=False, verbose=False)  # prepare loading
+                    print(raw.info["ch_names"])
                     # TODO: Maybe remove this section now ????
                     if file == "1PI07_nuit_hab.edf":
                         croptimes = dict(tmin=raw.times[0] + 10750, tmax=raw.times[-1] - 3330)
@@ -289,11 +291,17 @@ if __name__ == "__main__":
                                                                      )
                         valid_labels_bruxism.append(valid_labels_IMP)
 
+
+
                     #%% ----------------- Merging artifacts labels ------------------------------------------
 
                     if DO_BRUXISM:
                         epochs_bruxism, valid_labels_bruxism = crop_to_proportional_length(epochs_bruxism,
                                                                                            valid_labels_bruxism)
+                    print(" infos sur valid labels bruxism :")
+                    print(valid_labels_bruxism)
+                    print(len(valid_labels_bruxism))
+                    print(np.sum(valid_labels_bruxism))
                     if DO_MEMA:
                         epochs_MEMA, valid_labels_MEMA = crop_to_proportional_length(epochs_MEMA, valid_labels_MEMA)
                     print(f"DONE ({time() - tmp:.2f}s)", end=" ")
@@ -304,6 +312,7 @@ if __name__ == "__main__":
 
                     if DO_BRUXISM and np.sum(valid_labels_bruxism) > 0:
                         #
+
                         if sleep_labels is not None:
                             xnew = np.linspace(0, len(epochs_bruxism) * window_length_bruxism,
                                                len(epochs_bruxism), endpoint=False)

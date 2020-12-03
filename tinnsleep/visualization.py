@@ -389,7 +389,7 @@ def regression_report_with_plot(data, variables_x_axis, variables_y_axis, condit
                 axes = [axes]
             # loop on all effect variables (each subplot)
             for x_axis, ax in zip(variables_x_axis, axes):
-                regression_result = scipy.stats.linregress(data_loc[x_axis].values, data_loc[y_axis].values)
+                regression_result = scipy.stats.spearmanr(data_loc[x_axis].values, data_loc[y_axis].values)
                 if regression_result.pvalue < 0.01:
                     color = 'g'
                 elif regression_result.pvalue < 0.05:
