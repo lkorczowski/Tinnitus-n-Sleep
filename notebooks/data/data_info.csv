@@ -70,6 +70,6 @@
 1NS30_cohort2.edf;1NS30;1;batch2;1;1;1;1;0;1;1;0;1;;1;0;1;0.5;2;1;-1;-1;[0,6];[1,7];8000;2;2;1;3;4;2;0.5;group1;0;1NS30_cohort2.edf_right;1NS30_cohort2.edf_left;1NS30_cohort2.edf_right
 1AC26_cohort2.edf;1AC26;1;batch2;1;1;1;1;0;1;1;1;0;masseter d bad but not that bad;1;0;4.33333334;0.203125;-1;-0.166666667;2;0.333333333;[0,6];[1,7];8000;21.33333333;6;6;25.66666667;5;4;-1;group1;0;1AC26_cohort2.edf_left;1AC26_cohort2.edf_right;1AC26_cohort2.edf_right
 3CL02_cohort2.edf;3CL02;1;batch2;0;0;1;0;0;0;0;0;0;Partial recording: missing 4h30;1;0;-0.333333334;-0.125;-1;-0.333333333;1;0.5;[];[];8000;2.666666667;3;2;2.333333333;2;1;0;group3;0;3CL02_cohort2.edf;3CL02_cohort2.edf;3CL02_cohort2.edf
-3TS03_cohort2.edf;3TS03;1;batch2;1;1;1;0;0;1;1;1;1;No mask pressure between 00:54 and 4:37;1;0;7.66666667;0.212962963;1;0.166666667;-1;-0.25;[0,6];[1,7];8000;36;6;4;43.66666667;7;5;1;group3;0;0;3TS03_cohort2.edf;3TS03_cohort2.edf
+3TS03_cohort2.edf;3TS03;1;batch2;1;1;1;0;0;1;1;1;1;No mask pressure between 00:54 and 4:37;1;0;7.66666667;0.212962963;1;0.166666667;-1;-0.25;[0,6];[1,7];8000;36;6;4;43.66666667;7;5;1;group3;0;0;3TS03_cohort2.edf;0
 3HS08_cohort2.edf;3HS08;1;batch2;1;1;1;1;0;1;1;1;1;;1;0;-1;-0.272727273;0;0;0;0;[0,6];[1,7];8000;3.666666667;6;6;2.666666667;6;6;0;group3;0;3HS08_cohort2.edf;3HS08_cohort2.edf;3HS08_cohort2.edf_right
 2TL07_nuit_1.edf;2TL07;1;control;1;1;1;1;0;1;1;1;1;Beware MEMA channels names;1;1;;;;;;;[0,6];[1,7];8000;;;;;;;;group2;0;2TL07_nuit_1.edf;2TL07_nuit_1.edf;2TL07_nuit_1.edf_right
