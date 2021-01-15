@@ -257,7 +257,6 @@ def preprocess(raw, duration, interval,
            "suppressed_overall": suppressed_all,
            "total_nb_epochs": len(valid_labels),
            "suppressed_ratio": suppressed_all / len(valid_labels)}
-    print(log)
     return epochs, valid_labels, log
 
 
