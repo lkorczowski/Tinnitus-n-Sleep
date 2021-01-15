@@ -78,7 +78,6 @@ if __name__ == "__main__":
     emg_files = data_info.query("emg == 1")["filename"].values
 
     dico_chans = data_info.set_index('filename')[["Valid_chans", "Valid_imps", "THR_IMP"]]
-
     #%% Processing of the dataset and report generation
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -289,6 +288,8 @@ if __name__ == "__main__":
                                                                      )
                         valid_labels_bruxism.append(valid_labels_IMP)
 
+
+
                     #%% ----------------- Merging artifacts labels ------------------------------------------
 
                     if DO_BRUXISM:
@@ -304,6 +305,7 @@ if __name__ == "__main__":
 
                     if DO_BRUXISM and np.sum(valid_labels_bruxism) > 0:
                         #
+
                         if sleep_labels is not None:
                             xnew = np.linspace(0, len(epochs_bruxism) * window_length_bruxism,
                                                len(epochs_bruxism), endpoint=False)

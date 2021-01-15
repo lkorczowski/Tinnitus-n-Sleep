@@ -411,6 +411,17 @@ def read_etiology_file(etiology_file,
     df_etiology[new_key] = (df_raw[key1].replace(mapping) + df_raw[key2].replace(mapping))/2 >=1
 
     """
+    5bis)	Pb aux cervicales ou au cou
+    Colonne CB de l'excel, champ "avezvousdesmauxaucouauxce", avec une réponse "oui" (tout le temps, fréquemment, parfois).
+    Patient 1HB20 concerné, 1SL21 et 1UC22 non-concernés
+    Attention, manque 1SA14 
+    """
+    mapping = {"Non, jamais ou presque": 0, "Oui, parfois": 1, "Oui, fréquemment": 2, "Oui, tout le temps": 3}
+    key = "avezvousdesmauxaucouauxce"
+    new_key = "neck_pain"
+    df_etiology[new_key] = df_raw[key].replace(mapping) >= 1
+
+    """
     6)	Modulation somato-sensorielle si >3
     Somme des valeurs colonnes DF à DP, test si résultat supérieur à 3. ATTENTION : colonne DQ correspond à "NON" du coup ne pas la compter. 
     Attention, manque 1SA14
@@ -449,5 +460,41 @@ def read_etiology_file(etiology_file,
     key = "estcequevousronflez"
     new_key = "snoring"
     df_etiology[new_key] = df_raw[key].replace(mapping) == 1
+
+    """
+    9)	Origine trauma sonore
+    Colonne R champ "selonvousquelleatlacaused_0" réponse 1
+    Attention, manque 1SA14
+    Oui pour 1UC22, faux pour les 2 autres"""
+    mapping = {np.NaN: 0}
+    key = ["selonvousquelleatlacaused_0"]
+    new_key = "trauma_sonore"
+    df_etiology[new_key] = df_raw[key].replace(mapping).sum(axis=1) > 0
+
+    """
+    10)	Antécédent otite
+    Colonne AF champ "selonvousquelleatlacaused_14" réponse 1 ou declaration otite colonne CF
+    Attention, manque 1SA14
+    Oui pour 1UC22 1HB20 et 1SL14"""
+    mapping1 = {np.NaN: 0}
+    mapping2 = {np.NaN: 0,"Non": 0, "Oui, j'ai eu fréquemment des otites quand j'étais enfant": 1, "Oui, il m'arrive d'avoir des otites": 2}
+
+    key2 = "avezvousouavezvouseufrque"
+    key = ["selonvousquelleatlacaused_14"]
+    new_key = "otite"
+    df_etiology[new_key] = (df_raw[key].replace(mapping1).sum(axis=1) + df_raw[key2].replace(mapping2)) > 0
+
+    """
+    6)	Claquements oreille
+       Somme des valeurs colonnes CJ à CM, test si résultat supérieur à 1.
+       Oui pour 1UC22, on ne sait pas pour les 2 autres"""
+    mapping = {np.NaN: 0}
+    key = ["vousarrivetildentendredes_0",
+           "vousarrivetildentendredes_1",
+           "vousarrivetildentendredes_2",
+           "vousarrivetildentendredes_3"]
+    new_key = "Ear clapping"
+    df_etiology[new_key] = df_raw[key].replace(mapping).sum(axis=1) > 0
+
 
     return df_etiology
