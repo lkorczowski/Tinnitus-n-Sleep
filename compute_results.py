@@ -39,7 +39,8 @@ if __name__ == "__main__":
     import warnings
     from time import time
     from tinnsleep.data import read_sleep_file
-    from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess
+    from tinnsleep.reports import reporting, generate_MEMA_report, generate_bruxism_report, preprocess, \
+        creating_episode_epochs
     from tinnsleep.utils import crop_to_proportional_length, resample_labels, labels_1s_propagation
     from tinnsleep.config import Config
     from ast import literal_eval
@@ -96,7 +97,7 @@ if __name__ == "__main__":
         print("Files processed: ")
         start = time()
         #%%
-        for filename in EDF_list: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
+        for filename in EDF_list[:2]: #['/Users/louis/Data/SIOPI/bruxisme/3BS04_cohort2.edf']:#
             file = filename.split(os.path.sep)[-1]
             print(file, end=" ")
 
@@ -338,11 +339,17 @@ if __name__ == "__main__":
                             result_key = file[:-11] + ".edf_left"
                         else:
                             result_key = file
+
+                        filter_kwargs = dict(l_freq=0, h_freq=1., n_jobs=4,
+                                             fir_design='firwin', filter_length='auto', phase='zero-double')
                         results_MEMA[result_key] = reporting(epochs_MEMA, valid_labels_MEMA, THR_classif_MEMA,
                                                        time_interval=window_length_MEMA, delim=delim,
                                                        n_adaptive=n_adaptive_MEMA,
                                                        generate_report=generate_MEMA_report,
                                                        sleep_labels=sleep_labels_MEMA)
+                        li_episode_epochs = creating_episode_epochs(results_MEMA[result_key], raw, delim,
+                                                                    window_length_MEMA,
+                                                                   filter_kwargs = filter_kwargs)
                         if (has_mask_pressure + has_press_diff) == 2:
                             results_MEMA[file + "_right"] = reporting(epochs_MEMA[:,:1,:], valid_labels_MEMA, THR_classif_MEMA,
                                                            time_interval=window_length_MEMA, delim=delim,
@@ -357,6 +364,7 @@ if __name__ == "__main__":
 
 
                         print(f"done)", end=" ")
+                        print(results_MEMA)
                     else:
                         print(f"skipped)", end=" ")
 

@@ -4,7 +4,7 @@ from tinnsleep.classification import AmplitudeThresholding
 from tinnsleep.utils import fuse_with_classif_result, merge_labels_list, label_report, merge_label_and_events
 from tinnsleep.signal import rms
 from tinnsleep.events.scoring import classif_to_burst, burst_to_episode, episodes_to_list
-from tinnsleep.signal import is_good_epochs, power_ratio
+from tinnsleep.signal import is_good_epochs, power_ratio, get_peaks
 
 
 def generate_bruxism_report(classif, time_interval, delim, valid_labels=None, min_burst_joining=3, sleep_labels=None):
@@ -333,10 +333,13 @@ def reporting(epochs, valid_labels, THR_classif, time_interval, delim, n_adaptiv
         report_ = generate_report(labels, time_interval, delim, valid_labels,  sleep_labels=sleep_labels_valid,
                                   )
         report_.update(label_report(sleep_labels))
+        #Very smart way of estimating precisely the power ratio between events and {non-events AND non-artefacts epochs}
         report_["Power Ratio"] = power_ratio(epochs[valid_labels], labels)
 
         labels = fuse_with_classif_result(np.invert(valid_labels),
                                           labels)  # add the missing labels removed with artefacts
+
+
         labs.append(labels)
         reps.append(report_)
 
@@ -466,3 +469,50 @@ def combine_brux_MEMA(labels_brux, time_interval_brux, delim_ep_brux, labels_MEM
     brux_comb_ep, brux_pure_ep = _cond_subclassif(li_ep_brux, MEMA_burst_ep, time_interval)
 
     return brux_comb_ep, brux_pure_ep, MEMA_comb_ep, MEMA_pure_ep
+
+def creating_episode_epochs(report, raw, delim, window_length, time_interval, filter_kwargs=None,
+                            left_add = 0, right_add = 0, min_burst_joining=0):
+    """
+    Captures the signal of the wanted channel(s) on the parts where the events episodes are present and stocks it in
+    a list
+    left_add and right_add should be a duration in seconds
+    :param report: dict
+    report of the analysis on the current recording
+    :param raw: mne.raw
+    raw file of the recording, the good channels must have been prealably selected
+    :param delim: float
+    maximal tolerated time interval between 2 bursts to form an episode
+    :param window_length: float
+    exact length in seconds of an epoch
+    :param filter_kwargs: series of raw.filter args
+    filtering arguments
+    :param left_add: float
+    adding to the left of the episode a certain duration in seconds
+    :param right_add: float
+    adding to the right of the episode a certain duration in seconds
+    :param min_burst_joining: int
+    number of burst minimum to make an episode
+    :return:
+    a list of epochs of different length corresponding to the episodes of valid_labels
+    """
+
+    valid_labels = report["parameters"]["valid_labels"]
+    li_episodes = burst_to_episode(classif_to_burst(valid_labels, time_interval=time_interval), delim,
+                                   min_burst_joining=min_burst_joining)
+    if isinstance(filter_kwargs, dict):
+        raw = raw.filter(**filter_kwargs)
+    elif filter_kwargs is None:
+        pass  # do nothing
+    else:
+        raise ValueError('`filter_kwargs` a dict of parameters to pass to ``mne.raw.filter`` or None')
+
+    li_signal_events=[]
+    for ep in li_episodes:
+        if int(ep.beg*window_length) - left_add*window_length >0:
+            if int(ep.end*window_length) + right_add*window_length < len(raw):
+                epoch_event = raw.get_data(start = int(ep.beg*window_length) - left_add*window_length,
+                                           stop = int(ep.end*window_length) + right_add*window_length)
+        li_signal_events.append(epoch_event)
+
+    return li_signal_events
+

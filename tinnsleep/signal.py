@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 from tinnsleep.validation import is_valid_ch_names
+from scipy import signal
 
 
 def rms(epochs, axis=-1):
@@ -67,7 +68,28 @@ def power_ratio(epochs, labels, axis=-1):
         #raise ValueError("labels should have at least one True and one False")
 
     pow = mean_power(epochs, axis=axis)
+    #Smart move : here the np.invert(labels) array contains artefact-free epochs!
     return np.mean(pow[labels], axis=0)/np.mean(pow[np.invert(labels)], axis=0)
+
+def get_peaks(epochs):
+    """get peak parameters for each peak in the valid epochs list
+
+    Parameters
+    ----------
+    epochs : ndarray, shape (n_trials, n_electrodes, n_samples)
+        the epochs for the estimation
+
+    Returns
+    -------
+    peaks_recording : list, shape (n_trials,)
+        peaks and peaks_prominence characteristics.
+    """
+    peaks_recording=[]
+    for elm in epochs:
+        peaks = signal.find_peaks(elm[0])
+        proemin = signal.peak_prominences(elm[0], peaks[0])
+        peaks_recording.append([peaks, proemin])
+    return peaks_recording
 
 
 def is_good_epochs(epochs, **kwargs):

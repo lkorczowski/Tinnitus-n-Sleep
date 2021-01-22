@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from tinnsleep.signal import rms, is_good_epochs, _is_good_epoch, power_ratio
+from tinnsleep.signal import rms, is_good_epochs, _is_good_epoch, power_ratio, get_peaks
 from tinnsleep.utils import epoch
 
 
@@ -24,6 +24,15 @@ def test_rms():
     npt.assert_almost_equal(rms_values,
                             np.array([[2.1602469, 2.1602469], [2.51661148, 6.32455532], [0.57735027, 0.57735027]]),
                             decimal=4)
+
+def test_get_peaks():
+    epochs = np.array([[[0,0,0.5,0,1, 2,1 ,0]]])
+
+    print(get_peaks(epochs))
+    npt.assert_equal(get_peaks(epochs), [[(np.array([2, 5]), {}),(np.array([0.5, 2. ]),
+                                                                                           np.array([1, 3]
+                                                            ), np.array([3, 7]))]])
+
 
 
 def test_power_ratio():
