@@ -5,9 +5,9 @@ from tinnsleep.utils import epoch, label_report
 from tinnsleep.events.scoring import burst_to_episode, classif_to_burst, episodes_to_list
 from tinnsleep.data import CreateRaw
 from tinnsleep.reports import preprocess, reporting, combine_brux_MEMA, generate_bruxism_report,\
-    generate_MEMA_report
+    generate_MEMA_report, creating_episode_epochs
 from tinnsleep.classification import AmplitudeThresholding
-from tinnsleep.signal import is_good_epochs, rms, power_ratio
+from tinnsleep.signal import is_good_epochs, rms, power_ratio, get_peaks
 
 
 def test_preprocess_unit():
@@ -166,6 +166,8 @@ def test_reporting():
     epochs = epoch(data, duration, interval, axis=-1)
     THR_classif = [[0, 2], [0, 3]]
     valid_labels = [True, True, False, True, True, True, True, True, True, True, True, True, True, True, True, True]
+    print(len(valid_labels))
+    print(len(epochs))
     report = reporting(epochs, valid_labels, THR_classif, time_interval=0.25, delim=3, log={})
     classif_expected = np.array([False, False, False, False, True, False, True, False, True, False, False,
                                            False, False, False, False, False])
@@ -652,3 +654,19 @@ def test_generate_bruxism_report_with_sleep_mismatch():
     with pytest.raises(ValueError,
                        match=f"classif is \({len(classif)},\), sleep_labels is \({len(sleep_labels)},\)"):
         generate_bruxism_report(classif, 1, 3, valid_labels, sleep_labels=sleep_labels)
+
+def test_creating_episode_epochs():
+    n_chan = 2
+    np.random.seed(42)
+    data = np.random.randn(n_chan, 800)
+    raw = CreateRaw(data, 100, ['1', '2'])
+    report={}
+    report["parameters"]={}
+    report["parameters"]["valid_labels"] = [0,1,1,0,0,0,1,0]
+    delim = 0
+    time_interval=1
+    window_length=100
+    li_episodes_epochs = creating_episode_epochs(report, raw, delim,window_length, time_interval,
+                                                  filter_kwargs=None, left_add=0, right_add=0)
+
+    npt.assert_equal(li_episodes_epochs, [raw.get_data(start=100, stop=300), raw.get_data(start=600, stop=700)])
