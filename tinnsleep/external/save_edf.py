@@ -86,12 +86,16 @@ def write_edf(mne_raw, fname, picks=None, tmin=0, tmax=None, overwrite=False):
         data_list = []
 
         for i in range(n_channels):
-            if np.median(np.abs(channels[i])) < 1e-3:
-                scale = 1e6
-                unit = 'uV'
+            if np.median(np.abs(channels[i])) < 1e-5:
+                scale = 1e9
+                unit = 'nV'
             else:
-                scale = 1
-                unit = 'V'
+                if np.median(np.abs(channels[i])) < 1e-3:
+                    scale = 1e6
+                    unit = 'uV'
+                else:
+                    scale = 1
+                    unit = 'V'
 
             ch_dict = {'label': mne_raw.ch_names[i],
                        'dimension': unit,
