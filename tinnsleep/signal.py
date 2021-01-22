@@ -165,3 +165,38 @@ def _is_good_epoch(data, ch_names=None,
             return True, None
         else:
             return False, bad_list
+
+
+def align_epochs_latency(list_epochs, list_shifts):
+    """Test if epochs are good according to reject and flat by on intra-epoch min-max thresholding.
+
+    Parameters
+    ----------
+    list_epochs: list of ndarray, len (n_epochs) of shape (n_channels, n_samples)
+        a list of epochs. Epochs should be ndarray with fixed n_channels but could have different n_samples.
+
+    list_shifts: list of int, len (n_epochs)
+        a list of integer, the number of samples to shift each epoch.
+        if posivite, the epoch will be shifted to the right with left hand zero padding for missing samples
+        if negative, the epoch will be shift to the left with right hand zero padding for missing samples
+        shifted out-of-bound samples are crop and definitely lost.
+
+    Returns
+    -------
+    aligned_epochs: list of ndarray, len (n_epochs), with shape (n_channels, n_samples)
+        aligned epochs
+    """
+    list_epochs_aligned = []
+    for i, x in enumerate(list_epochs):
+        shift = list_shifts[i]
+        if shift > 0:
+            # left hand zero padding
+            list_epochs_aligned.append(np.pad(x, ((0, 0), (shift, 0)), mode='constant')[:, :-shift])
+        elif shift < 0:
+            # right hand zero padding
+            list_epochs_aligned.append(np.pad(x, ((0, 0), (0, -shift)), mode='constant')[:, -shift:])
+        else:
+            # do absolutely nothing
+            pass
+
+    return list_epochs_aligned
